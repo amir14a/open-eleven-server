@@ -304,6 +304,17 @@ public sealed class Hub(ILogger<Hub> log)
 
         PublishRoomStateChanged(room, "StateChanged", member.Id);
 
+        // The joining member never sent CMD_WATCH_DECIDE_GAMEENV/GAMEPLAYER/GAMEPLAYERENV
+        // (FUN_007bacc0 arms those watches locally), so without this it never learns the
+        // match settings, roster, or side/captain assignment and the entry-game screen
+        // (and therefore CMD_ENTRY_GAME) never opens for it.
+        if (room.GameEnvironment is not null)
+        {
+            PublishDecideGameEnv(room);
+            PublishDecideGamePlayer(room);
+            PublishDecideGamePlayerEnv(room);
+        }
+
         PublishRoomUpdated(room, member.Id);
     }
 

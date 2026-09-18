@@ -154,6 +154,8 @@ public sealed class RoomHandlers(
         room.GameEnvironment = environment;
         // The other occupants only ever learn the settings through this watch.
         ctx.Hub.PublishDecideGameEnv(room);
+        ctx.Hub.PublishDecideGamePlayer(room);
+        ctx.Hub.PublishDecideGamePlayerEnv(room);
         ctx.Hub.PublishRoomUpdated(room, ctx.Session.Id);
 
         log.LogInformation(
