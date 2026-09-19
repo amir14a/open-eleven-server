@@ -304,6 +304,18 @@ public sealed class Hub(ILogger<Hub> log)
 
         PublishRoomStateChanged(room, "StateChanged", member.Id);
 
+        // The entry-game screen is armed locally by the client (FUN_007bacc0), not via a
+        // wire request, and its six watchers only report after a follow-up event. A member
+        // that joins an already-configured room therefore never hears the roster, sides,
+        // or settings unless they are pushed here — which in turn keeps its ready-up
+        // (CMD_ENTRY_GAME) from ever firing and leaves its gameNum stuck at -1.
+        if (room.GameEnvironment is not null)
+        {
+            PublishDecideGameEnv(room);
+            PublishDecideGamePlayer(room);
+            PublishDecideGamePlayerEnv(room);
+        }
+
         PublishRoomUpdated(room, member.Id);
     }
 
@@ -544,6 +556,26 @@ public sealed class Hub(ILogger<Hub> log)
         var sent = 0;
         foreach (var room in Rooms.Where(room => room.IsStartable))
             sent += PublishGameEntryChanged(room);
+        return sent;
+    }
+
+    /// <summary>
+    /// Periodic refresh of the entry-game setting/roster/side watches for configured
+    /// pre-match rooms. The clients arm these watches locally and only learn new values
+    /// from a push, so a member whose first snapshot was sent before it finished arming
+    /// (or before the host configured the room) would otherwise never open its entry-game
+    /// screen and never send CMD_ENTRY_GAME.
+    /// </summary>
+    public int PublishDecideGameSnapshots()
+    {
+        var sent = 0;
+        foreach (var room in Rooms.Where(room => room.IsStartable && room.GameEnvironment is not null))
+        {
+            sent += PublishDecideGameEnv(room);
+            sent += PublishDecideGamePlayer(room);
+            sent += PublishDecideGamePlayerEnv(room);
+        }
+
         return sent;
     }
 

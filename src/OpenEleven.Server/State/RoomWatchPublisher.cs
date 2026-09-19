@@ -23,6 +23,10 @@ public sealed class RoomWatchPublisher(
                 var sent = hub.PublishStartableGameEntrySnapshots();
                 if (sent > 0)
                     log.LogDebug("Refreshed {Count} CMD_WATCH_ENTRY_GAME snapshots", sent);
+
+                var decided = hub.PublishDecideGameSnapshots();
+                if (decided > 0)
+                    log.LogDebug("Refreshed {Count} decide-game snapshots", decided);
             }
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)

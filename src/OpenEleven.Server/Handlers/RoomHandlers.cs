@@ -152,8 +152,13 @@ public sealed class RoomHandlers(
             return Reply.Of(ctx.Err("NOROOM"));
 
         room.GameEnvironment = environment;
-        // The other occupants only ever learn the settings through this watch.
+        // The other occupants only ever learn the settings through this watch. Push every
+        // entry-game watch the host's settings drive, not just the environment: a member
+        // that never receives the roster and side assignment never opens its entry-game
+        // screen, so it never sends CMD_ENTRY_GAME and its gameNum sits at -1.
         ctx.Hub.PublishDecideGameEnv(room);
+        ctx.Hub.PublishDecideGamePlayer(room);
+        ctx.Hub.PublishDecideGamePlayerEnv(room);
         ctx.Hub.PublishRoomUpdated(room, ctx.Session.Id);
 
         log.LogInformation(
