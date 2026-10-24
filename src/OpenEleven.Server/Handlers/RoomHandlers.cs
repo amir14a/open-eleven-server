@@ -17,6 +17,8 @@ namespace OpenEleven.Server.Handlers;
 /// </summary>
 public sealed class RoomHandlers(
     ProtocolTextPolicy textPolicy,
+    Microsoft.Extensions.Options.IOptionsMonitor<ServerOptions> options,
+    OpenEleven.Data.GameDbContext db,
     ILogger<RoomHandlers> log)
 {
     private const ServiceRole RoomRoles = ServiceRole.Menu | ServiceRole.Lobby | ServiceRole.FdLobby;
@@ -34,7 +36,7 @@ public sealed class RoomHandlers(
             return Reply.Of(ctx.Fail("ERR_ALREADYINROOM"));
 
         var maxPlayers = ctx.Request.GetInt32("max_players", 4);
-        var requestedName = ctx.Request.GetString("name") ?? $"Room {ctx.Session.PlayerName}";
+        var requestedName = ctx.Request.GetString("name") ?? ServerText.Get("room.default", ctx.Session.Language, ctx.Session.PlayerName);
         if (ctx.Session is not { Pid: > 0, BlockId: not null }
             || maxPlayers is not (2 or 4)
             || !textPolicy.TryValidate(requestedName, out var name))
@@ -48,6 +50,14 @@ public sealed class RoomHandlers(
         room.Password = ctx.Request.GetString("password") ?? "";
         room.AllowGuest = ctx.Request.GetString("enable_guest") != "NO";
         room.InviteLimited = ctx.Request.GetString("is_invite_limit") == "YES";
+        room.TeamName = ctx.Request.GetString("team_name") ?? "";
+        room.ShortTeamName = ctx.Request.GetString("short_teamname") ?? "";
+        room.LegendsVsPlayer = ctx.Request.GetString("is_legends_vs_player") ?? "NO";
+        // The client writes team_flag=["YES","YES","YES",]; the trailing comma can leave an empty entry.
+        if (ctx.Request.GetValue("team_flag") is KvArray { } flags
+            && flags.Values.OfType<string>().Where(f => f.Length > 0).ToArray() is { Length: 3 } chosen)
+            room.TeamFlag = new KvArray(chosen);
+        room.DlcVersion = ctx.Session.DlcVersion;
 
         ctx.Hub.PublishRoomUpdated(room, ctx.Session.Id);
 
@@ -97,11 +107,12 @@ public sealed class RoomHandlers(
         if (member is null)
             return Reply.Of(ctx.Fail("ERR_NOPLAYER"));
 
+        var endpoints = ctx.Hub.EndpointsFor(ctx.Session, member);
         return Reply.Of(ctx.Ok()
-            .Set("ex_ip", member.ExternalIp)
-            .Set("ex_port", member.ExternalPort)
-            .Set("in_ip", member.InternalIp)
-            .Set("in_port", member.InternalPort)
+            .Set("ex_ip", endpoints.ExternalIp)
+            .Set("ex_port", endpoints.ExternalPort)
+            .Set("in_ip", endpoints.InternalIp)
+            .Set("in_port", endpoints.InternalPort)
             .Set("pid", member.Pid));
     }
 
@@ -299,6 +310,12 @@ public sealed class RoomHandlers(
         if (target is null || target.Pid == ctx.Session.Pid)
             return Reply.Of(ctx.Fail("ERR_TARGETPLAYERNOTEXIST"));
 
+        // The kicked player has to be told, or its client stays in the room screen: the
+        // room-state watch (parser FUN_0051c110) carries event enum 0x45, whose "Kicked"
+        // takes the client out. Built before LeaveRoom, which drops the target's watch rqid.
+        if (ctx.Hub.BuildRoomStateUpdate(room, target, "Kicked") is { } kicked)
+            target.Push(kicked);
+
         // Same path as a voluntary exit, so the notices and any ownership handover match.
         ctx.Hub.LeaveRoom(target, room.Id);
         log.LogInformation(
@@ -387,6 +404,12 @@ public sealed class RoomHandlers(
             return Reply.Of(ctx.Ok());
         }
 
+        // pes2011.exe sends entry=FALSE for both players right after CMD_SET_GAMEMEMBERENV, as
+        // it leaves the entry screen. Honouring it empties the entries and the clients then
+        // report "communications with other users have been lost".
+        if (room.MatchStarting && !entered.Value)
+            return Reply.Of(ctx.Ok());
+
         room.SetGameEntry(ctx.Session, entered.Value, side);
 
         // Complete CMD_ENTRY_GAME before satisfying the sender's parked watch.
@@ -413,15 +436,11 @@ public sealed class RoomHandlers(
         if (room is null)
             return Reply.Of(ctx.Err("NOROOM"));
 
-        var members = room.Snapshot()
-            .Select(member => RoomPresenter.MemberListEntry(room, member))
-            .ToArray();
-
         return Reply.Of(
+        [
             ctx.Ok(),
-            ctx.Ok("MSG_RMEMBERLISTSTART"),
-            ctx.Ok("MSG_RMEMBERLIST").SetList("count", "list", members),
-            ctx.Ok("MSG_RMEMBEREND"));
+            .. RoomPresenter.MemberListStream(room, ctx.Rqid),
+        ]);
     }
 
     private static KvMessage RoomJoinError(CommandContext ctx, RoomJoinStatus status)
@@ -441,6 +460,25 @@ public sealed class RoomHandlers(
         bool includeRoomId = false,
         bool includeRoomOwner = false)
     {
+        if (ctx.Hub.FindRoom(roomId) is { } target
+            && target.Snapshot().FirstOrDefault(m => m.Pid == target.OwnerPid) is { } roomOwner)
+        {
+            // Modified game data (a different para_hash from login) must not mix with the
+            // owner's: ERR_DIFFDCVERSION is the "different data version" refusal the client knows.
+            if (options.CurrentValue.Protocol.RequireSameParaHashToJoin
+                && roomOwner.ParaHash.Length > 0 && ctx.Session.ParaHash.Length > 0
+                && !string.Equals(roomOwner.ParaHash, ctx.Session.ParaHash, StringComparison.OrdinalIgnoreCase))
+            {
+                log.LogWarning("pid {Pid} refused from room {RoomId}: para_hash {Hash} differs from the owner's {OwnerHash}",
+                    ctx.Session.Pid, roomId, ctx.Session.ParaHash, roomOwner.ParaHash);
+                return [ctx.Fail("ERR_DIFFDCVERSION")];
+            }
+
+            // A blacklisted player sees the room as full rather than learning it was blocked.
+            if (db.Blacklist.Any(b => b.Pid == roomOwner.Pid && b.TargetPid == ctx.Session.Pid))
+                return [ctx.Fail("ERR_ROOMISFULL")];
+        }
+
         var joined = ctx.Hub.JoinRoom(
             ctx.Session,
             roomId,
@@ -460,14 +498,15 @@ public sealed class RoomHandlers(
             // CMD_GET_IPANDPORT request. Missing this object produces the observed pid=0.
             var owner = joined.Room.Snapshot()
                 .First(member => member.Pid == joined.Room.OwnerPid);
+            var endpoints = ctx.Hub.EndpointsFor(ctx.Session, owner);
             response.Set("room_owner", new KvMessage()
                 .Set("name", owner.PlayerName)
                 .Set("pid", owner.Pid)
                 .Set("xuid", 0L)
-                .Set("ex_ip", owner.ExternalIp)
-                .Set("ex_port", owner.ExternalPort)
-                .Set("in_ip", owner.InternalIp)
-                .Set("in_port", owner.InternalPort));
+                .Set("ex_ip", endpoints.ExternalIp)
+                .Set("ex_port", endpoints.ExternalPort)
+                .Set("in_ip", endpoints.InternalIp)
+                .Set("in_port", endpoints.InternalPort));
         }
 
         var replies = new List<KvMessage> { response };
@@ -475,6 +514,15 @@ public sealed class RoomHandlers(
         // so the join response must include the current state even without a parked
         // server-side rqid. Keep a supplied rqid for protocol variants that do park it.
         replies.Add(ctx.Hub.BuildRoomStateUpdate(joined.Room, ctx.Session)!);
+
+        // Queue the roster after the CMD_JOIN_ROOM response, never before it: the join
+        // state machine is waiting on that response, and the roster stream is also what
+        // populates the room screen for a player who joined an existing room.
+        replies.AddRange(RoomPresenter.MemberListStream(joined.Room, Hub.UnsolicitedRqid));
+
+        // PublishRoomJoined skips the joiner; it gets its own copy here, after the join response.
+        if (ctx.Hub.RoomListUpdateFor(ctx.Session, joined.Room) is { } update)
+            replies.Add(update);
         return replies.ToArray();
     }
 }

@@ -16,6 +16,10 @@ public interface IPlayerRepository
         PlayerSearchMode mode, string query, int limit, CancellationToken ct = default);
     Task<IReadOnlyList<Player>> GetForAccountAsync(int accountId, CancellationToken ct = default);
     Task<IReadOnlyList<Player>> GetLeaderboardAsync(int limit, CancellationToken ct = default);
+    Task<int> CountInCompetitionAsync(int competitionId, CancellationToken ct = default);
+
+    /// <summary>Teams the player used in its latest completed matches, newest first.</summary>
+    Task<IReadOnlyList<int>> GetRecentTeamsAsync(int pid, int count, CancellationToken ct = default);
     Task<(PlayerCreateResult Result, Player? Player)> CreateForAccountAsync(
         int accountId, string name, string normalizedName, string language,
         CancellationToken ct = default);
@@ -75,7 +79,7 @@ public interface IMatchRepository
 public sealed class PlayerRepository(GameDbContext db) : IPlayerRepository
 {
     public Task<Player?> GetAsync(int pid, CancellationToken ct = default)
-        => db.Players.Include(p => p.Stats).FirstOrDefaultAsync(p => p.Pid == pid, ct);
+        => db.Players.Include(p => p.Stats).Include(p => p.Account).FirstOrDefaultAsync(p => p.Pid == pid, ct);
 
     public Task<Player?> GetByNameAsync(string name, CancellationToken ct = default)
     {
@@ -117,6 +121,18 @@ public sealed class PlayerRepository(GameDbContext db) : IPlayerRepository
         => await db.Players.Include(p => p.Stats)
             .OrderByDescending(p => p.Point)
             .Take(limit)
+            .ToListAsync(ct);
+
+    public Task<int> CountInCompetitionAsync(int competitionId, CancellationToken ct = default)
+        => db.Players.CountAsync(p => p.CompetitionId == competitionId, ct);
+
+    public async Task<IReadOnlyList<int>> GetRecentTeamsAsync(int pid, int count, CancellationToken ct = default)
+        => await db.Matches
+            .Where(m => m.Completed && (m.HomePid == pid || m.AwayPid == pid))
+            .OrderByDescending(m => m.PlayedAt)
+            .Select(m => m.HomePid == pid ? m.HomeTeamId : m.AwayTeamId)
+            .Where(team => team != 0)
+            .Take(count)
             .ToListAsync(ct);
 
     public async Task<(PlayerCreateResult Result, Player? Player)> CreateForAccountAsync(
@@ -256,7 +272,7 @@ public sealed class MatchRepository(GameDbContext db) : IMatchRepository
 
     public async Task<IReadOnlyList<MatchRecord>> GetRecentAsync(int pid, int limit, CancellationToken ct = default)
         => await db.Matches
-            .Where(m => m.HomePid == pid || m.AwayPid == pid)
+            .Where(m => m.Ranked && m.Completed && (m.HomePid == pid || m.AwayPid == pid))
             .OrderByDescending(m => m.PlayedAt)
             .Take(limit)
             .ToListAsync(ct);

@@ -74,6 +74,16 @@ public static class AuthProof
         return Convert.ToHexStringLower(MD5.HashData(input));
     }
 
+    /// <summary>PES 2011 order: MD5(ASCII(gameId) || raw challenge bytes || ASCII(credential)).</summary>
+    public static string Compute2011(string gameId, string challengeCode, string credential)
+    {
+        if (!TryDecodeChallenge(challengeCode, out var challenge))
+            throw new ArgumentException("Challenge code must contain exactly 32 hexadecimal characters.", nameof(challengeCode));
+
+        return Convert.ToHexStringLower(MD5.HashData(
+            [.. Encoding.ASCII.GetBytes(gameId), .. challenge, .. Encoding.ASCII.GetBytes(credential)]));
+    }
+
     public static bool FixedTimeEquals(string left, string right)
     {
         var leftBytes = Encoding.ASCII.GetBytes(left);

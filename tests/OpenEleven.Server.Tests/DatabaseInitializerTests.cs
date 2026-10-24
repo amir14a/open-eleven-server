@@ -32,7 +32,7 @@ public sealed class DatabaseInitializerTests
             var initializer = new DatabaseInitializer(
                 db, NullLogger<DatabaseInitializer>.Instance);
 
-            await initializer.InitializeAsync(seed: false);
+            await initializer.InitializeAsync();
 
             var account = await db.Accounts.SingleAsync();
             Assert.Equal("legacy-player", account.GameId);
@@ -93,7 +93,7 @@ public sealed class DatabaseInitializerTests
 
             var initializer = new DatabaseInitializer(
                 db, NullLogger<DatabaseInitializer>.Instance);
-            await initializer.InitializeAsync(seed: false);
+            await initializer.InitializeAsync();
 
             Assert.Empty(await db.Accounts.ToListAsync());
             Assert.Empty(await db.Players.ToListAsync());
@@ -124,7 +124,7 @@ public sealed class DatabaseInitializerTests
 
             var initializer = new DatabaseInitializer(
                 db, NullLogger<DatabaseInitializer>.Instance);
-            await initializer.InitializeAsync(seed: false);
+            await initializer.InitializeAsync();
 
             Assert.Equal("user changed this", (await db.Players.SingleAsync()).Intro);
             Assert.Equal("LOCAL PLAYER", (await db.Players.SingleAsync()).NormalizedName);

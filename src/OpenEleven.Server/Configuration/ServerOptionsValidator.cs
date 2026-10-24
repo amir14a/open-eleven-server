@@ -88,6 +88,21 @@ public sealed class ServerOptionsValidator : IValidateOptions<ServerOptions>
         if (duplicatePorts.Length > 0)
             failures.Add($"Two services cannot share a port; repeated: {string.Join(", ", duplicatePorts)}.");
 
+        // An unknown type silently inherits the previous entry's type in the client's parser.
+        foreach (var url in options.Urls)
+        {
+            if (!UrlOptions.Types.Contains(url.Type))
+                failures.Add($"Urls: unknown Type '{url.Type}'. Valid: {string.Join(", ", UrlOptions.Types)}.");
+            if ((url.File.Length > 0) == (url.Url.Length > 0))
+                failures.Add($"Urls: entry '{url.Type}' needs exactly one of File or Url.");
+            else if (url.File.Length > 0 && !File.Exists(url.FullPath))
+                failures.Add($"Urls: entry '{url.Type}' points at a missing file '{url.File}'.");
+        }
+
+        // FUN_00513de0 keeps at most 23 entries; built-ins take up to 5 of them.
+        if (options.Urls.Count > 18)
+            failures.Add("Urls: at most 18 entries.");
+
         return failures.Count > 0
             ? ValidateOptionsResult.Fail(failures)
             : ValidateOptionsResult.Success;

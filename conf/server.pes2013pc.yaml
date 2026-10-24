@@ -66,10 +66,8 @@ Server:
     Provider: Sqlite
     ConnectionString: "Data Source=data/pes2013pc.db"
     AutoCreate: true
-    Seed: true
 
   Protocol:
-    RequireEulaBeforeServerList: false
     ChallengeCode: "00112233445566778899aabbccddeeff"
     PendingLoginLifetimeSeconds: 300
     PlayerSearchLimit: 100
@@ -87,7 +85,7 @@ Server:
 
   Debug:
     HexDump: true
-    HexDumpMaxBytes: 320
+    HexDumpMaxBytes: 1024
     PrettyPrintPayloads: true
     LogUnknownCommands: true
     LogOutboundPayloads: true

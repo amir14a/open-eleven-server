@@ -84,7 +84,8 @@ public sealed class TextChatHandlers(ChatTextPolicy textPolicy, ILogger<TextChat
         // disagreement is logged rather than refused: the session that owns the sender's
         // room lives on a different connection, so scene and room checks against *this*
         // session would reject perfectly valid traffic.
-        if (scene is null || channel is null || listMode != TextChatListMode.ChatBan)
+        // PES 2011 sends no scene at all, so a missing one is not unusual there.
+        if ((scene is null && ctx.Request.Has("scene")) || channel is null || listMode != TextChatListMode.ChatBan)
             log.LogWarning(
                 "Unusual text chat route from pid {Pid}: scene={Scene} channel={Channel} list={ListMode}",
                 ctx.Session.Pid,

@@ -20,23 +20,15 @@ public sealed class DatabaseInitializer(GameDbContext db, ILogger<DatabaseInitia
     /// <summary>desired_position flags used by the old reference-only demo profile.</summary>
     public const int LegacyDesiredPositionMask = (1 << 0) | (1 << 3) | (1 << 7);
 
-    public async Task InitializeAsync(bool seed, CancellationToken ct = default)
+    public async Task InitializeAsync(CancellationToken ct = default)
     {
         await db.Database.EnsureCreatedAsync(ct);
         await EnsureAccountSchemaAsync(ct);
         await EnsurePlayerColumnsAsync(ct);
+        await EnsureModelSchemaAsync(ct);
         await RemoveLegacyDemoPlayerAsync(ct);
         await BackfillAndValidatePlayerNamesAsync(ct);
         await EnsurePlayerIndexesAsync(ct);
-
-        if (!seed)
-            return;
-
-        if (await SeedInformationAsync(ct))
-        {
-            await db.SaveChangesAsync(ct);
-            log.LogInformation("Seeded default catalog data.");
-        }
     }
 
     /// <summary>
@@ -151,6 +143,17 @@ public sealed class DatabaseInitializer(GameDbContext db, ILogger<DatabaseInitia
                         connection,
                         "ALTER TABLE \"Players\" ADD COLUMN \"NormalizedName\" TEXT NOT NULL DEFAULT '';",
                         ct);
+                if (!columns.Contains("QuickMatchOptions"))
+                    await ExecuteAsync(connection, "ALTER TABLE \"Players\" ADD COLUMN \"QuickMatchOptions\" TEXT NOT NULL DEFAULT '';", ct);
+                if (!columns.Contains("CompetitionId"))
+                    await ExecuteAsync(connection, "ALTER TABLE \"Players\" ADD COLUMN \"CompetitionId\" INTEGER NOT NULL DEFAULT 0;", ct);
+
+                // Matches written before friendlies were stored were all ranking matches.
+                var matchColumns = await ReadSqliteColumnsAsync(connection, "Matches", ct);
+                if (matchColumns.Count > 0 && !matchColumns.Contains("Ranked"))
+                    await ExecuteAsync(connection, "ALTER TABLE \"Matches\" ADD COLUMN \"Ranked\" INTEGER NOT NULL DEFAULT 1;", ct);
+                if (matchColumns.Count > 0 && !matchColumns.Contains("Settings"))
+                    await ExecuteAsync(connection, "ALTER TABLE \"Matches\" ADD COLUMN \"Settings\" TEXT NOT NULL DEFAULT '';", ct);
             }
             else if (provider.Contains("MySql", StringComparison.OrdinalIgnoreCase))
             {
@@ -160,6 +163,100 @@ public sealed class DatabaseInitializer(GameDbContext db, ILogger<DatabaseInitia
                         connection,
                         "ALTER TABLE `Players` ADD COLUMN `NormalizedName` varchar(64) NOT NULL DEFAULT '';",
                         ct);
+                if (!columns.Contains("QuickMatchOptions"))
+                    await ExecuteAsync(connection, "ALTER TABLE `Players` ADD COLUMN `QuickMatchOptions` varchar(64) NOT NULL DEFAULT '';", ct);
+                if (!columns.Contains("CompetitionId"))
+                    await ExecuteAsync(connection, "ALTER TABLE `Players` ADD COLUMN `CompetitionId` int NOT NULL DEFAULT 0;", ct);
+
+                var matchColumns = await ReadMySqlColumnsAsync(connection, "Matches", ct);
+                if (matchColumns.Count > 0 && !matchColumns.Contains("Ranked"))
+                    await ExecuteAsync(connection, "ALTER TABLE `Matches` ADD COLUMN `Ranked` tinyint(1) NOT NULL DEFAULT 1;", ct);
+                if (matchColumns.Count > 0 && !matchColumns.Contains("Settings"))
+                    await ExecuteAsync(connection, "ALTER TABLE `Matches` ADD COLUMN `Settings` longtext NOT NULL;", ct);
+            }
+        }
+        finally
+        {
+            if (closeWhenDone)
+                await connection.CloseAsync();
+        }
+    }
+
+    /// <summary>Columns added to existing rows with a value other than the type's zero.</summary>
+    private static readonly Dictionary<(string Table, string Column), string> AddedColumnDefaults = new()
+    {
+        [("Matches", "Completed")] = "1",
+    };
+
+    /// <summary>
+    /// Brings an existing database up to the current model: creates the tables it lacks
+    /// (with their indexes, from EF's own create script) and adds missing columns. New
+    /// entities and properties therefore need no hand-written upgrade step.
+    /// </summary>
+    private async Task EnsureModelSchemaAsync(CancellationToken ct)
+    {
+        var provider = db.Database.ProviderName ?? "";
+        var sqlite = provider.Contains("Sqlite", StringComparison.OrdinalIgnoreCase);
+        if (!sqlite && !provider.Contains("MySql", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        var connection = db.Database.GetDbConnection();
+        var closeWhenDone = connection.State != ConnectionState.Open;
+        if (closeWhenDone)
+            await connection.OpenAsync(ct);
+
+        try
+        {
+            var q = sqlite ? "\"" : "`";
+            var statements = System.Text.RegularExpressions.Regex
+                .Split(db.Database.GenerateCreateScript(), @";\s*(?:\r?\n|$)")
+                .Select(s => s.Trim())
+                .Where(s => s.Length > 0)
+                .ToArray();
+
+            foreach (var entity in db.Model.GetEntityTypes())
+            {
+                var table = entity.GetTableName();
+                if (table is null)
+                    continue;
+
+                var columns = sqlite
+                    ? await ReadSqliteColumnsAsync(connection, table, ct)
+                    : await ReadMySqlColumnsAsync(connection, table, ct);
+
+                if (columns.Count == 0)
+                {
+                    foreach (var sql in statements.Where(s =>
+                                 s.StartsWith($"CREATE TABLE {q}{table}{q}", StringComparison.Ordinal)
+                                 || (s.StartsWith("CREATE ", StringComparison.Ordinal)
+                                     && s.Contains($" ON {q}{table}{q}", StringComparison.Ordinal))))
+                        await ExecuteAsync(connection, sql + ";", ct);
+                    log.LogInformation("Created table {Table}.", table);
+                    continue;
+                }
+
+                var storeObject = Microsoft.EntityFrameworkCore.Metadata.StoreObjectIdentifier.Table(table, null);
+                foreach (var property in entity.GetProperties())
+                {
+                    var column = property.GetColumnName(storeObject);
+                    if (column is null || columns.Contains(column))
+                        continue;
+
+                    var type = property.GetColumnType();
+                    var text = type.Contains("text", StringComparison.OrdinalIgnoreCase)
+                               || type.Contains("char", StringComparison.OrdinalIgnoreCase);
+                    var nullable = property.IsNullable ? "NULL" : "NOT NULL";
+                    var fallback = text ? "''" : "0";
+                    var value = AddedColumnDefaults.GetValueOrDefault((table, column), fallback);
+                    // MySQL refuses a DEFAULT on longtext; NOT NULL alone fills existing rows with ''.
+                    var defaultClause = property.IsNullable || (!sqlite && type.Contains("text", StringComparison.OrdinalIgnoreCase))
+                        ? ""
+                        : $" DEFAULT {value}";
+
+                    await ExecuteAsync(connection,
+                        $"ALTER TABLE {q}{table}{q} ADD COLUMN {q}{column}{q} {type} {nullable}{defaultClause};", ct);
+                    log.LogInformation("Added column {Table}.{Column}.", table, column);
+                }
             }
         }
         finally
@@ -369,20 +466,5 @@ public sealed class DatabaseInitializer(GameDbContext db, ILogger<DatabaseInitia
         await using var command = connection.CreateCommand();
         command.CommandText = sql;
         await command.ExecuteNonQueryAsync(ct);
-    }
-
-    private async Task<bool> SeedInformationAsync(CancellationToken ct)
-    {
-        if (await db.Information.AnyAsync(ct))
-            return false;
-
-        db.Information.Add(new InformationItem
-        {
-            Subject = "Test",
-            Body = "Hello",
-            Important = false,
-            Present = false,
-        });
-        return true;
     }
 }

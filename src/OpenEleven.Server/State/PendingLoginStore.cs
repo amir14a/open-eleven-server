@@ -55,6 +55,17 @@ public sealed class PendingLoginStore(
             .ToArray();
     }
 
+    public IReadOnlyList<PendingLogin> FindByGameId(IPAddress remoteAddress, string gameId)
+    {
+        RemoveExpired();
+        var normalizedAddress = NormalizeAddress(remoteAddress);
+
+        return _entries.Values
+            .Where(entry => entry.RemoteAddress.Equals(normalizedAddress)
+                            && string.Equals(entry.GameId, gameId, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+    }
+
     /// <summary>
     /// Renews the logical login after a binary service successfully authenticates.
     /// PES opens Account, Menu and Lobby connections at different times, so the HTTP

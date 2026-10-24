@@ -53,6 +53,9 @@ public sealed class Session
     public string AuthHash { get; set; } = "";
     public string ParaHash { get; set; } = "";
     public string EntryHash { get; set; } = "";
+
+    /// <summary>szDLContentsVersion from MSG_REQAUTH (PES 2011); shown as a room's dlcontent.</summary>
+    public string DlcVersion { get; set; } = "";
     public string RegCode { get; set; } = "";
     public bool FirstLogin { get; set; }
     public int Pid { get; set; }
@@ -61,6 +64,9 @@ public sealed class Session
     public bool EulaAccepted { get; set; }
     public bool ChatEnabled { get; set; } = true;
     public TextChatSubscription? TextChatWatch { get; set; }
+    public WatchListSubscription? RoomListWatch { get; set; }
+    public WatchListSubscription? BlockPlayerWatch { get; set; }
+    public WatchListSubscription? RoomPlayerWatch { get; set; }
 
     public int? BlockId { get; set; }
     public int? RoomId { get; set; }

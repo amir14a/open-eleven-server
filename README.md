@@ -339,9 +339,44 @@ single capture shows.
 Stubbed: the challenge code is fixed and any credential is accepted; match results are not
 yet recorded.
 
-`MSG_ROOMINNOTICE` — the notice telling a room's occupants that someone joined — is gated
-behind `Protocol.EmitUnconfirmedMessages` and therefore **off by default**. It reproducibly
-closes the recipient's Lobby connection, and the cause is not yet understood: the payload
-matches the field table `FUN_00BB4D70` declares, with the type codes and sizes that table
-expects. Everything else in the room flow (browse, endpoint lookup, join, room list
-updates) runs with the flag off. Turn it on to resume tracing that one message.
+`MSG_ROOMINNOTICE` and `MSG_PxROOMOUTNOTICE` — the notices telling a room's occupants that
+someone joined or left — are gated behind `Protocol.EmitUnconfirmedMessages` and therefore
+**off by default**. `MSG_ROOMINNOTICE` reproducibly closes the recipient's Lobby connection,
+and the cause is not yet understood: the payload matches the field table `FUN_00BB4D70`
+declares, with the type codes and sizes that table expects.
+
+The room roster does not depend on them. A join or leave pushes a fresh
+`MSG_RMEMBERLISTSTART` / `MSG_RMEMBERLIST` / `MSG_RMEMBEREND` stream (the same sequence
+`MSG_REQRMEMBERLIST` returns) to every other occupant, so the room screen still gains and
+loses players with the notices disabled. Turn the flag on to resume tracing those messages.
+
+When the server advertises a private address (`AdvertiseIp` resolves to RFC1918/loopback),
+`CMD_GET_IPANDPORT` and `CMD_WATCH_IPANDPORT` hand out the peer's internal endpoint. Two
+clients on that LAN cannot reach each other through the router's public address, which is
+what the client reported at `CMD_JOIN_BLOCK` as its external endpoint. A publicly advertised
+server keeps the external endpoint.
+
+## License
+
+OpenEleven is licensed under the **GNU Affero General Public License v3.0 or later**
+(`AGPL-3.0-or-later`). The full text is in [LICENSE](LICENSE); the short version:
+
+- You may run, study, modify and redistribute this software, including commercially.
+- If you **distribute** a modified version, you must pass on the same license and the
+  complete corresponding source.
+- If you **run a modified version as a network service** — which is exactly what this
+  project is for — section 13 requires you to offer everyone interacting with it (the
+  players) the corresponding source of the version you are actually running. Pointing
+  them at your fork's public repository satisfies this; you are not required to send
+  changes upstream.
+
+The AGPL covers this code only. It grants no rights to Pro Evolution Soccer, its assets,
+its trademarks or its network protocol, which remain the property of their owners.
+
+Third-party components and their licenses are listed in
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). Contributions are accepted under the
+same license with a DCO sign-off — see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Questions about the license go to the maintainers at <pes5indie@gmail.com>. Note that
+contributions are accepted under the AGPL with a DCO sign-off only, so the project as a
+whole cannot be relicensed under different terms.

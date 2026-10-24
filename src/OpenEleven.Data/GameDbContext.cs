@@ -15,6 +15,12 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
     public DbSet<PlayerStats> PlayerStats => Set<PlayerStats>();
     public DbSet<MatchRecord> Matches => Set<MatchRecord>();
     public DbSet<InformationItem> Information => Set<InformationItem>();
+    public DbSet<Friendship> Friendships => Set<Friendship>();
+    public DbSet<BlacklistEntry> Blacklist => Set<BlacklistEntry>();
+    public DbSet<PlayerNotice> Notices => Set<PlayerNotice>();
+    public DbSet<ShortMail> ShortMails => Set<ShortMail>();
+    public DbSet<WeeklyRankingEntry> WeeklyRankings => Set<WeeklyRankingEntry>();
+    public DbSet<ServerSetting> Settings => Set<ServerSetting>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -55,5 +61,38 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
         });
 
         b.Entity<InformationItem>(e => e.HasKey(x => x.Id));
+
+        b.Entity<Friendship>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.Pid, x.OtherPid }).IsUnique();
+        });
+
+        b.Entity<BlacklistEntry>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.Pid, x.TargetPid }).IsUnique();
+        });
+
+        b.Entity<ShortMail>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.ToPid);
+            e.HasIndex(x => x.FromPid);
+        });
+
+        b.Entity<PlayerNotice>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.Pid);
+        });
+
+        b.Entity<WeeklyRankingEntry>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.WeekStart, x.Rank });
+        });
+
+        b.Entity<ServerSetting>(e => e.HasKey(x => x.Key));
     }
 }

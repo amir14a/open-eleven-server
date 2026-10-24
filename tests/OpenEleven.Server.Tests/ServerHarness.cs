@@ -83,7 +83,7 @@ public sealed class ServerHarness : IAsyncDisposable
         await using (var scope = provider.CreateAsyncScope())
         {
             var initializer = scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
-            await initializer.InitializeAsync(seed: true);
+            await initializer.InitializeAsync();
             referenceAccountId = await SeedReferenceProfileAsync(scope.ServiceProvider);
         }
 
@@ -92,13 +92,14 @@ public sealed class ServerHarness : IAsyncDisposable
 
     public Session NewSession(
         ServiceRole role = ServiceRole.Gate,
-        SessionState state = SessionState.Connected)
+        SessionState state = SessionState.Connected,
+        IPAddress? remoteAddress = null)
     {
         var session = new Session
         {
             Id = Guid.NewGuid(),
             Role = role,
-            Remote = new IPEndPoint(IPAddress.Loopback, 50000),
+            Remote = new IPEndPoint(remoteAddress ?? IPAddress.Loopback, 50000),
             State = state,
             AccountId = state >= SessionState.Authenticated ? _referenceAccountId : 0,
             BlockId = state >= SessionState.InBlock ? 1 : null,

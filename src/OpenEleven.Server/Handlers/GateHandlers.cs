@@ -25,14 +25,12 @@ public sealed class GateHandlers(
 {
     private const ServiceRole AnyServiceRole = ServiceRole.All;
 
-    [Command("CMD_GET_SVRLIST", Roles = ServiceRole.Gate)]
+    // PES 2011 answers CMD_GET_SVRLIST with a different payload shape and has its own
+    // handler (Pes2011Handlers), so this one stays declared for the titles whose client
+    // parses svrlist/svrgid.
+    [Command("CMD_GET_SVRLIST", Roles = ServiceRole.Gate, Profiles = GameProfile.All & ~GameProfile.Pes2011Pc)]
     public ValueTask<KvMessage[]> GetServerList(CommandContext ctx)
-    {
-        if (options.CurrentValue.Protocol.RequireEulaBeforeServerList && !ctx.Session.EulaAccepted)
-            return Reply.Of(ctx.Err("EULA"));
-
-        return Reply.Of(ctx.Ok().SetList("server_num", "svrlist", catalog.BuildServerEntries()));
-    }
+        => Reply.Of(ctx.Ok().SetList("server_num", catalog.ServerListKey, catalog.BuildServerEntries()));
 
     [Command("CMD_GET_SVRVERSION", Roles = AnyServiceRole)]
     public ValueTask<KvMessage[]> GetVersion(CommandContext ctx)
@@ -70,13 +68,49 @@ public sealed class GateHandlers(
             ? $"http://{catalog.AdvertiseIp}"
             : $"http://{catalog.AdvertiseIp}:{httpPort}";
 
-        var entries = new[]
+        var entries = new List<KvMessage>
         {
             UrlEntry("PC_SPEC", $"{host}/pcspec.bin", assets.SizeOf("/pcspec.bin")),
             UrlEntry("KONAMIID", $"{host}/register", assets.SizeOf("/register")),
             UrlEntry("GAMEID_AUTH", $"{host}/gameid_auth", assets.SizeOf("/gameid_auth")),
             UrlEntry("EULA_PES", $"{host}/eula_pes.txt", assets.SizeOf("/eula_pes.txt")),
         };
+
+        if (options.CurrentValue.GameProfile == GameProfile.Pes2011Pc)
+        {
+            // The terms text is served by /eula_pes.txt (GET_HTTP), and the ranking screen
+            // posts to RANK, or RANK_WEEK for an archived week. FUN_005f0a40 dereferences the
+            // RANK_WEEK lookup unchecked, so it has to exist.
+            // The request carries the client's language (lang="EN"); the texts behind these urls
+            // are served in it.
+            var lang = Uri.EscapeDataString(ctx.Request.GetString("lang") ?? ctx.Session.Language ?? "EN");
+            entries.RemoveAll(e => e.GetString("type") == "EULA_PES");
+            entries.Add(UrlEntry("EULA_PES", $"{host}/eula_pes.txt?lang={lang}",
+                System.Text.Encoding.UTF8.GetByteCount(Web.GameEndpoints.EulaText(options.CurrentValue, lang))));
+            entries.Add(UrlEntry("RANK_WEEK", $"{host}/ranking", 0));
+
+            foreach (var url in options.CurrentValue.Urls)
+            {
+                entries.RemoveAll(e => e.GetString("type") == url.Type);
+                entries.Add(url switch
+                {
+                    // DOWNLOAD names the update manifest, not the package (see DownloadFiles.Manifest).
+                    { Type: "DOWNLOAD", File.Length: > 0 } => UrlEntry(url.Type, $"{host}/dlc/manifest/{lang}", 0),
+                    { File.Length: > 0 } => DownloadFiles.Entry(url, $"{host}/files/{Path.GetFileName(url.File)}"),
+                    _ => UrlEntry(url.Type, url.Url, url.FileSize, url.Version, url.Md5),
+                });
+            }
+
+            // pes2011.exe FUN_00513de0 never records the type, version or size of ulist[0] (its
+            // guard is `index - 1 < 0x17`), only the url, and the table is zeroed first, so slot 0
+            // always reads as type 0 = RANK. Anything else put there disappears (a PC_SPEC there
+            // made FUN_005a5d30 strlen(NULL) at 0x005A5D70), so slot 0 carries the RANK url.
+            var rank = entries.FindIndex(e => e.GetString("type") == "RANK");
+            var first = rank >= 0 ? entries[rank] : UrlEntry("RANK", $"{host}/ranking", 0);
+            if (rank >= 0)
+                entries.RemoveAt(rank);
+            entries.Insert(0, first);
+        }
 
         return Reply.Of(ctx.Ok().SetList("url_num", "ulist", entries));
     }
@@ -86,29 +120,49 @@ public sealed class GateHandlers(
     {
         var items = await repository.GetInformationAsync(ctx.CancellationToken);
 
-        var entries = items.Select(i => new KvMessage()
-            .Set("date", new DateTimeOffset(i.PublishedAt, TimeSpan.Zero).ToUnixTimeSeconds())
-            .Set("info_id", i.Id)
-            .Set("mes_subject", i.Subject)
-            .Set("mes_body", i.Body)
-            .Set("important", i.Important ? "1" : "0")
-            .Set("present", i.Present ? "1" : "0")).ToArray();
+        // The project notice is always first and always important; database items follow.
+        // PES 2011 (FUN_005a72d0) pops an important item up only if its info_id is not in its
+        // 30-slot "already seen" list (FUN_00537990). Empty slots hold 0, so id 0 always reads as
+        // seen; a fresh id per request makes the notice pop up on every login. The time-based
+        // id stays far above database identities.
+        // In the language the client asked with (lang); see ServerText for the notice's terms.
+        var lang = ctx.Request.GetString("lang") ?? ctx.Session.Language;
+        var aboutId = (int)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() & 0x7fffffff);
+        var entries = items.Select(i => InformationEntry(i.Id, i.PublishedAt, i.Subject, i.Body, i.Important, i.Present))
+            .Prepend(InformationEntry(aboutId, DateTime.UtcNow, ServerText.Get("about.subject", lang),
+                ServerText.Get("about.body", lang), important: true, present: true))
+            .ToArray();
 
         return [ctx.Ok().SetList("info_num", "ilist", entries)];
     }
+
+    private KvMessage InformationEntry(int id, DateTime date, string subject, string body, bool important, bool present)
+        => new KvMessage()
+            .Set("date", new DateTimeOffset(DateTime.SpecifyKind(date, DateTimeKind.Utc)).ToUnixTimeSeconds())
+            .Set("info_id", id)
+            .Set("mes_subject", subject)
+            .Set("mes_body", body)
+            // PES 2011 reads important as enum 0x01 (FALSE|TRUE, FUN_0061d600); "1" is not a
+            // name it knows and reads as not important. Other titles keep the reference "1"/"0".
+            .Set("important", options.CurrentValue.GameProfile == GameProfile.Pes2011Pc
+                ? (important ? "TRUE" : "FALSE")
+                : (important ? "1" : "0"))
+            .Set("present", present ? "1" : "0");
 
     [Command("CMD_DISCONNECT", Roles = AnyServiceRole)]
     public ValueTask<KvMessage[]> Disconnect(CommandContext ctx)
     {
         // The reference server echoed the whole server list back on disconnect; the
         // client tolerates it and it lets a reconnect skip a round trip.
-        return Reply.Of(ctx.Ok().SetList("server_num", "svrlist", catalog.BuildServerEntries()));
+        return Reply.Of(ctx.Ok().SetList("server_num", catalog.ServerListKey, catalog.BuildServerEntries()));
     }
 
-    private static KvMessage UrlEntry(string type, string url, int size) => new KvMessage()
-        .Set("type", type)
-        .Set("url", url)
-        .Set("version", 1)
-        .Set("file_size", size)
-        .Set("md5", new KvRaw("0"));
+    internal static KvMessage UrlEntry(string type, string url, int size, int version = 1, string md5 = "0")
+        => new KvMessage()
+            .Set("type", type)
+            .Set("url", url)
+            .Set("version", version)
+            .Set("file_size", size)
+            // FUN_00513de0 reads md5 as a string; the bare 0 placeholder stays as the reference sent it.
+            .Set("md5", md5 == "0" ? new KvRaw("0") : md5);
 }

@@ -18,7 +18,9 @@ public static class PlayerPresenter
 
     public static KvMessage ListEntry(Player p) => new KvMessage()
         .Set("pid", p.Pid)
-        .Set("date", 0)
+        .Set("date", p.LastPlayedAt is { } played
+            ? new DateTimeOffset(DateTime.SpecifyKind(played, DateTimeKind.Utc)).ToUnixTimeSeconds()
+            : 0)
         .Set("point", p.Point)
         .Set("name", p.Name)
         .Set("match_num", p.Stats.MatchCount)
@@ -39,14 +41,24 @@ public static class PlayerPresenter
         .Set("kind", p.Kind)
         .Set("lang", p.Lang);
 
-    /// <summary>Fills a CMD_GET_PLAYERINFO reply. Field order follows the reference server.</summary>
-    public static KvMessage FillPlayerInfo(KvMessage message, Player p)
+    /// <summary>
+    /// Fills a CMD_GET_PLAYERINFO reply. Field order follows the reference server.
+    /// <paramref name="recentTeams"/> fills teamLog (5 entries, newest first; the favourite team
+    /// when the player has no history), and the versions are the ones the player's client
+    /// reported at its last login.
+    /// </summary>
+    public static KvMessage FillPlayerInfo(KvMessage message, Player p, string? division = null, bool listSyntax = false,
+        IReadOnlyList<int>? recentTeams = null)
     {
         var s = p.Stats;
+        var teams = new object?[5];
+        for (var i = 0; i < teams.Length; i++)
+            teams[i] = recentTeams is { Count: > 0 } ? (i < recentTeams.Count ? recentTeams[i] : 0) : (i == 0 ? p.FavoriteTeam : 0);
+        static string Version(string? v) => string.IsNullOrWhiteSpace(v) ? "1.00" : v;
 
         return message
             .Set("name", p.Name)
-            .Set("div", p.Division)
+            .Set("div", division ?? p.Division)
             .Set("match_num", s.MatchCount)
             .Set("win_num", s.WinCount)
             .Set("lose_num", s.LoseCount)
@@ -72,18 +84,25 @@ public static class PlayerPresenter
             .Set("rank", p.Rank)
             .Set("lang", p.Lang)
             .Set("enable_chat", p.ChatEnabled)
-            .Set("teamLog", new IndexedField(new object?[] { p.FavoriteTeam, 0, 0, 0, 0 }))
+            .Set("teamLog", Indexed(listSyntax, teams))
             .Set("total_combination", s.TotalCombination)
             .Set("max_combination", s.MaxCombination)
-            .Set("dlcontent", "1.00")
-            .Set("patch_version", "1.00")
+            .Set("dlcontent", Version(p.Account?.DlcVersion))
+            .Set("patch_version", Version(p.Account?.PatchVersion))
             .Set("selfreport_level", p.SelfReportLevel)
             .Set("automatch_want", p.AutoMatchWant)
             .Set("beginnermark", p.BeginnerMark)
             .Set("position_want", p.PositionWant)
-            .Set("desired_position", DesiredPositions(p.DesiredPositionMask))
+            .Set("desired_position", listSyntax
+                ? new KvArray(DesiredPositions(p.DesiredPositionMask).Values)
+                : DesiredPositions(p.DesiredPositionMask))
             .Set("list_num", 0);
     }
+
+    // PES 2010 reads flat key[i]=v pairs; the PES 2011 tokenizer (FUN_00c79680) only accepts
+    // the bracketed key=[a,b,c] form, as it does for ulist and player_data.
+    private static object Indexed(bool listSyntax, params object?[] values)
+        => listSyntax ? new KvArray(values) : new IndexedField(values);
 
     /// <summary>Expands the stored bitmask into the 13 YES/NO flags the client reads.</summary>
     public static IndexedField DesiredPositions(int mask)

@@ -197,6 +197,26 @@ public class AuthenticationTests
         => harness.NewSession(ServiceRole.Account);
 
     [Fact]
+    public async Task Pes2011_proof_uses_plain_game_id_and_dashless_serial()
+    {
+        await using var harness = await ServerHarness.CreateAsync();
+        await RegisterAsync(harness, "marcos");
+        Assert.True((await harness.AuthenticateHttpAsync("marcos", Credential)).Success);
+
+        var session = NewAuthSession(harness);
+        await harness.DispatchAsync(session, "MSG_REQCCODE", rqid: 1);
+        var replies = await harness.DispatchAsync(session, "MSG_REQAUTH", rqid: 2, withFields: request => request
+            .Set("uname", "marcos")
+            .Set("hash", AuthProof.Compute2011("marcos", session.ChallengeCode, Credential))
+            .Set("para_hash", "d6861177058a1b4cc4add08c9c829d73")
+            .Set("entry_hash", "4610ec92ea8e19ef49cdb1d318094fcd")
+            .Set("tmpRegcode", Serial.Replace("-", "")));
+
+        Assert.Equal("NOERR", replies[^1].GetString("result"));
+        Assert.Equal(SessionState.Authenticated, session.State);
+    }
+
+    [Fact]
     public async Task Http_login_and_matching_binary_proof_bind_the_account()
     {
         await using var harness = await ServerHarness.CreateAsync();
@@ -204,7 +224,7 @@ public class AuthenticationTests
 
         var http = await harness.AuthenticateHttpAsync("marcos", Credential);
         Assert.True(http.Success);
-        Assert.Equal($"1\nmarcos\n{Credential}\n", http.Body);
+        Assert.Equal($"1\nmarcos\n{Credential}\n{Credential}\n", http.Body);
 
         var session = NewAuthSession(harness);
         var replies = await harness.AuthenticateSocketAsync(session, "marcos", Credential, Serial);

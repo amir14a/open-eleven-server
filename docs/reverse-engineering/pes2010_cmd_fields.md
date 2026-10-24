@@ -265,6 +265,33 @@ members find out what the host is configuring:
 | `CMD_WATCH_ENTRY_GAME` | `entry_count`, then per entry: `pid`, `entryNum`, `gameNum` | tracks who has pressed "ready" (`gameNum == -1` = not yet entered); local ready-flag flips once more than one entry is complete |
 | `CMD_WATCH_UPDATE_GAMERECORD` | none — bare signal only | just a "your match record was updated, go re-fetch it" ping |
 
+#### Room roster and join events (verified against this build)
+
+- `MSG_REQRMEMBERLIST` is answered with ACK + `MSG_RMEMBERLISTSTART` +
+  `MSG_RMEMBERLIST` + `MSG_RMEMBEREND`. `FUN_00BB5190` reads, per member,
+  `ex_ip`, `ex_port` (2-byte), `in_ip`, `in_port` (2-byte), `pid`,
+  `room_pid`, `room_entry_no`, `game_entry_no`, and eight indexed
+  `desiredPosition[N]` strings. `pid` is the lookup key used by
+  `FUN_00BB3D70`; `room_pid` is a separate room-local id and is what
+  `FUN_00BB41E0` serializes back as `room_player_id` — it must be unique per
+  member, not the host repeated on every entry.
+- `CMD_WATCH_ROOMSTATE` (`FUN_0072F770`) reads `event` as enum type `0x2e`
+  (`OwnerChanged`, `AppointOwner`, `Kicked`, `StateChanged`), `owner_pid`, and
+  `state` as enum type `0x2d`. Both `event` and `state` are plain top-level
+  keys; a response with an unknown enum string maps to `-1`.
+- `CMD_WATCH_ENTRY_GAME` (`FUN_0072AEB0`) reads `entry_count` and
+  `entrygame[i].pid`, `.entryNum`, `.gameNum`. It requires every unoccupied
+  slot to be present with `gameNum=-1`, and only enables the local ready flag
+  when more than one entry has `gameNum != -1`.
+- `CMD_WATCH_DECIDE_GAMEPLAYER` (`FUN_0072ED20`) does **not** read a list: it
+  reads the scalar key `pid` eight times and `video` eight times into fixed
+  eight-slot arrays. Sending `pid=[...]`/`video=[...]` makes its integer
+  parser fall back to `0x7b`.
+- `MSG_ROOMINNOTICE` and `MSG_PxROOMOUTNOTICE` match `FUN_00BB4D70`'s field
+  table, but `MSG_ROOMINNOTICE` still closes the recipient's Lobby connection.
+  The server keeps them opt-in and refreshes the roster with the
+  START/LIST/END stream instead. See `README.md`.
+
 ### Quick match
 
 | Command | Request | Response | Notes |

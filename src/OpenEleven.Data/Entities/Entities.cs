@@ -42,6 +42,13 @@ public sealed class Account
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? LastLoginAt { get; set; }
 
+    /// <summary>szPatchVersion / szDLContentsVersion the client reported at its last login.</summary>
+    [MaxLength(16)]
+    public string PatchVersion { get; set; } = "";
+
+    [MaxLength(16)]
+    public string DlcVersion { get; set; } = "";
+
     public List<Player> Players { get; set; } = new();
 }
 
@@ -97,6 +104,46 @@ public sealed class Player
     public bool BeginnerMark { get; set; } = true;
     public bool ChatEnabled { get; set; } = true;
 
+    /// <summary>
+    /// PES 2011 CMD_SET_QUICKMATCHOPTION values, comma-separated in order: opp_lang,
+    /// oc_is_rating_rank, oc_is_rating_free, ml_is_division. Empty means the defaults.
+    /// </summary>
+    [MaxLength(64)]
+    public string QuickMatchOptions { get; set; } = "";
+
+    /// <summary>
+    /// Competition the player entered with CMD_JOIN_COMPLG, 0 for none. One at a time: the
+    /// client knows ERR_COMPE_JOIN_OTHERCOMPE for a second entry.
+    /// </summary>
+    public int CompetitionId { get; set; }
+
+    public DateTime? LastPlayedAt { get; set; }
+
+    /// <summary>Completed matches since manner last moved; ten clean ones win a step back.</summary>
+    public int MannerProgress { get; set; }
+
+    // Ranked results of the running week and month (season). The week is archived to
+    // WeeklyRankings and the season decides promotion and relegation when they roll over.
+    public int WeeklyPoints { get; set; }
+    public int WeeklyMatches { get; set; }
+    public int WeeklyWins { get; set; }
+    public int WeeklyDraws { get; set; }
+    public int WeeklyLosses { get; set; }
+
+    /// <summary>Rated wins in a row this week, and the best such run (the weekly streak column).</summary>
+    public int WeeklyStreak { get; set; }
+    public int WeeklyBestStreak { get; set; }
+
+    public int SeasonPoints { get; set; }
+    public int SeasonMatches { get; set; }
+
+    /// <summary>
+    /// Division change from the last season end not yet shown to the player, as
+    /// "olddiv,oldrank,newdiv,newrank,unixdate". Empty when there is nothing to show.
+    /// </summary>
+    [MaxLength(64)]
+    public string PendingDivisionUpdate { get; set; } = "";
+
     public PlayerStats Stats { get; set; } = new();
 }
 
@@ -131,7 +178,140 @@ public sealed class MatchRecord
     public int AwayTeamId { get; set; }
     public bool Disconnected { get; set; }
     public int? DisconnectedPid { get; set; }
+
+    /// <summary>Ranking match (rating and points moved) rather than a friendly.</summary>
+    public bool Ranked { get; set; }
+
+    /// <summary>Room options and the CMD_SET_GAMEENV record, in the client's key=value text.</summary>
+    public string Settings { get; set; } = "";
+
+    /// <summary>
+    /// Created when the match starts (its Id is the client's match_id) and completed when it
+    /// ends. Only completed rows are history.
+    /// </summary>
+    public bool Completed { get; set; } = true;
+
+    /// <summary>Goals per period, "1st,2nd,ex1st,ex2nd,pk".</summary>
+    [MaxLength(32)]
+    public string HomePeriods { get; set; } = "";
+
+    [MaxLength(32)]
+    public string AwayPeriods { get; set; } = "";
+
+    public bool ExtraTime { get; set; }
+    public bool Penalties { get; set; }
+
+    /// <summary>Rating and points moved (ranked, not voided by the anti-farming rules).</summary>
+    public bool Rated { get; set; }
+
+    /// <summary>Goals and cards as reported by the match host, one per line (see MatchEvents).</summary>
+    public string Events { get; set; } = "";
+
     public DateTime PlayedAt { get; set; } = DateTime.UtcNow;
+}
+
+public enum FriendState
+{
+    // Names and order are pes2011.exe enum 0x18.
+    Friend = 0,
+    SentReq = 1,
+    RecievedReq = 2,
+}
+
+/// <summary>One side of a friendship or friend request; each pair has a row per player.</summary>
+public sealed class Friendship
+{
+    public int Id { get; set; }
+    public int Pid { get; set; }
+    public int OtherPid { get; set; }
+    public FriendState State { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+public sealed class BlacklistEntry
+{
+    public int Id { get; set; }
+    public int Pid { get; set; }
+    public int TargetPid { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>
+/// A short mail between players. Sender and recipient each delete their own copy; the row
+/// goes once both have.
+/// </summary>
+public sealed class ShortMail
+{
+    public int Id { get; set; }
+    public int FromPid { get; set; }
+    public int ToPid { get; set; }
+
+    [MaxLength(192)]
+    public string Subject { get; set; } = "";
+
+    [MaxLength(1536)]
+    public string Body { get; set; } = "";
+
+    public bool Read { get; set; }
+    public bool DeletedBySender { get; set; }
+    public bool DeletedByRecipient { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>A message for one player, served by CMD_GET_PRIVATEINFO.</summary>
+public sealed class PlayerNotice
+{
+    public int Id { get; set; }
+    public int Pid { get; set; }
+
+    [MaxLength(64)]
+    public string Title { get; set; } = "";
+
+    [MaxLength(512)]
+    public string Body { get; set; } = "";
+
+    public bool Important { get; set; }
+
+    /// <summary>Already shown to the player; kept (soft-deleted) rather than removed.</summary>
+    public bool Delivered { get; set; }
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>A finished week's ranking line, kept for the weekly ranking screens.</summary>
+public sealed class WeeklyRankingEntry
+{
+    public long Id { get; set; }
+
+    /// <summary>Monday 00:00 UTC the week started, in unix seconds.</summary>
+    public long WeekStart { get; set; }
+
+    public int Pid { get; set; }
+
+    [MaxLength(15)]
+    public string Name { get; set; } = "";
+
+    public int Rank { get; set; }
+    public int Points { get; set; }
+    public int Matches { get; set; }
+    public int Wins { get; set; }
+    public int Draws { get; set; }
+    public int Losses { get; set; }
+    public int Streak { get; set; }
+    public int Rating { get; set; }
+
+    [MaxLength(8)]
+    public string Division { get; set; } = "";
+}
+
+/// <summary>Small server bookkeeping values (last processed week and season).</summary>
+public sealed class ServerSetting
+{
+    [MaxLength(64)]
+    public string Key { get; set; } = "";
+
+    [MaxLength(256)]
+    public string Value { get; set; } = "";
 }
 
 /// <summary>News item served by CMD_GET_INFORMATIONLIST. Editable without a redeploy.</summary>

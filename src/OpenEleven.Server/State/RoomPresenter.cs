@@ -77,6 +77,24 @@ public static class RoomPresenter
         return gamer;
     }
 
+    /// <summary>
+    /// The three events FUN_00BB5190 needs to rebuild a roster: START, one LIST carrying
+    /// every member, END. The ACK for MSG_REQRMEMBERLIST is separate and is not included.
+    /// </summary>
+    public static KvMessage[] MemberListStream(Room room, int rqid)
+    {
+        var members = room.Snapshot()
+            .Select(member => MemberListEntry(room, member))
+            .ToArray();
+
+        return
+        [
+            KvMessage.Ok("MSG_RMEMBERLISTSTART", rqid),
+            KvMessage.Ok("MSG_RMEMBERLIST", rqid).SetList("count", "list", members),
+            KvMessage.Ok("MSG_RMEMBEREND", rqid),
+        ];
+    }
+
     public static KvMessage MemberListEntry(Room room, Session member)
         => MemberEntry(room, member, "room_pid");
 
@@ -90,14 +108,21 @@ public static class RoomPresenter
             .Set("in_ip", member.InternalIp)
             .Set("in_port", member.InternalPort)
             .Set("pid", member.Pid)
-            // The room's host, not this member: pid already carries the member, so a
-            // duplicate would be redundant. Unverified — FUN_00BB3AD0 consumes the parsed
-            // MSG_ROOMINNOTICE struct and would settle it.
-            .Set(roomPlayerIdField, room.OwnerPid)
+            // The room-local player number. FUN_00BB41E0 serializes the parsed value back
+            // as room_player_id beside pid, so it identifies this member inside the room;
+            // repeating the host's id on every entry would make two players indistinguishable.
+            .Set(roomPlayerIdField, RoomPlayerNumber(member))
             .Set("room_entry_no", member.RoomEntryNo)
             .Set("game_entry_no", member.GameEntryNo)
             // PES2010 enum type 0x36 accepts only NO/YES. Empty strings decode as -1.
             .Set("desiredPosition", KvArray.Repeat("NO", DesiredPositionSlots));
+
+    /// <summary>
+    /// One-based id this member uses inside the room. room_entry_no stays zero-based; the
+    /// room-player id is a separate, unique index used by the p2p roster.
+    /// </summary>
+    public static int RoomPlayerNumber(Session member)
+        => member.RoomEntryNo >= 0 ? member.RoomEntryNo + 1 : member.Pid;
 
     private static string EmptyAs(string value, string fallback)
         => string.IsNullOrEmpty(value) ? fallback : value;

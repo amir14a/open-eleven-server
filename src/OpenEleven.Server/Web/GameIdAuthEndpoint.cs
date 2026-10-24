@@ -17,7 +17,10 @@ public static class GameIdAuthEndpoint
         => AuthProof.TryNormalizeMd5(value, out _);
 
     public static string BuildSuccessResponse(string gameId, string credential)
-        => $"1\n{gameId.Replace("\r", "").Replace("\n", "")}\n{credential}\n";
+        // PES 2011's parser (pes2011.exe FUN_011b1670) rejects the reply unless a status line is
+        // followed by three non-empty lines. The third is a placeholder (the credential again)
+        // until a run shows what the client does with it; PES 2010 ignores trailing lines.
+        => $"1\n{gameId.Replace("\r", "").Replace("\n", "")}\n{credential}\n{credential}\n";
 
     public static string BuildFailureResponse() => "0\n\n\n";
 }

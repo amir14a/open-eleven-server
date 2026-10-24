@@ -23,6 +23,13 @@ public static class TitleProfiles
     };
 
     /// <summary>
+    /// The team ids a title's team-select screen accepts (useable_team_id[]). Team ids differ per
+    /// title; only PES 2011's table has been read so far, the others get none.
+    /// </summary>
+    public static int[] UseableTeams(GameProfile profile)
+        => profile == GameProfile.Pes2011Pc ? State.Pes2011Lists.UseableTeams : [];
+
+    /// <summary>
     /// The simple assembly name of the profile project that carries this title's deltas.
     /// </summary>
     public static string AssemblyName(GameProfile profile) => profile switch

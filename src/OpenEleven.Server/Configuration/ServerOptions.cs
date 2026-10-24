@@ -46,6 +46,20 @@ public sealed class ServerOptions
     /// entries by their position in it. At most <see cref="MaxLobbies"/> entries.
     /// </summary>
     public List<LobbyOptions> Lobbies { get; set; } = new();
+
+    /// <summary>PES 2011 competitions (KONAMI CUP ONLINE). Operator policy, like the lobbies.</summary>
+    public List<CompetitionOptions> Competitions { get; set; } = new();
+
+    /// <summary>
+    /// Extra CMD_GET_URLLIST entries (PES 2011), added after the built-in ones and replacing a
+    /// built-in of the same type. A type that is listed changes what the client does (DOWNLOAD
+    /// enables the DLC download menu), so list only what has something real behind it.
+    /// </summary>
+    public List<UrlOptions> Urls { get; set; } = new();
+
+    /// <summary>PES 2011 rank system: rating, points, seasons and anti-farming.</summary>
+    public RankOptions Rank { get; set; } = new();
+
     public HttpsOptions Https { get; set; } = new();
     public DatabaseOptions Database { get; set; } = new();
     public ProtocolOptions Protocol { get; set; } = new();
@@ -119,6 +133,114 @@ public sealed class LobbyOptions
     public bool Enabled { get; set; } = true;
 }
 
+/// <summary>
+/// One competition. Its status and the list it shows in (schedule, now playing, past) follow
+/// from the UTC times, so nothing has to be flipped by hand as it runs.
+/// </summary>
+public sealed class CompetitionOptions
+{
+    /// <summary>compe_id. Must be unique and stay stable: player entries point at it.</summary>
+    public int Id { get; set; }
+
+    public string Name { get; set; } = "";
+
+    /// <summary>Enum 0x0a name. The 2011 client lists only KONAMI_CUP_ONLINE outside the archive.</summary>
+    public string Kind { get; set; } = "KONAMI_CUP_ONLINE";
+
+    /// <summary>Enum 0x08: PLATINUM, GOLD, SILVER or BRONZE.</summary>
+    public string Category { get; set; } = "GOLD";
+
+    public DateTime EntryStart { get; set; }
+    public DateTime EntryEnd { get; set; }
+    public DateTime MatchStart { get; set; }
+    public DateTime MatchEnd { get; set; }
+    public DateTime End { get; set; }
+
+    public int Capacity { get; set; } = 64;
+
+    /// <summary>Enum 0x10: TIME_5, TIME_10 or TIME_15.</summary>
+    public string GameTime { get; set; } = "TIME_10";
+
+    /// <summary>dlcver sent for this competition; empty uses Protocol.DlcVersion.</summary>
+    public string DlcVersion { get; set; } = "";
+
+    public bool Enabled { get; set; } = true;
+}
+
+/// <summary>
+/// The rank system. Rating (Elo) measures skill and never resets fully; points measure
+/// activity and feed the weekly ranking and the monthly season, whose end promotes and
+/// relegates between D1..D5.
+/// </summary>
+public sealed class RankOptions
+{
+    /// <summary>Rating of a new player, and the value a season end pulls ratings toward.</summary>
+    public int StartRating { get; set; } = 1000;
+
+    /// <summary>Elo K for a player's first <see cref="SettledAfterMatches"/> matches, then <see cref="KSettled"/>.</summary>
+    public int KNew { get; set; } = 40;
+    public int KSettled { get; set; } = 24;
+    public int SettledAfterMatches { get; set; } = 30;
+
+    public int WinPoints { get; set; } = 3;
+    public int DrawPoints { get; set; } = 1;
+
+    /// <summary>Extra point for winning without conceding.</summary>
+    public int CleanSheetBonus { get; set; } = 1;
+
+    /// <summary>Ranked matches per UTC day against the same opponent that move rating and points.</summary>
+    public int MaxRatedPerOpponentPerDay { get; set; } = 3;
+
+    /// <summary>Only rate a match when both players report the same para_hash (same game data).</summary>
+    public bool RequireSameParaHash { get; set; } = true;
+
+    /// <summary>Season end: share of each division (by season points) promoted and relegated, in percent.</summary>
+    public int PromotePercent { get; set; } = 20;
+    public int RelegatePercent { get; set; } = 20;
+
+    /// <summary>Ranked matches in a season needed to be promoted or relegated at its end.</summary>
+    public int MinSeasonMatches { get; set; } = 5;
+
+    /// <summary>Share of the distance from <see cref="StartRating"/> a rating keeps at a season end.</summary>
+    public double SeasonRatingCarry { get; set; } = 0.75;
+
+    /// <summary>Matches listed by CMD_GET_GAMERESULTS.</summary>
+    public int HistoryLimit { get; set; } = 30;
+}
+
+/// <summary>One CMD_GET_URLLIST entry. Set either <see cref="File"/> or <see cref="Url"/>.</summary>
+public sealed class UrlOptions
+{
+    /// <summary>pes2011.exe enum 0x4b. Anything else is rejected at startup.</summary>
+    public static readonly string[] Types =
+    [
+        "RANK", "RANK_WEEK", "PC_SPEC", "DOWNLOAD", "DOWNLOAD_DESC", "KONAMIID", "KONAMIID_ALTER",
+        "GAMEID_AUTH", "VIDEO", "EULA_PES", "COMMU_MEMBERS_VS", "COMMU_TEAM_VS", "HTTP_TEST", "ADFILE",
+        "PATCH_DL", "BANNER", "CUP", "COMPE_DIGEST_UL", "COMPE_DIGEST_DL", "RECORD", "P2PMATCH",
+    ];
+
+    public string Type { get; set; } = "";
+
+    /// <summary>
+    /// A file on this machine, served over HTTP at /files/{file name}. Its size and MD5, which the
+    /// client checks after a download, are computed from the file.
+    /// </summary>
+    public string File { get; set; } = "";
+
+    /// <summary><see cref="File"/>, a relative one anchored at the application directory like the SQLite file.</summary>
+    public string FullPath => Path.GetFullPath(File, AppContext.BaseDirectory);
+
+    /// <summary>An absolute URL hosted elsewhere, sent as-is with <see cref="FileSize"/> and <see cref="Md5"/>.</summary>
+    public string Url { get; set; } = "";
+
+    public int FileSize { get; set; }
+    public string Md5 { get; set; } = "0";
+    public int Version { get; set; } = 1;
+
+    /// <summary>DOWNLOAD only: the text the client shows for the update (manifest line 5); empty = built-in, translated.</summary>
+    public string Description { get; set; } = "";
+}
+
 public sealed class HttpsOptions
 {
     public bool Enabled { get; set; } = true;
@@ -143,20 +265,11 @@ public sealed class DatabaseOptions
 
     /// <summary>Create the schema at startup when it does not exist.</summary>
     public bool AutoCreate { get; set; } = true;
-
-    /// <summary>Insert the default block/information/demo-player rows on an empty database.</summary>
-    public bool Seed { get; set; } = true;
 }
 
 public sealed class ProtocolOptions
 {
     public const int MaxPlayerSearchLimit = 100;
-
-    /// <summary>
-    /// Reply ERR/EULA to CMD_GET_SVRLIST until the client has fetched the EULA.
-    /// Off by default: forcing this on was recorded as a dead end during RE.
-    /// </summary>
-    public bool RequireEulaBeforeServerList { get; set; }
 
     /// <summary>Fixed 16-byte challenge returned by MSG_CHALLENGE, encoded as 32 hex characters.</summary>
     public string ChallengeCode { get; set; } = "00112233445566778899aabbccddeeff";
@@ -174,6 +287,20 @@ public sealed class ProtocolOptions
     public string PatchVersion { get; set; } = "1.0";
     public string DlcVersion { get; set; } = "1.0";
     public string EulaVersion { get; set; } = "1.0";
+
+    /// <summary>
+    /// Text of the terms screen (PES 2011 fetches it from the EULA_PES url). Empty uses the
+    /// built-in text in the player's language. A file path is read from that file, preferring a
+    /// per-language copy next to it: "eula.txt" → "eula.SP.txt" for a Spanish client.
+    /// Any other value is sent as-is to everyone.
+    /// </summary>
+    public string EulaText { get; set; } = "";
+
+    /// <summary>
+    /// Refuse to let a player join a room whose owner logged in with a different para_hash
+    /// (the client's game data fingerprint), so modified data cannot meet unmodified data.
+    /// </summary>
+    public bool RequireSameParaHashToJoin { get; set; } = true;
 
     /// <summary>Reply with a bare NOERR ack to commands that have no handler yet.</summary>
     public bool AckUnknownCommands { get; set; } = true;
@@ -221,7 +348,7 @@ public sealed class DebugOptions
     /// Cap on dumped bytes per packet. 0 removes the cap. A room list runs past a
     /// kilobyte and would otherwise bury everything around it.
     /// </summary>
-    public int HexDumpMaxBytes { get; set; } = 320;
+    public int HexDumpMaxBytes { get; set; } = 1024;
 
     /// <summary>
     /// Render key=value payloads as an indented tree rather than one long line.

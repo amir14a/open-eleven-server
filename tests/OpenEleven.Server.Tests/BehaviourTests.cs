@@ -1,3 +1,12 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 PES5 Indie Team <pes5indie@gmail.com>
+//
+// This file is part of OpenEleven. See the LICENSE file at the repository root.
+
+using System.Net;
+using Microsoft.Extensions.DependencyInjection;
+using OpenEleven.Data;
+using OpenEleven.Data.Entities;
 using OpenEleven.Protocol.Kv;
 using OpenEleven.Server.Configuration;
 using OpenEleven.Server.State;
@@ -76,13 +85,23 @@ public class InformationListTests
         // Regression: ordering this query by a DateTimeOffset column is not translatable
         // on SQLite, which turned the whole command into an ERR/SERVER reply.
         await using var harness = await ServerHarness.CreateAsync();
+        using (var scope = harness.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+            db.Information.Add(new InformationItem { Subject = "Maintenance", Body = "Tonight" });
+            await db.SaveChangesAsync();
+        }
+
         var session = harness.NewSession();
 
         var replies = await harness.DispatchAsync(session, "CMD_GET_INFORMATIONLIST");
 
+        // The fixed project notice always comes first, marked important.
         Assert.Equal("NOERR", replies[0].GetString("result"));
-        Assert.Equal(1, replies[0].GetInt32("info_num"));
-        Assert.Equal("Test", replies[0].GetList("ilist")[0].GetString("mes_subject"));
+        Assert.Equal(2, replies[0].GetInt32("info_num"));
+        var list = replies[0].GetList("ilist");
+        Assert.Equal(("About OpenEleven", "1"), (list[0].GetString("mes_subject"), list[0].GetString("important")));
+        Assert.Equal("Maintenance", list[1].GetString("mes_subject"));
     }
 }
 
@@ -194,9 +213,15 @@ public class RoomTests
     [Fact]
     public async Task Peers_receive_the_advertised_external_endpoint_for_direct_lookup()
     {
-        await using var harness = await ServerHarness.CreateAsync();
+        // A publicly advertised server is not on the clients' LAN, so the external
+        // endpoint is the one to hand out.
+        await using var harness = await ServerHarness.CreateAsync(
+            settings => settings["Server:AdvertiseIp"] = "198.51.100.1");
 
-        var host = harness.NewSession(ServiceRole.Lobby, SessionState.InBlock);
+        // Different remote addresses represent two different hosts behind the internet;
+        // the LAN fallback must not kick in there.
+        var host = harness.NewSession(
+            ServiceRole.Lobby, SessionState.InBlock, IPAddress.Parse("203.0.113.10"));
         host.Pid = 1;
         host.ExternalIp = "198.51.100.10";
         host.ExternalPort = 61001;
@@ -206,9 +231,10 @@ public class RoomTests
         var created = await harness.DispatchAsync(host, "CMD_CREATEJOIN_ROOM");
         var roomId = created[0].GetInt32("room_id");
 
-        var guest = harness.NewSession(ServiceRole.Lobby, SessionState.InBlock);
+        var guest = harness.NewSession(
+            ServiceRole.Lobby, SessionState.InBlock, IPAddress.Parse("203.0.113.20"));
         guest.Pid = 2;
-        guest.ExternalIp = host.ExternalIp;
+        guest.ExternalIp = "198.51.100.20";
         guest.ExternalPort = 61002;
         guest.InternalIp = "192.168.1.20";
         guest.InternalPort = 27414;
@@ -257,10 +283,12 @@ public class RoomTests
             if (item.Message is { } message)
                 pushed.Add(message);
 
+        // Both sessions reach the server from the same host on a private deployment, so
+        // the LAN endpoint is the one that works; the NAT endpoint would need hairpinning.
         var endpoint = Assert.Single(pushed, message => message.MsgName == "CMD_WATCH_IPANDPORT");
         Assert.Equal(77, endpoint.Rqid);
-        Assert.Equal(guest.ExternalIp, endpoint.GetString("ex_ip"));
-        Assert.Equal(guest.ExternalPort, endpoint.GetInt32("ex_port"));
+        Assert.Equal(guest.InternalIp, endpoint.GetString("ex_ip"));
+        Assert.Equal(guest.InternalPort, endpoint.GetInt32("ex_port"));
         Assert.Equal(guest.Pid, endpoint.GetInt32("pid"));
     }
 
@@ -325,7 +353,9 @@ public class RoomTests
         var replies = await harness.DispatchAsync(guest, "CMD_JOIN_ROOM", withFields: request =>
             request.Set("room_id", roomId));
 
-        Assert.Equal(["CMD_JOIN_ROOM", "CMD_WATCH_ROOMSTATE"],
+        Assert.Equal(
+            ["CMD_JOIN_ROOM", "CMD_WATCH_ROOMSTATE",
+             "MSG_RMEMBERLISTSTART", "MSG_RMEMBERLIST", "MSG_RMEMBEREND"],
             replies.Select(reply => reply.MsgName).ToArray());
         Assert.Equal(88, replies[1].Rqid);
         Assert.Equal("WAITING", replies[1].GetString("state"));
@@ -474,10 +504,13 @@ public class RoomTests
         var roster = pushed.Last(message => message.MsgName == "CMD_WATCH_DECIDE_GAMEPLAYER");
         Assert.Equal(61, roster.Rqid);
         Assert.Equal(2, roster.GetInt32("player_count"));
-        var pids = Assert.IsType<KvArray>(roster.GetValue("pid"));
-        // One entry per room slot: the two occupants, then -1 for every empty slot.
-        Assert.Equal(4, pids.Values.Count);
-        Assert.Equal([1, 2, -1, -1], pids.Values.Select(value => Convert.ToInt32(value)));
+        // FUN_0072ED20 reads the scalar key "pid" eight times, whatever the room size.
+        var pids = roster.Fields
+            .Where(field => field.Key == "pid")
+            .Select(field => Convert.ToInt32(field.Value))
+            .ToArray();
+        Assert.Equal([1, 2, -1, -1, -1, -1, -1, -1], pids);
+        Assert.Equal(8, roster.Fields.Count(field => field.Key == "video"));
 
         var sides = pushed.Last(message => message.MsgName == "CMD_WATCH_DECIDE_GAMEPLAYERENV");
         Assert.Equal(62, sides.Rqid);
@@ -664,16 +697,18 @@ public class RoomTests
         await harness.DispatchAsync(guest, "CMD_JOIN_ROOM", withFields: r =>
             r.Set("room_id", roomId));
 
+        // Joining already refreshed the host's cached roster; the last MSG_RMEMBERLIST
+        // is the direct reply to this request.
         var replies = await harness.DispatchAsync(host, "MSG_REQRMEMBERLIST");
-        var members = replies.Single(r => r.MsgName == "MSG_RMEMBERLIST").GetList("list");
+        var members = replies.Last(r => r.MsgName == "MSG_RMEMBERLIST").GetList("list");
 
         Assert.Equal(2, members.Count);
         Assert.Equal("203.0.113.7", members[0].GetString("ex_ip"));
         Assert.Equal([0, 1], members.Select(m => m.GetInt32("room_entry_no")).ToArray());
         Assert.Equal([1, 2], members.Select(m => m.GetInt32("pid")).ToArray());
 
-        // room_pid is the host, identical on every entry — pid already carries the member.
-        Assert.All(members, m => Assert.Equal(1, m.GetInt32("room_pid")));
+        // room_pid is each member's unique room-local number, one-based.
+        Assert.Equal([1, 2], members.Select(m => m.GetInt32("room_pid")).ToArray());
     }
 
     [Fact]

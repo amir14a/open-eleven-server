@@ -38,4 +38,24 @@ public static class ServiceRoleExtensions
         ServiceRole.VdpChat => "VDPCHAT",
         _ => throw new ArgumentOutOfRangeException(nameof(role), role, "Not a single service role."),
     };
+
+    /// <summary>
+    /// The <c>svrtype</c> token PES 2011's server-list parser accepts, or null when the role
+    /// has no PES 2011 equivalent and must not be advertised.
+    /// </summary>
+    /// <remarks>
+    /// The parser (<c>pes2011.exe FUN_00ffd160</c>) compares each entry's <c>svrtype</c> against
+    /// exactly five names, in this order, at 0x013ba23c: <c>MENU</c>, <c>AUTOLOGIN</c>,
+    /// <c>ACCOUNT</c>, <c>GATE</c>, <c>VDPCHAT</c>. Anything else raises
+    /// <c>ERR_CLIENT_OPTFORMAT</c> for the whole response, so <c>FDLOBBY</c> and <c>LOBBY</c>
+    /// (which are PES 2010 service tiers) are omitted rather than sent and rejected.
+    /// </remarks>
+    public static string? ToPes2011SvrType(this ServiceRole role) => role switch
+    {
+        ServiceRole.Gate => "GATE",
+        ServiceRole.Account => "ACCOUNT",
+        ServiceRole.Menu => "MENU",
+        ServiceRole.VdpChat => "VDPCHAT",
+        _ => null,
+    };
 }

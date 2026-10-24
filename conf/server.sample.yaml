@@ -99,10 +99,8 @@ Server:
     # Put real credentials in conf/server.local.yaml (also gitignored) rather than here.
     ConnectionString: "Data Source=data/OpenEleven.db"
     AutoCreate: true
-    Seed: true
 
   Protocol:
-    RequireEulaBeforeServerList: false
     # Fixed challenge: the handshake is stubbed and accepts any credential.
     ChallengeCode: "00112233445566778899aabbccddeeff"
     PendingLoginLifetimeSeconds: 300
@@ -133,7 +131,7 @@ Server:
     HexDump: true
     # Bytes dumped per packet before truncating; 0 removes the cap. A room list runs
     # past a kilobyte, which is ~75 lines of hex and buries everything around it.
-    HexDumpMaxBytes: 320
+    HexDumpMaxBytes: 1024
     # Render key=value payloads as an indented tree instead of one long line.
     PrettyPrintPayloads: true
     # Auto | Always | Never. Auto colours only on a real terminal, and stays off when

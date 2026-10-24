@@ -72,15 +72,6 @@ public sealed class PlayerDirectoryHandlers(
             : Reply.Of(ctx.Fail("ERR_INVALIDLETTER"));
     }
 
-    [Command("CMD_GET_DIVISIONUPDATE", Roles = DirectoryRoles,
-        RequiredState = SessionState.Authenticated)]
-    public ValueTask<KvMessage[]> GetDivisionUpdate(CommandContext ctx)
-    {
-        // FUN_0072B150 treats updated=NO as the complete no-update contract and does
-        // not require the optional div_result structure.
-        return Reply.Of(ctx.Ok().Set("updated", false));
-    }
-
     private KvMessage PresentSearchResult(Hub hub, Player player)
     {
         var entry = new KvMessage()

@@ -165,7 +165,7 @@ public static class OpenElevenServerHost
 
         await using var scope = app.Services.CreateAsyncScope();
         var initializer = scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
-        await initializer.InitializeAsync(options.Database.Seed);
+        await initializer.InitializeAsync();
     }
 
     private static void LogStartupSummary(

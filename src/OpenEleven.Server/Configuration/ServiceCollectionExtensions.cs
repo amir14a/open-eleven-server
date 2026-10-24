@@ -68,9 +68,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<KvWriter>();
         services.AddSingleton<ProtocolCodecs>();
 
+        services.AddSingleton<MatchResults>();
+        services.AddHostedService<RankScheduler>();
         services.AddSingleton<Hub>();
         services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<PendingLoginStore>();
+        services.AddSingleton<GameIdTicketStore>();
         services.AddSingleton<ServerCatalog>();
         services.AddSingleton<LobbyCatalog>();
         services.AddSingleton<ProtocolTextPolicy>();

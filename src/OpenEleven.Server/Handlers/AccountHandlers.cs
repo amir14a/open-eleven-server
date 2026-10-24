@@ -25,6 +25,7 @@ public sealed class AccountHandlers(
     IPlayerRepository players,
     IAccountRepository accounts,
     PendingLoginStore pendingLogins,
+    OpenEleven.Data.GameDbContext db,
     ILogger<AccountHandlers> log)
 {
     // Captures show the client repeats this handshake on Account, Menu and Lobby.
@@ -45,7 +46,11 @@ public sealed class AccountHandlers(
     [Command("MSG_REQAUTH", Roles = AuthRoles, RequiredState = SessionState.Challenged)]
     public async ValueTask<KvMessage[]> RequestAuth(CommandContext ctx)
     {
-        if (!AuthProof.TryNormalizeMd5(ctx.Request.GetString("uname"), out var credential)
+        // PES 2010 sends the MD5 credential as uname; PES 2011 sends the plain game id there
+        // and hashes MD5(gameId || challenge || credential) (seen in a live client run).
+        var uname = ctx.Request.GetString("uname");
+        var is2011 = !AuthProof.TryNormalizeMd5(uname, out var credential);
+        if ((is2011 && string.IsNullOrWhiteSpace(uname))
             || !AuthProof.TryNormalizeMd5(ctx.Request.GetString("hash"), out var reportedHash)
             || !AuthProof.TryNormalizeMd5(ctx.Request.GetString("para_hash"), out var paraHash)
             || !AuthProof.TryNormalizeMd5(ctx.Request.GetString("entry_hash"), out var entryHash)
@@ -59,7 +64,9 @@ public sealed class AccountHandlers(
         // available to the server. Their shape is validated above and their reported
         // values are retained on the session for auditing and later policy decisions.
 
-        var candidates = pendingLogins.FindCandidates(ctx.Session.Remote.Address, credential);
+        var candidates = is2011
+            ? pendingLogins.FindByGameId(ctx.Session.Remote.Address, uname!.Trim())
+            : pendingLogins.FindCandidates(ctx.Session.Remote.Address, credential);
         if (candidates.Count == 0)
         {
             log.LogWarning(
@@ -70,7 +77,9 @@ public sealed class AccountHandlers(
 
         var matches = candidates
             .Where(candidate => AuthProof.FixedTimeEquals(
-                AuthProof.Compute(credential, ctx.Session.ChallengeCode, candidate.GameId),
+                is2011
+                    ? AuthProof.Compute2011(candidate.GameId, ctx.Session.ChallengeCode, candidate.Credential)
+                    : AuthProof.Compute(credential, ctx.Session.ChallengeCode, candidate.GameId),
                 reportedHash))
             .ToArray();
 
@@ -83,6 +92,7 @@ public sealed class AccountHandlers(
         }
 
         var pendingLogin = matches[0];
+        credential = pendingLogin.Credential;
         var account = await accounts.GetByGameIdAsync(pendingLogin.GameId, ctx.CancellationToken);
         if (account is null || account.Id != pendingLogin.AccountId)
             return [ctx.Err("MSG_AUTHRESULT", "NOACCOUNT")];
@@ -99,8 +109,9 @@ public sealed class AccountHandlers(
 
         // The serial is supplied when the account is registered and checked here against
         // the one the client presents. It is never learned from the client.
-        var presented = ctx.Request.GetString("tmpRegcode")?.Trim().ToUpperInvariant();
-        var registeredRegCode = account.RegCode?.Trim().ToUpperInvariant();
+        // PES 2011 sends the serial without its dashes.
+        var presented = ctx.Request.GetString("tmpRegcode")?.Trim().ToUpperInvariant().Replace("-", "");
+        var registeredRegCode = account.RegCode?.Trim().ToUpperInvariant().Replace("-", "");
         if (string.IsNullOrEmpty(presented)
             || !string.Equals(registeredRegCode, presented, StringComparison.Ordinal))
         {
@@ -122,6 +133,12 @@ public sealed class AccountHandlers(
         ctx.Session.ParaHash = paraHash;
         ctx.Session.EntryHash = entryHash;
         ctx.Session.RegCode = presented;
+
+        // PES 2011 reports its patch and DLC versions; they show on the player's profile.
+        if (ctx.Request.GetString("szPatchVersion") is { Length: > 0 and <= 16 } patch)
+            account.PatchVersion = patch;
+        if (ctx.Request.GetString("szDLContentsVersion") is { Length: > 0 and <= 16 } dlc)
+            account.DlcVersion = ctx.Session.DlcVersion = dlc;
         ctx.Session.FirstLogin = await pendingLogin.ResolveFirstLoginAsync(
             token => accounts.ClaimFirstLoginAsync(account.Id, token),
             ctx.CancellationToken);
@@ -173,7 +190,33 @@ public sealed class AccountHandlers(
             if (player is null)
                 return [ctx.Fail("ERR_DATABASE")];
 
-            return [PlayerPresenter.FillPlayerInfo(ctx.Ok(), player)];
+            // pes2011.exe maps div through D5|D4|D3|D2|D1|NONE (table 0x16) and stores -1 for
+            // the PES 2010 value "D3C", which the player-info screen then trips over.
+            var is2011 = options.CurrentValue.GameProfile == GameProfile.Pes2011Pc;
+            var division = RankSystem.Applies(options.CurrentValue.GameProfile)
+                           && player.Division is not ("D5" or "D4" or "D3" or "D2" or "D1" or "NONE")
+                ? "D5"
+                : null;
+
+            var teams = await players.GetRecentTeamsAsync(player.Pid, 5, ctx.CancellationToken);
+            var reply = PlayerPresenter.FillPlayerInfo(ctx.Ok(), player, division, listSyntax: is2011, teams);
+            if (is2011)
+            {
+                // Profile page 2 "Weekly Ranking TOP 10 / TOP 100": weeks finished in that range.
+                // Page 4 (Legends) "Matches": Legends rooms played; its combos are total/max_combination.
+                // FUN_00572590 reads all of these as optional; ML (page 3) and podium finishes
+                // (page 5, list_num + compe_list[]) stay empty until those modes exist.
+                var me = player.Pid;
+                reply.Set("top10_num", await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.CountAsync(
+                        db.WeeklyRankings, r => r.Pid == me && r.Rank <= 10, ctx.CancellationToken))
+                    .Set("top100_num", await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.CountAsync(
+                        db.WeeklyRankings, r => r.Pid == me && r.Rank <= 100, ctx.CancellationToken))
+                    .Set("FD_match_num", await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.CountAsync(
+                        db.Matches, m => m.Completed && (m.HomePid == me || m.AwayPid == me)
+                                         && m.Settings.Contains("match_type=\"LEGENDS\""), ctx.CancellationToken));
+            }
+
+            return [reply];
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -270,11 +313,6 @@ public sealed class AccountHandlers(
         }
     }
 
-    [Command("CMD_GET_PRIVATEINFO", Roles = AuthRoles, RequiredState = SessionState.Authenticated)]
-    public ValueTask<KvMessage[]> GetPrivateInfo(CommandContext ctx)
-        // FUN_00731C60 accepts count=0 without reading any privInfo[i] records.
-        => Reply.Of(ctx.Ok().Set("count", 0));
-
     [Command("CMD_SET_CURRENTPLAYER", Roles = AuthRoles, RequiredState = SessionState.Authenticated)]
     public async ValueTask<KvMessage[]> SetCurrentPlayer(CommandContext ctx)
     {
@@ -290,6 +328,13 @@ public sealed class AccountHandlers(
         if (player is null)
             return [ctx.Fail("ERR_DATABASE")];
 
+        // A fresh profile starts at the rank system's start rating, in D5.
+        if (RankSystem.Applies(options.CurrentValue.GameProfile))
+        {
+            RankSystem.Normalize(player, options.CurrentValue.Rank);
+            await players.SaveAsync(ctx.CancellationToken);
+        }
+
         ctx.Session.Pid = player.Pid;
         ctx.Session.PlayerName = player.Name;
         ctx.Session.DesiredPositionMask = player.DesiredPositionMask;
@@ -300,12 +345,18 @@ public sealed class AccountHandlers(
             "Session {Session} selected player {Name} (pid {Pid})",
             ctx.Session.Id, player.Name, player.Pid);
 
+        // KvMessage.Set appends, so the size is written exactly once.
+        var teams = TitleProfiles.UseableTeams(options.CurrentValue.GameProfile);
+        var reply = ctx.Ok().Set("useable_team_size", teams.Length);
+        if (teams.Length > 0)
+            reply.Set("useable_team_id", new KvArray(teams.Cast<object?>().ToArray()));
+
+        var (mailCount, newMail) = await MailHandlers.InboxStateAsync(db, player.Pid, ctx.CancellationToken);
         return
         [
-            ctx.Ok()
-                .Set("useable_team_size", 0)
-                .Set("mailcount", 0)
-                .Set("newmail", false)
+            reply
+                .Set("mailcount", mailCount)
+                .Set("newmail", newMail)
                 .Set("chat_probi", false)
                 .Set("camera_probi", false)
                 .Set("voice_probi", false)
