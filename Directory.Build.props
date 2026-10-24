@@ -8,6 +8,7 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <Copyright>Copyright (C) 2026 PES5 Indie Team</Copyright>
   </PropertyGroup>
 
   <PropertyGroup>
