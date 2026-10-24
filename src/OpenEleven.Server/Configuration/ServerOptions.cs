@@ -31,6 +31,16 @@ public sealed class ServerOptions
     public List<ServiceEndpointOptions> Services { get; set; } = new();
 
     /// <summary>
+    /// File the log is also written to, or empty for console only.
+    /// </summary>
+    /// <remarks>
+    /// A relative path is resolved against the application directory, the same anchor the
+    /// SQLite file uses, so the location does not depend on where the process was started
+    /// from. The absolute path is printed in the startup banner.
+    /// </remarks>
+    public string LogFile { get; set; } = "";
+
+    /// <summary>
     /// The blocks the client picks from in CMD_GET_BLOCKLIST. Config rather than database
     /// rows: the list is operator policy, it changes as a unit, and the client addresses
     /// entries by their position in it. At most <see cref="MaxLobbies"/> entries.

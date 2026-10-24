@@ -16,6 +16,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Log redaction and packet formatting are transport internals; the suite has to be
+         able to assert that a credential never reaches a log line. -->
+    <InternalsVisibleTo Include="OpenEleven.Server.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\OpenEleven.Protocol\OpenEleven.Protocol.csproj" />
     <ProjectReference Include="..\OpenEleven.Data\OpenEleven.Data.csproj" />
   </ItemGroup>

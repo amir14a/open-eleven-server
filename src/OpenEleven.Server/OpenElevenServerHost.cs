@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using OpenEleven.Data;
 using OpenEleven.Server.Configuration;
 using OpenEleven.Server.Dispatch;
+using OpenEleven.Server.Logging;
 using OpenEleven.Server.State;
 using OpenEleven.Server.Transport;
 using OpenEleven.Server.Web;
@@ -69,6 +70,20 @@ public static class OpenElevenServerHost
         var startupOptions = builder.Configuration.GetSection(ServerOptions.SectionName).Get<ServerOptions>()
                              ?? new ServerOptions();
 
+        // Durable copy of the log. Console output is gone as soon as it scrolls, and a client
+        // attempt that fails in two seconds is exactly the evidence that cannot be re-derived.
+        FileLoggerProvider? fileLog = null;
+        if (!string.IsNullOrWhiteSpace(startupOptions.LogFile))
+        {
+            var logPath = Path.GetFullPath(
+                Path.IsPathRooted(startupOptions.LogFile)
+                    ? startupOptions.LogFile
+                    : Path.Combine(AppContext.BaseDirectory, startupOptions.LogFile));
+
+            fileLog = new FileLoggerProvider(logPath);
+            builder.Logging.AddProvider(fileLog);
+        }
+
         // One TCP listener per logical service. Only the gate port is fixed, because the
         // client hardcodes it; every other port is discovered from the server list.
         foreach (var endpoint in startupOptions.Services.Where(s => s.Enabled))
@@ -111,7 +126,7 @@ public static class OpenElevenServerHost
         var app = builder.Build();
 
         await InitializeDatabaseAsync(app);
-        LogStartupSummary(app, startupOptions);
+        LogStartupSummary(app, startupOptions, fileLog);
 
         // The ranked list of commands the client wanted and did not get is the
         // reverse-engineering worklist, printed once on the way out.
@@ -153,7 +168,8 @@ public static class OpenElevenServerHost
         await initializer.InitializeAsync(options.Database.Seed);
     }
 
-    private static void LogStartupSummary(WebApplication app, ServerOptions options)
+    private static void LogStartupSummary(
+        WebApplication app, ServerOptions options, FileLoggerProvider? fileLog)
     {
         var log = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("OpenEleven.Startup");
         var catalog = app.Services.GetRequiredService<ServerCatalog>();
@@ -163,6 +179,11 @@ public static class OpenElevenServerHost
             "Serving {Title}: advertising {Ip} (configured as {Configured})",
             TitleProfiles.DisplayName(options.GameProfile), catalog.AdvertiseIp, options.AdvertiseIp);
         log.LogInformation("{Count} commands registered", registry.Count);
+
+        if (fileLog is { IsOpen: true })
+            log.LogInformation("Log file: {LogFile}", fileLog.Path);
+        else if (!string.IsNullOrWhiteSpace(options.LogFile))
+            log.LogWarning("Log file {LogFile} could not be opened; console logging only", options.LogFile);
 
         foreach (var service in options.Services.Where(s => s.Enabled))
             log.LogInformation(

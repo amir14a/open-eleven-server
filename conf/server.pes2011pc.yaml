@@ -6,6 +6,11 @@ Server:
 
   GameProfile: Pes2011Pc
 
+  # Durable copy of the console log, relative to the executable's directory.
+  # A client attempt that fails in under a second leaves nothing on the console after it
+  # scrolls, so every reverse-engineering run needs this file. Empty disables it.
+  LogFile: "logs/pes2011pc.log"
+
   Listen:
     Host: 0.0.0.0
     # Per-title HTTP/HTTPS so all four titles can run side-by-side on one host.
