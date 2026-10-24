@@ -147,6 +147,7 @@ public class InnerBodyTests
     [InlineData("a")]
     [InlineData("1234567")]
     [InlineData("result=\"NOERR\",msg=\"CMD_GET_SVRTIME\",rqid=1,date=0\0")]
+    [InlineData("mes_subject=\"À propos d'OpenEleven\",name=\"Быстрый матч\",x=\"快速比賽\"")]
     public void Round_trips_the_payload(string payload)
     {
         var body = InnerBody.Wrap(payload);

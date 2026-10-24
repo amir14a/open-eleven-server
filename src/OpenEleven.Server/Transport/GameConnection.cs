@@ -31,6 +31,8 @@ public sealed class GameConnection(
 {
     private const int MinimumReadBuffer = 4096;
 
+    private readonly InnerBodyChunks _chunks = new();
+
     public async Task RunAsync(CancellationToken stoppingToken)
     {
         var remote = (IPEndPoint)socket.RemoteEndPoint!;
@@ -181,7 +183,16 @@ public sealed class GameConnection(
         session.LastActivity = DateTimeOffset.UtcNow;
         var debug = options.CurrentValue.Debug;
 
-        if (!frame.IsTextCommand)
+        string payload;
+        if (InnerBodyChunks.IsChunkPacket(frame.Id))
+        {
+            var done = _chunks.Feed(frame.Id, codecs.Blowfish.Decrypt(frame.Data));
+            if (done is null)
+                return;
+
+            payload = done;
+        }
+        else if (!frame.IsTextCommand)
         {
             // Logged at Information, not Debug: at the default level these packets were
             // invisible, which made a client that sent nothing else look like a client
@@ -195,9 +206,10 @@ public sealed class GameConnection(
                 session.PushAck(frame.Id);
             return;
         }
-
-        var inner = codecs.Blowfish.Decrypt(frame.Data);
-        var payload = InnerBody.Unwrap(inner);
+        else
+        {
+            payload = InnerBody.Unwrap(codecs.Blowfish.Decrypt(frame.Data));
+        }
 
         var request = codecs.Reader.TryParse(payload);
         if (request is null)
@@ -205,6 +217,7 @@ public sealed class GameConnection(
             logger.LogWarning(
                 "Unparseable text payload from {Session}:\n{Dump}",
                 session, HexDump.Format(payload));
+
             return;
         }
 
@@ -216,6 +229,31 @@ public sealed class GameConnection(
         await dispatcher.DispatchAsync(session, request, ct);
     }
 
+    /// <summary>
+    /// Flags an outbound frame whose body is longer than the client's reader accepts.
+    /// </summary>
+    /// <remarks>
+    /// pes2011.exe <c>FUN_01006660</c> errors out (state 0xff) as soon as the frame's 16-bit
+    /// length field exceeds 0x400 and never reads the body, so an oversized payload looks like
+    /// an immediate disconnect with nothing on the wire to explain it. The packet is still sent
+    /// rather than dropped: sending it keeps the failure reproducible and observable, while
+    /// dropping it would turn a protocol mistake into a silent hang.
+    /// </remarks>
+    private void WarnIfOversizedFrame(Session session, OutboundPacket item, int bodyLength)
+    {
+        // Only the PES 2011 reader has been checked; other titles are left alone.
+        if (options.CurrentValue.GameProfile != GameProfile.Pes2011Pc || bodyLength <= Pes2011MaxFrameBytes)
+            return;
+
+        logger.LogError(
+            "Outbound {Msg} frame body is {Length} bytes, above the {Limit}-byte limit the " +
+            "client's frame reader accepts; it will drop the connection instead of reading it " +
+            "({Session})",
+            item.Message?.MsgName ?? $"0x{item.PacketId:X4}", bodyLength, Pes2011MaxFrameBytes, session);
+    }
+
+    private const int Pes2011MaxFrameBytes = 0x400;
+
     private async Task WritePipeAsync(Session session, CancellationTokenSource cts)
     {
         var ct = cts.Token;
@@ -223,12 +261,13 @@ public sealed class GameConnection(
         {
             await foreach (var item in session.Queue.Reader.ReadAllAsync(ct))
             {
-                byte[] body;
+                var frames = new List<(ushort Id, byte[] Body)>();
 
                 if (item.Message is { } message)
                 {
                     var text = codecs.Writer.Write(message);
-                    body = codecs.Blowfish.Encrypt(InnerBody.Wrap(text));
+                    foreach (var (id, plain) in InnerBody.WrapChunked(text))
+                        frames.Add((id, codecs.Blowfish.Encrypt(plain)));
 
                     var debug = options.CurrentValue.Debug;
                     if (debug.LogOutboundPayloads)
@@ -243,11 +282,17 @@ public sealed class GameConnection(
                 }
                 else
                 {
-                    body = item.Raw ?? Array.Empty<byte>();
+                    frames.Add((item.PacketId, item.Raw ?? Array.Empty<byte>()));
                 }
 
-                var wire = codecs.Packets.Write(item.PacketId, session.NextCounter(), body, codecs.Xor);
-                await socket.SendAsync(wire, SocketFlags.None, ct);
+                foreach (var (id, body) in frames)
+                {
+                    var wire = codecs.Packets.Write(id, session.NextCounter(), body, codecs.Xor);
+
+                    WarnIfOversizedFrame(session, item, body.Length);
+
+                    await socket.SendAsync(wire, SocketFlags.None, ct);
+                }
 
                 if (item.CloseAfterSend)
                 {
