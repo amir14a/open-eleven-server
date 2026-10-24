@@ -1,0 +1,7079 @@
+{
+ "enums": {
+  "0x00": [
+   "HOUR_NONE",
+   "HOUR_00_01",
+   "HOUR_01_02",
+   "HOUR_02_03",
+   "HOUR_03_04",
+   "HOUR_04_05",
+   "HOUR_05_06",
+   "HOUR_06_07",
+   "HOUR_07_08",
+   "HOUR_08_09",
+   "HOUR_09_10",
+   "HOUR_10_11",
+   "HOUR_11_12",
+   "HOUR_12_13",
+   "HOUR_13_14",
+   "HOUR_14_15",
+   "HOUR_15_16",
+   "HOUR_16_17",
+   "HOUR_17_18",
+   "HOUR_18_19",
+   "HOUR_19_20",
+   "HOUR_20_21",
+   "HOUR_21_22",
+   "HOUR_22_23",
+   "HOUR_23_00"
+  ],
+  "0x01": [
+   "FALSE",
+   "TRUE"
+  ],
+  "0x02": [
+   "YELLOW",
+   "RED",
+   "NONE"
+  ],
+  "0x03": [
+   "BLOCK",
+   "ROOM",
+   "TEAM",
+   "GAME_QUICK",
+   "TEAM_QUICK",
+   "COMPETITION",
+   "COMMUNITY",
+   "COMMUNITY_LEAGUE"
+  ],
+  "0x04": [
+   "CHAT_BAN",
+   "CHAT_SEND"
+  ],
+  "0x05": [
+   "LOGIN",
+   "LOGOUT",
+   "COMMU_DELETED"
+  ],
+  "0x06": [
+   "TEAM_RANK_CNT_MATCH",
+   "TEAM_RANK_CNT_WIN",
+   "TEAM_RANK_CNT_LOSE",
+   "TEAM_RANK_CNT_DRAW",
+   "TEAM_RANK_AVR_WIN",
+   "TEAM_RANK_AVR_SCORE",
+   "TEAM_RANK_AVR_LOST",
+   "TEAM_RANK_AVR_SHOT",
+   "TEAM_RANK_AVR_SHOTED",
+   "TEAM_RANK_AVR_POSSESSION"
+  ],
+  "0x07": [
+   "USER_RANK_CNT_MATCH",
+   "USER_RANK_CNT_WIN",
+   "USER_RANK_CNT_LOSE",
+   "USER_RANK_CNT_DRAW",
+   "USER_RANK_AVR_WIN",
+   "USER_RANK_AVR_SCORE",
+   "USER_RANK_AVR_LOST",
+   "USER_RANK_AVR_ASSIST",
+   "USER_RANK_AVR_FOUL",
+   "USER_RANK_AVR_YC",
+   "USER_RANK_AVR_RC",
+   "USER_RANK_AVR_SHOT",
+   "USER_RANK_AVR_SHOTED",
+   "USER_RANK_AVR_POSSESSION",
+   "USER_RANK_WIN_LEAGUE",
+   "USER_RANK_WIN_CUP",
+   "USER_RANK_CONTINUOUS_WIN",
+   "USER_RANK_CONTINUOUS_LOSE",
+   "USER_RANK_TOTAL_COMBINATION",
+   "USER_RANK_BEST_COMBINATION"
+  ],
+  "0x08": [
+   "PLATINUM",
+   "GOLD",
+   "SILVER",
+   "BRONZE"
+  ],
+  "0x09": [
+   "WEEKRANK",
+   "DIVISION"
+  ],
+  "0x0a": [
+   "UEFA_Champions_League",
+   "International_Club_Championship",
+   "International_Cup_Online",
+   "KONAMI_CHAMPIONSHIP",
+   "KONAMI_CUP_ONLINE",
+   "WEPES_CLUB_OPEN",
+   "WEPES_NATIONAL_OPEN",
+   "WEPES_CHAMPIONSHIP",
+   "D1_Cup",
+   "D2_Cup",
+   "D3_Cup",
+   "D4_Cup",
+   "D5_Cup",
+   "ML_UEFA_Champions_League",
+   "ML_Open",
+   "ML_Open_coach_mode",
+   "ML_D1_Cup",
+   "ML_D1_Cup_coach_mode",
+   "ML_D2_Cup",
+   "ML_D2_Cup_coach_mode",
+   "ML_D3_Cup",
+   "ML_D3_Cup_coach_mode",
+   "ML_D4_Cup",
+   "ML_D4_Cup_coach_mode",
+   "ML_D5_Cup",
+   "ML_D5_Cup_coach_mode",
+   "RESERVED_CUP01",
+   "RESERVED_CUP02",
+   "RESERVED_CUP03",
+   "RESERVED_CUP04",
+   "RESERVED_CUP05",
+   "RESERVED_CUP06",
+   "RESERVED_CUP07",
+   "RESERVED_CUP08",
+   "RESERVED_CUP09",
+   "RESERVED_CUP10",
+   "RESERVED_CUP11",
+   "RESERVED_CUP12",
+   "RESERVED_CUP13",
+   "RESERVED_CUP14",
+   "RESERVED_CUP15",
+   "RESERVED_CUP16",
+   "RESERVED_CUP17",
+   "RESERVED_CUP18",
+   "RESERVED_CUP19",
+   "RESERVED_CUP20",
+   "RESERVED_CUP21",
+   "RESERVED_CUP22",
+   "RESERVED_CUP23",
+   "RESERVED_CUP24",
+   "RESERVED_CUP25",
+   "RESERVED_CUP26",
+   "RESERVED_CUP27",
+   "RESERVED_CUP28",
+   "RESERVED_CUP29",
+   "RESERVED_CUP30",
+   "RESERVED_CUP31",
+   "RESERVED_CUP32",
+   "RESERVED_CUP33",
+   "RESERVED_CUP34",
+   "RESERVED_CUP35",
+   "RESERVED_CUP36",
+   "RESERVED_CUP37",
+   "RESERVED_CUP38",
+   "RESERVED_CUP39",
+   "RESERVED_CUP40",
+   "RESERVED_CUP41",
+   "RESERVED_CUP42",
+   "RESERVED_CUP43",
+   "RESERVED_CUP44",
+   "RESERVED_CUP45",
+   "RESERVED_CUP46",
+   "RESERVED_CUP47",
+   "RESERVED_CUP48",
+   "RESERVED_CUP49",
+   "RESERVED_CUP50",
+   "RESERVED_CUP51",
+   "RESERVED_CUP52",
+   "RESERVED_CUP53",
+   "RESERVED_CUP54"
+  ],
+  "0x0b": [
+   "NOW_PLAY",
+   "NOW_WATCH",
+   "OLD_ALL",
+   "OLD_MY",
+   "SCHEDULE"
+  ],
+  "0x0c": [
+   "MATCH_1",
+   "MATCH_2",
+   "MATCH_3",
+   "MATCH_4"
+  ],
+  "0x0d": [
+   "NORMAL",
+   "ML"
+  ],
+  "0x0e": [
+   "NOCREATE",
+   "CREATED",
+   "PERMITSTART",
+   "ENTRY",
+   "STARTED",
+   "ENTRY_CLOSED",
+   "MATCH_CLOSED",
+   "FINISHED",
+   "CANSELED",
+   "END",
+   "CLEARED",
+   "DELETED"
+  ],
+  "0x0f": [
+   "SECOND_ROUND_EXIT",
+   "FINAL_ADVANCEMENT",
+   "END_PLAYOFF"
+  ],
+  "0x10": [
+   "TIME_5",
+   "TIME_10",
+   "TIME_15"
+  ],
+  "0x11": [
+   "VICTORY",
+   "SECOND_PLACE",
+   "BEST_4",
+   "BEST_8",
+   "FINAL_ADVANCEMENT",
+   "SECOND_ROUND_EXIT",
+   "NON"
+  ],
+  "0x12": [
+   "UEFA_Champions_League",
+   "International_Club_Championship",
+   "International_Cup_Online",
+   "KONAMI_CHAMPIONSHIP",
+   "KONAMI_CUP_ONLINE",
+   "WEPES_CLUB_OPEN",
+   "WEPES_NATIONAL_OPEN",
+   "WEPES_CHAMPIONSHIP",
+   "D1_Cup",
+   "D2_Cup",
+   "D3_Cup",
+   "D4_Cup",
+   "D5_Cup",
+   "ML_UEFA_Champions_League",
+   "ML_Open",
+   "ML_Open_coach_mode",
+   "ML_D1_Cup",
+   "ML_D1_Cup_coach_mode",
+   "ML_D2_Cup",
+   "ML_D2_Cup_coach_mode",
+   "ML_D3_Cup",
+   "ML_D3_Cup_coach_mode",
+   "ML_D4_Cup",
+   "ML_D4_Cup_coach_mode",
+   "ML_D5_Cup",
+   "ML_D5_Cup_coach_mode",
+   "RESERVED_CUP01",
+   "RESERVED_CUP02",
+   "RESERVED_CUP03",
+   "RESERVED_CUP04",
+   "RESERVED_CUP05",
+   "RESERVED_CUP06",
+   "RESERVED_CUP07",
+   "RESERVED_CUP08",
+   "RESERVED_CUP09",
+   "RESERVED_CUP10",
+   "RESERVED_CUP11",
+   "RESERVED_CUP12",
+   "RESERVED_CUP13",
+   "RESERVED_CUP14",
+   "RESERVED_CUP15",
+   "RESERVED_CUP16",
+   "RESERVED_CUP17",
+   "RESERVED_CUP18",
+   "RESERVED_CUP19",
+   "RESERVED_CUP20",
+   "RESERVED_CUP21",
+   "RESERVED_CUP22",
+   "RESERVED_CUP23",
+   "RESERVED_CUP24",
+   "RESERVED_CUP25",
+   "RESERVED_CUP26",
+   "RESERVED_CUP27",
+   "RESERVED_CUP28",
+   "RESERVED_CUP29",
+   "RESERVED_CUP30",
+   "RESERVED_CUP31",
+   "RESERVED_CUP32",
+   "RESERVED_CUP33",
+   "RESERVED_CUP34",
+   "RESERVED_CUP35",
+   "RESERVED_CUP36",
+   "RESERVED_CUP37",
+   "RESERVED_CUP38",
+   "RESERVED_CUP39",
+   "RESERVED_CUP40",
+   "RESERVED_CUP41",
+   "RESERVED_CUP42",
+   "RESERVED_CUP43",
+   "RESERVED_CUP44",
+   "RESERVED_CUP45",
+   "RESERVED_CUP46",
+   "RESERVED_CUP47",
+   "RESERVED_CUP48",
+   "RESERVED_CUP49",
+   "RESERVED_CUP50",
+   "RESERVED_CUP51",
+   "RESERVED_CUP52",
+   "RESERVED_CUP53",
+   "RESERVED_CUP54"
+  ],
+  "0x13": [
+   "NORMAL_END",
+   "BEFORE_ERR",
+   "GAMEING_ERR",
+   "TIMEOUT"
+  ],
+  "0x14": [
+   "NORMAL",
+   "RANDOM"
+  ],
+  "0x15": [
+   "VERYEASY",
+   "EASY",
+   "NORMAL",
+   "HARD",
+   "VERYHARD",
+   "HARDEST"
+  ],
+  "0x16": [
+   "D5",
+   "D4",
+   "D3",
+   "D2",
+   "D1",
+   "NONE"
+  ],
+  "0x17": [
+   "FRAME_50",
+   "FRAME_60"
+  ],
+  "0x18": [
+   "Friend",
+   "SentReq",
+   "RecievedReq"
+  ],
+  "0x19": [
+   "HOME",
+   "AWAY"
+  ],
+  "0x1a": [
+   "ENTRY",
+   "1ST",
+   "BREAK1",
+   "2ND",
+   "BREAK2",
+   "EX1ST",
+   "BREAK3",
+   "EX2ND",
+   "BREAK4",
+   "PK",
+   "END"
+  ],
+  "0x1b": [
+   "NOSET",
+   "5MINUTES",
+   "10MINUTES",
+   "15MINUTES",
+   "20MINUTES",
+   "25MINUTES",
+   "30MINUTES"
+  ],
+  "0x1c": [
+   "EN",
+   "FR",
+   "GR",
+   "IT",
+   "SP",
+   "JP",
+   "KR",
+   "US",
+   "PR",
+   "MX",
+   "RU",
+   "HE",
+   "SV",
+   "NL",
+   "BR",
+   "TR",
+   "CH",
+   "ANY"
+  ],
+  "0x1d": [
+   "LOGOUT",
+   "LEGENDS_ROOM"
+  ],
+  "0x1e": [
+   "NOSET",
+   "SHORT",
+   "MIDDLE",
+   "LONG"
+  ],
+  "0x1f": [
+   "ADD",
+   "DEL",
+   "UPDATE"
+  ],
+  "0x20": [
+   "OC",
+   "FD"
+  ],
+  "0x21": [
+   "LOGINID",
+   "NPID",
+   "XUID"
+  ],
+  "0x22": [
+   "NONE",
+   "FIN",
+   "MOV"
+  ],
+  "0x23": [
+   "MAIL_NORMAL",
+   "CUP_WR_FINALWIN",
+   "CUP_WR_FINALPRIZE",
+   "CUP_WR_NORMALWIN",
+   "CUP_WR_NORMALPRIZE",
+   "CUP_WR_PREPASS",
+   "CUP_WR_GOAL",
+   "CUP_WR_ASSIST",
+   "CUP_NOREPLAY",
+   "CUP_NORMALEND",
+   "COUTION",
+   "MAILBOX_FLG",
+   "CUP_MUKOUEND",
+   "CUP_MLONLY",
+   "GROUP_BANISH",
+   "MAIL_REP_NOMINATED",
+   "MAIL_REP_RANKEDHIGHT"
+  ],
+  "0x24": [
+   "GOAL",
+   "WIN"
+  ],
+  "0x25": [
+   "RANK_MATCH",
+   "COMPE_MATCH"
+  ],
+  "0x26": [
+   "OC_RANKING",
+   "OC_FREE",
+   "LEGENDS",
+   "COMMU",
+   "COMMU_LEAGUE"
+  ],
+  "0x27": [
+   "ML_DIVISION_5",
+   "ML_DIVISION_4",
+   "ML_DIVISION_3",
+   "ML_DIVISION_2",
+   "ML_DIVISION_1"
+  ],
+  "0x28": [
+   "TEAM_CREATE",
+   "TEAM_NAME",
+   "TEAM_RESET",
+   "DIVISION_UP",
+   "DIVISION_DOWN",
+   "BUY",
+   "SELL",
+   "COMPE",
+   "REGULAR"
+  ],
+  "0x29": [
+   "NONE",
+   "RIGHT",
+   "LEFT",
+   "BOTH"
+  ],
+  "0x2a": [
+   "UP",
+   "DOWN",
+   "FLAT"
+  ],
+  "0x2b": [
+   "CREATE",
+   "EDIT",
+   "DIVISION_UP",
+   "DIVISION_DOWN"
+  ],
+  "0x2c": [
+   "DAY",
+   "WEEK",
+   "MONTH"
+  ],
+  "0x2d": [
+   "DESC",
+   "ASC"
+  ],
+  "0x2e": [
+   "CF",
+   "ST",
+   "WG",
+   "OH",
+   "SH",
+   "CH",
+   "WB",
+   "DH",
+   "SB",
+   "CB",
+   "SW",
+   "GK"
+  ],
+  "0x2f": [
+   "TEAM_POWER",
+   "TEAM_FUNDS"
+  ],
+  "0x30": [
+   "OR",
+   "AND"
+  ],
+  "0x31": [
+   "OFF",
+   "ON",
+   "FUZZY"
+  ],
+  "0x32": [
+   "PLAYER_NAME",
+   "POSITION",
+   "HEIGHT",
+   "AGE",
+   "OVERALL_RATING",
+   "MARKET_VALUE",
+   "NATIONALITY"
+  ],
+  "0x33": [
+   "NO",
+   "RIGHT",
+   "LEFT"
+  ],
+  "0x34": [
+   "NONE",
+   "CREATED"
+  ],
+  "0x35": [
+   "TEAM_TYPE_4_3_1_2",
+   "TEAM_TYPE_4_4_1_1",
+   "TEAM_TYPE_4_1_2_3",
+   "TEAM_TYPE_3_4_1_2",
+   "TEAM_TYPE_3_3_2_2",
+   "TEAM_TYPE_5_4_1"
+  ],
+  "0x36": [
+   "NONE",
+   "NETWORK",
+   "COMPE",
+   "COMMUNITY",
+   "COMMUNITY_COMPE",
+   "LEGENDS",
+   "LEGENDS_AUTO",
+   "QUICK_RANK1VS1",
+   "QUICK_RANK2VS2",
+   "QUICK_FREE",
+   "ML",
+   "ML_QUICK_RANK",
+   "ML_COMPE"
+  ],
+  "0x37": [
+   "OPEN_INTERNET",
+   "SYMMETRIC_UDP_FIREWALL",
+   "SYMMETRIC_OPEN",
+   "FULL_CONE_NAT",
+   "OPEN_CHOICE_PORT",
+   "RESTRICTED_CONE_NAT",
+   "RESTRICTED_PORT_CONE_NAT",
+   "SYMMETRIC_NAT"
+  ],
+  "0x38": [
+   "JOIN",
+   "LEAVE",
+   "DEL",
+   "COMMUNICATIONFAILED",
+   "MIGRATE"
+  ],
+  "0x39": [
+   "PASS_PLAIN",
+   "PASS_AES"
+  ],
+  "0x3a": [
+   "LOW",
+   "MID",
+   "HIGH"
+  ],
+  "0x3b": [
+   "NORMAL",
+   "GM",
+   "EVENTER",
+   "KONAMISTAFF"
+  ],
+  "0x3c": [
+   "PS2",
+   "PS3",
+   "PC",
+   "X360"
+  ],
+  "0x3d": [
+   "BEGINNER",
+   "AMA",
+   "PRO",
+   "LEG",
+   "STAR"
+  ],
+  "0x3e": [
+   "GK",
+   "LIB",
+   "SW",
+   "CB",
+   "SB",
+   "DMF",
+   "WB",
+   "CMF",
+   "SMF",
+   "OMF",
+   "WG",
+   "ST",
+   "CF"
+  ],
+  "0x3f": [
+   "NOT_FILL",
+   "FILL"
+  ],
+  "0x40": [
+   "OC_Rank",
+   "OC_Free",
+   "FD_Free",
+   "COMPE",
+   "ML_Rank",
+   "ML_COMPE"
+  ],
+  "0x41": [
+   "GT05",
+   "GT10"
+  ],
+  "0x42": [
+   "LOGINMEMBER_NUM",
+   "MATCH_NUM",
+   "LEGENDS_MATCH_NUM",
+   "LEAGUE_NUM"
+  ],
+  "0x43": [
+   "REGION_ALL",
+   "REGION_EU",
+   "REGION_NA",
+   "REGION_ASIA"
+  ],
+  "0x44": [
+   "WAITING",
+   "SETENV",
+   "GAME",
+   "RESULT",
+   "DISCONWAIT",
+   "RESULTWAIT"
+  ],
+  "0x45": [
+   "OwnerChanged",
+   "AppointOwner",
+   "Kicked",
+   "StateChanged"
+  ],
+  "0x46": [
+   "FORWARD",
+   "PART",
+   "PERFECT"
+  ],
+  "0x47": [
+   "NAME",
+   "COMMENT"
+  ],
+  "0x48": [
+   "SELL",
+   "BUY"
+  ],
+  "0x49": [
+   "GATE",
+   "ACCOUNT",
+   "MENU",
+   "VDPCHAT"
+  ],
+  "0x4a": [
+   "MAN",
+   "WOMAN"
+  ],
+  "0x4b": [
+   "RANK",
+   "RANK_WEEK",
+   "PC_SPEC",
+   "DOWNLOAD",
+   "DOWNLOAD_DESC",
+   "KONAMIID",
+   "KONAMIID_ALTER",
+   "GAMEID_AUTH",
+   "VIDEO",
+   "EULA_PES",
+   "COMMU_MEMBERS_VS",
+   "COMMU_TEAM_VS",
+   "HTTP_TEST",
+   "ADFILE",
+   "PATCH_DL",
+   "BANNER",
+   "CUP",
+   "COMPE_DIGEST_UL",
+   "COMPE_DIGEST_DL",
+   "RECORD",
+   "P2PMATCH"
+  ],
+  "0x4c": [
+   "NO",
+   "YES"
+  ]
+ },
+ "watchLists": {
+  "CMD_REQWATCHL_ROOMLIST": "listnum_name=\"room_list_num\",list_name=\"room_list\",listid_name=\"room_id\",list_max=100",
+  "CMD_REQWATCHL_ROOMPLAYERLIST": "listnum_name=\"roomplayer_list_num\",list_name=\"roomplayer_list\",listid_name=\"pid\",list_max=8",
+  "CMD_REQWATCHL_BLOCKPLAYERLIST": "listnum_name=\"blockplayer_list_num\",list_name=\"blockplayer_list\",listid_name=\"pid\",list_max=100",
+  "CMD_REQWATCHL_COMMU_MATCHLIST": "listnum_name=\"match_list_num\",list_name=\"match_list\",listid_name=\"match.match_id\",list_max=9",
+  "CMD_REQWATCHL_COMMU_MEMBERLIST": "listnum_name=\"member_list_num\",list_name=\"member_list\",listid_name=\"info.pid\",list_max=32",
+  "CMD_REQWATCHL_COMMU_PLAYABLEMATCHLIST": "listnum_name=\"match_list_num\",list_name=\"match_list\",listid_name=\"match_id\",list_max=300",
+  "CMD_REQWATCHL_COMMU_COMPEMEMBERLIST": "listnum_name=\"member_list_num\",list_name=\"member_list\",listid_name=\"info.pid\",list_max=32",
+  "CMD_REQWATCHL_COMPLG_MATCHLIST": "listnum_name=\"match_list_num\",list_name=\"match_list\",listid_name=\"match_id\",list_max=8"
+ },
+ "commands": {
+  "CMD_ACK_ML_MARKET_PRICE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "gameplayer_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0060daa0": [
+     "result",
+     "ERR_TRADE_STOP",
+     "ERR_INSUFFICIENT_FUNDS",
+     "market_price",
+     "trade_rate",
+     "enable_buy_num",
+     "team_funds",
+     "A"
+    ],
+    "0060dd70": [
+     "result",
+     "ERR_TRADE_STOP",
+     "market_price",
+     "trade_rate",
+     "enable_buy_num",
+     "team_funds"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_ADD_BLACKLIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {
+    "target_pid": "int",
+    "target_npid": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_INVALIDARG",
+    "ERR_INFRIENDLIST",
+    "ERR_PLAYERISONESELF",
+    "ERR_INBLACKLIST",
+    "ERR_FRIENDCOUNTFULL"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_ADD_COMPLG_RESULTS": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_ADD_FOUL": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {
+    "card_pid": "int",
+    "card_side": "string",
+    "card_gameplayer_id": "int",
+    "card_kind": "string",
+    "injury_side": "string",
+    "injury_gameplayer_id": "int",
+    "injury_all": "uint",
+    "injury_one": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTINROOM",
+    "ERR_ROOMNOTFOUND",
+    "ERR_NOTGAMEHOST",
+    "ERR_ROOMSTATNOTMATCH",
+    "ERR_INVALIDARG"
+   ],
+   "followedBy": [
+    "CMD_ADD_SCORE",
+    "CMD_GET_GAMEADDPOINT",
+    "CMD_REQ_FORFEITEDGAME_REPLY",
+    "CMD_SEND_ABNORMALEND",
+    "CMD_SET_INJURYGAMEEND"
+   ],
+   "follows": [
+    "CMD_ADD_SCORE",
+    "CMD_SEND_ABNORMALEND"
+   ],
+   "handledByServer": false
+  },
+  "CMD_ADD_ML_EVENT_COMPE_TEST": {
+   "class": null,
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_ADD_ML_MARKET_CHECKLIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "gameplayer_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_ADD_SCORE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {
+    "goal_side": "string",
+    "goal_gameplayer_id": "uint",
+    "goal_player_side": "string",
+    "assist_side": "string",
+    "assist_gameplayer_id": "uint",
+    "assist_player_side": "string",
+    "goal_player_pid": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTINROOM",
+    "ERR_ROOMNOTFOUND",
+    "ERR_ROOMSTATNOTMATCH",
+    "ERR_MSGFORMAT"
+   ],
+   "followedBy": [
+    "CMD_ADD_FOUL",
+    "CMD_GET_GAMEADDPOINT",
+    "CMD_REQ_FORFEITEDGAME_REPLY",
+    "CMD_SEND_ABNORMALEND",
+    "CMD_SET_INJURYGAMEEND"
+   ],
+   "follows": [
+    "CMD_ADD_FOUL",
+    "CMD_GET_GAMEADDPOINT",
+    "CMD_REQ_FORFEITEDGAME_REPLY",
+    "CMD_SEND_ABNORMALEND",
+    "CMD_SEND_ML_GAMEPLAYERS",
+    "CMD_SET_GAMETEAM",
+    "CMD_SET_INJURYGAMEEND",
+    "CMD_UPDATE_ROOMSTATE",
+    "CMD_WATCH_ABNORMALEND",
+    "CMD_WATCH_FORFEITEDGAMEEND",
+    "CMD_WATCH_INJURYGAMEEND",
+    "CMD_WATCH_OWNGOALGAMEEND"
+   ],
+   "handledByServer": false
+  },
+  "CMD_APPLY_COMMU_MATCH": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "match_id": "uint",
+    "room_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_COMMUCOMPENOTEXIST",
+    "ERR_MATCHNOTEXIST",
+    "ERR_TARGETINGAME",
+    "ERR_PLAYERNOTINCOMPE",
+    "ERR_BUSY",
+    "ERR_COMMUMATCHREFUSED",
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_AUTH_GAMEID": {
+   "class": null,
+   "server": "ACCOUNT",
+   "family": "Account",
+   "request": {
+    "gameid": "string",
+    "gameid_password": "string",
+    "password_type": "string",
+    "gameid_url_num": "uint",
+    "gameid_url": "raw/object"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0050fac0": [
+     "loginid",
+     "loginid_password",
+     "aes_password"
+    ]
+   },
+   "errors": [
+    "ERR_AUTHGID_URL",
+    "ERR_AUTHGID_SSLEXPIRE",
+    "ERR_AUTHGID_AUTH",
+    "ERR_AUTHGID_SSLETC"
+   ],
+   "followedBy": [
+    "CMD_DISCONNECT",
+    "CMD_LOGIN"
+   ],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_AUTH_NPTICKET": {
+   "class": "SENDRECV",
+   "server": "ACCOUNT",
+   "family": "Account",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_GET_TICKETINFO",
+    "ERR_READ_PASSPHRASE",
+    "ERR_READ_CIPHERINFO",
+    "ERR_PREPARE_CIPHERINFO",
+    "ERR_INVALID_TICKET"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_BUY_ML_MARKET_GAMEPLAYER": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "gameplayer_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_INSUFFICIENT_FUNDS",
+    "ERR_TRADE_STOP",
+    "ERR_NOTFOUND",
+    "ERR_TEAM_MEMBER_FULL",
+    "ERR_ENABLE_BUY_NUM"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_CANCEL_COMMU_MATCH": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "match_id": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_COMMUCOMPENOTEXIST",
+    "ERR_PLAYERISNOTGAMER"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_CANCEL_DECIDE_QUICKMATCH": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Quick match / Legends",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005eb880": [
+     "try_info.",
+     "try_count",
+     "ping",
+     "ping_add",
+     "band_try_count",
+     "band",
+     "band_add",
+     "player_num",
+     "member[",
+     "pid",
+     "matching_order",
+     "name",
+     "is_owner",
+     "side",
+     "is_leader",
+     "is_begin",
+     "lang",
+     "division",
+     "rating",
+     "ml_point",
+     "ml_division",
+     "manner",
+     "frrate",
+     "country",
+     "area",
+     "player_name",
+     "ex_ip",
+     "ex_port",
+     "in_ip",
+     "in_port",
+     "det_ip",
+     "det_port",
+     "ping_result",
+     "fd_pic_url",
+     "fd_selfreport_level",
+     "fd_beginnermark",
+     "fd_position_want",
+     "fd_desired_position",
+     "has_guestplayer"
+    ]
+   },
+   "errors": [
+    "ERR_ROOMNOTFOUND"
+   ],
+   "followedBy": [
+    "CMD_LEAVE_ROOM"
+   ],
+   "follows": [
+    "CMD_SET_GAMEMEMBER",
+    "CMD_START_QUICKMATCH"
+   ],
+   "handledByServer": false
+  },
+  "CMD_CANCEL_LEGENDSROOMMATCHING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Quick match / Legends",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_MATCHPHASE",
+    "ERR_NOTFOUNDCLIENT"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_CANCEL_QUICK_GAMEBEGINNING_HOPE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Quick match / Legends",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_MATCHPHASE",
+    "ERR_NOTFOUNDCLIENT"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_CANCEL_STARTQUICKMATCH": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Quick match / Legends",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005eb880": [
+     "try_info.",
+     "try_count",
+     "ping",
+     "ping_add",
+     "band_try_count",
+     "band",
+     "band_add",
+     "player_num",
+     "member[",
+     "pid",
+     "matching_order",
+     "name",
+     "is_owner",
+     "side",
+     "is_leader",
+     "is_begin",
+     "lang",
+     "division",
+     "rating",
+     "ml_point",
+     "ml_division",
+     "manner",
+     "frrate",
+     "country",
+     "area",
+     "player_name",
+     "ex_ip",
+     "ex_port",
+     "in_ip",
+     "in_port",
+     "det_ip",
+     "det_port",
+     "ping_result",
+     "fd_pic_url",
+     "fd_selfreport_level",
+     "fd_beginnermark",
+     "fd_position_want",
+     "fd_desired_position",
+     "has_guestplayer"
+    ]
+   },
+   "errors": [
+    "ERR_MATCHPHASE",
+    "ERR_NOTFOUNDCLIENT"
+   ],
+   "followedBy": [],
+   "follows": [
+    "CMD_START_QUICKMATCH"
+   ],
+   "handledByServer": false
+  },
+  "CMD_CHANGE_GAMEPHASE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {
+    "phase": "string",
+    "is_sync_failed": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTINROOM",
+    "ERR_ROOMNOTFOUND",
+    "ERR_ROOMSTATNOTMATCH",
+    "ERR_NOTGAMEHOST"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_CHANGE_ROOMNAME": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Room",
+   "request": {
+    "name": "string",
+    "passwd": "string",
+    "legends_playstyle": "string",
+    "is_legends_vs_player": "string",
+    "team_name": "string",
+    "short_teamname": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTINROOM",
+    "ERR_NOTROOMOWNER",
+    "ERR_INVALIDARG",
+    "ERR_NGWORDINRNAME",
+    "ERR_ROOMNOTFOUND",
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_CHECK_STRING": {
+   "class": "SENDRECV",
+   "server": "ACCOUNT",
+   "family": "Account",
+   "request": {
+    "str": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_INVALIDLETTER"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_COMMON_SENDRECV": {
+   "class": null,
+   "server": "MENU",
+   "family": "Misc",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_CREATEJOIN_ROOM": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Room",
+   "request": {
+    "name": "string",
+    "match_type": "string",
+    "team_flag": "raw/object",
+    "lang": "string",
+    "max_players": "uint",
+    "is_invite_limit": "string",
+    "password": "string",
+    "enable_guest": "string",
+    "legends_playstyle": "string",
+    "is_legends_vs_player": "string",
+    "team_name": "string",
+    "short_teamname": "string"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"MENU\""
+    ],
+    "name": [
+     "\"Room marcos\""
+    ],
+    "match_type": [
+     "\"OC_RANKING\""
+    ],
+    "team_flag": [
+     "[\"YES\", \"YES\", \"NO\", ]"
+    ],
+    "lang": [
+     "\"EN\""
+    ],
+    "max_players": [
+     "2"
+    ],
+    "is_invite_limit": [
+     "\"NO\""
+    ],
+    "password": [
+     "\"\""
+    ],
+    "enable_guest": [
+     "\"YES\""
+    ],
+    "legends_playstyle": [
+     "\"EVERYONE\""
+    ],
+    "is_legends_vs_player": [
+     "\"NO\""
+    ],
+    "team_name": [
+     "\"\""
+    ],
+    "short_teamname": [
+     "\"\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {
+    "005e7460": [
+     "name",
+     "match_type",
+     "team_flag",
+     "is_invite_limit",
+     "team_name",
+     "short_teamname",
+     "is_legends_vs_player",
+     "lang",
+     "max_players",
+     "password",
+     "game_env",
+     "cpuLevel",
+     "gametime",
+     "injury",
+     "condition",
+     "ball_type",
+     "exGame",
+     "pkOnOff",
+     "substitution",
+     "limitTime"
+    ]
+   },
+   "errors": [
+    "ERR_INVALIDARG",
+    "ERR_ALREADYINROOM",
+    "ERR_NGWORDINRNAME",
+    "ERR_ROOMTOOMANY"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_CREATE_COMMU": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "commu_name": "string",
+    "commu_description": "string",
+    "password": "string",
+    "invite_only": "YES/NO",
+    "week": "raw/object",
+    "start_time": "uint",
+    "end_time": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NGWORD",
+    "ERR_TOOMANYCOMMU",
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_CREATE_COMMU_LEAGUE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "compe_name": "string",
+    "match_time": "enum 0x10",
+    "injury": "YES/NO",
+    "ball_type": "uint",
+    "home_and_away": "YES/NO",
+    "comment": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_NGWORD",
+    "ERR_COMMUCOMPEISFULL",
+    "ERR_DIFFDCVERSION",
+    "ERR_NOTJOINEDCOMMU"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_CREATE_COMPLG": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMPE_NOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_CREATE_ML_MYTEAM": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "team_name": "string",
+    "team_name_short": "string / uint",
+    "check_team_name": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_ALREADYEXISTS",
+    "ERR_LICENSE",
+    "ERR_NOTFOUND",
+    "ERR_NGWORD"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_CREATE_PLAYER": {
+   "class": "SENDRECV",
+   "server": "ACCOUNT",
+   "family": "Account",
+   "request": {
+    "svrtype": "string",
+    "name": "string"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"ACCOUNT\""
+    ],
+    "name": [
+     "\"marcos\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_ALREADYEXISTS",
+    "ERR_INVALIDLETTER",
+    "ERR_NGWORDINPNAME"
+   ],
+   "followedBy": [
+    "CMD_SET_LANGUAGE"
+   ],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_DECIDE_ML_MYTEAM_PLAYER": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_DELETE_ML_MARKET_CHECKLIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "gameplayer_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_DELETE_ML_MYTEAM": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_DEL_BLACKLIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {
+    "target_pid": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_DEL_COMMU": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMMUNOTEXIST",
+    "ERR_NOTCOMMUOWNER"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_DEL_COMMU_LEAGUEMEMBER": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "pid": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMMUNOTEXIST",
+    "ERR_NOTCOMMUOWNER",
+    "ERR_NOTENTRY"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_DEL_COMMU_MEMBER": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "commu_id": "int",
+    "pid": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMMUNOTEXIST",
+    "ERR_PLAYERNOTINCOMMU",
+    "ERR_NOTCOMMUOWNER"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_DEL_FRIEND": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {
+    "from_pid": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_DEL_FRIENDREQ": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {
+    "to_pid": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_DEL_PLAYER": {
+   "class": "SENDRECV",
+   "server": "ACCOUNT",
+   "family": "Account",
+   "request": {
+    "svrtype": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_NOPLAYER",
+    "ERR_DELINDAYS"
+   ],
+   "followedBy": [],
+   "follows": [
+    "CMD_LOGIN"
+   ],
+   "handledByServer": false
+  },
+  "CMD_DEL_SENDSHORTMAIL": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {
+    "smail_id": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_DEL_SHORTMAIL": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {
+    "smail_id": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_DISCONNECT": {
+   "class": null,
+   "server": "any",
+   "family": "Lobby / session",
+   "request": {
+    "svrtype": "string",
+    "logoutstat": "string"
+   },
+   "observedRequestSamples": {
+    "logoutstat": [
+     "\"MOV\"",
+     "\"FIN\""
+    ]
+   },
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [
+    "CMD_LOGIN",
+    "CMD_REG_SVRLIST"
+   ],
+   "follows": [
+    "CMD_AUTH_GAMEID",
+    "CMD_GET_INFORMATIONLIST"
+   ],
+   "handledByServer": true
+  },
+  "CMD_DOWNLOAD_AD": {
+   "class": null,
+   "server": "MENU",
+   "family": "Lobby / session",
+   "request": {
+    "uri": "string",
+    "filename": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_END_COMMU_LEAGUE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "compe_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMMUNOTEXIST",
+    "ERR_COMMUCOMPENOTEXIST",
+    "ERR_NOTCOMMUOWNER"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_ENTRY_COMMU_LEAGUECELL": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "cell_id": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_COMMUCOMPENOTEXIST",
+    "ERR_ENTRYISFULL",
+    "ERR_DATABASE",
+    "ERR_DIFFDCVERSION"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_ENTRY_GAME": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Room",
+   "request": {
+    "entry": "enum 0x01",
+    "side": "enum 0x19"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_GET_BLACKLIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {
+    "pid": "int"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"MENU\""
+    ],
+    "pid": [
+     "1"
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {
+    "00549460": [
+     "pid",
+     "name",
+     "manner",
+     "division",
+     "rating",
+     "status",
+     "lang",
+     "index",
+     "npid"
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_BLOCKLIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Lobby / session",
+   "request": {
+    "lang": "string"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"MENU\""
+    ],
+    "lang": [
+     "\"EN\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {
+    "00514350": [
+     "count",
+     "bklist[",
+     "player_num",
+     "max_player_num"
+    ],
+    "00514680": [
+     "count",
+     "bklist[",
+     "name",
+     "block_id",
+     "max_player_num",
+     "player_num"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_GET_COMMU_ASSISTRANKING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "compe_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_NOTJOINEDCOMMU",
+    "ERR_COMMUCOMPENOTEXIST",
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMMU_COMPERANKING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_NOTJOINEDCOMMU",
+    "ERR_COMMUCOMPENOTEXIST",
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMMU_COMPERESULT": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_NOTJOINEDCOMMU",
+    "ERR_COMMUCOMPENOTEXIST",
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMMU_GOALRANKING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "compe_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTJOINEDCOMMU",
+    "ERR_COMMUCOMPENOTEXIST",
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMMU_INFO": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "commu_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0054fe50": [
+     "commu_info",
+     "value",
+     "commu_id",
+     "member_count",
+     "logon_member_count",
+     "total_match_count",
+     "total_compe_count",
+     "update_date",
+     "start_time",
+     "end_time",
+     "commu_name",
+     "commu_description",
+     "invite_only",
+     "password",
+     "week"
+    ]
+   },
+   "errors": [
+    "ERR_COMMUNOTEXIST"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMMU_LEAGUEENTRYCELLINFO": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_COMMUCOMPENOTEXIST"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMMU_LEAGUELIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_NOTJOINEDCOMMU",
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMMU_MEMBERRANKING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_NOTJOINEDCOMMU",
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMMU_MEMBERSRESULTS": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "pid": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_NOTJOINEDCOMMU",
+    "ERR_PLAYERNOTINCOMMU",
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMMU_MEMBERSRESULTS_VS": {
+   "class": null,
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "commu_id": "int",
+    "base_pid": "int",
+    "oppo_pid": "int",
+    "uri": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_NOTJOINEDCOMMU",
+    "ERR_PLAYERNOTINCOMMU"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMMU_PASTLEAGUELIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMMU_PASTLEAGUERESULT": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "compe_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_COMMUCOMPENOTEXIST"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMMU_TEAM": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "cell_id": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_COMMUCOMPENOTEXIST"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMMU_TEAMLIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_NOTJOINEDCOMMU"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMMU_TEAMRANKING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_NOTJOINEDCOMMU"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMMU_TEAMRESULTS": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "team_id": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMMUNOTEXIST",
+    "ERR_PLAYERNOTINCOMMU",
+    "ERR_NOTJOINEDCOMMU"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMMU_TEAMRESULTS_VS": {
+   "class": null,
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "commu_id": "int",
+    "base_team_id": "uint",
+    "oppo_team_id": "uint",
+    "uri": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_NOTJOINEDCOMMU"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMPLG_ASSISTRANKING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {
+    "compe_id": "int",
+    "start_rank": "int",
+    "get_count": "int",
+    "get_pid": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00562760": [
+     "rank",
+     "team_id",
+     "pid",
+     "assist",
+     "npid",
+     "name"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMPE_NOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMPLG_COMMENDATION_DATA": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMPE_NOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMPLG_DIGESTLIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {
+    "digest_begin": "uint",
+    "digest_num": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMPLG_GOALRANKING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {
+    "compe_id": "int",
+    "start_rank": "int",
+    "get_count": "int",
+    "get_pid": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005620a0": [
+     "rank",
+     "team_id",
+     "pid",
+     "score",
+     "npid",
+     "name"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMPE_NOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMPLG_INFO": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {
+    "compe_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0055daf0": [
+     "compe_data",
+     "compe_kind",
+     "compe_id",
+     "entry_start_time",
+     "entry_end_time",
+     "match_start_time",
+     "match_end_time",
+     "compe_end_time",
+     "compe_name",
+     "status",
+     "category",
+     "entry_limit",
+     "entry_limit_rank",
+     "dlcver",
+     "player_capacity",
+     "player_num",
+     "champion_notice",
+     "use_national",
+     "use_club",
+     "use_ml",
+     "guest_count",
+     "useable_team_size",
+     "usable_ball_pre_num",
+     "usable_ball_playoff_num",
+     "usable_ball_final_num",
+     "gametime",
+     "is_coach_mode",
+     "fee",
+     "need_konamiid",
+     "is_digest",
+     "banner_file_name",
+     "useable_team_id",
+     "entry_limit_division",
+     "get_ball_id",
+     "get_spike_id",
+     "ad_file_name",
+     "usable_ball_pre_list",
+     "usable_ball_playoff_list",
+     "usable_ball_final_list"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMPE_NOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMPLG_KIND_LIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00565da0": [
+     "compe_kind_num",
+     "compe_kind_list",
+     "compe_kind",
+     "compe_name",
+     "banner_file_name"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMPLG_LIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {
+    "compe_list_kind": "string / enum 0x0d",
+    "compe_kind": "string",
+    "compe_mode": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0055cdb0": [
+     "compe_num",
+     "compe_list_kind",
+     "compe_list",
+     "compe_kind",
+     "compe_id",
+     "entry_start_time",
+     "entry_end_time",
+     "match_start_time",
+     "match_end_time",
+     "compe_end_time",
+     "compe_name",
+     "status",
+     "category",
+     "entry_limit",
+     "entry_limit_rank",
+     "dlcver",
+     "player_capacity",
+     "player_num",
+     "champion_notice",
+     "guest_count",
+     "is_coach_mode",
+     "need_konamiid",
+     "banner_file_name",
+     "entry_limit_division"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMPLG_MATCH_START_TIME": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMPLG_MYENTRY_COMPEID": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMPLG_MYRESULTS": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMPLG_PLAYOFF_MATCH": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMPE_STATUS",
+    "ERR_COMPE_NOT_PLAYOFF_ENTRY"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMPLG_PLAYOFF_PLAY_OK": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {
+    "has_guestplayer": "YES/NO"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMPE_NOTFOUND",
+    "ERR_COMPE_STATUS"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMPLG_PLAYOFF_RESULTS": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {
+    "compe_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMPE_NOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMPLG_PRE_RESULTS": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {
+    "compe_id": "int",
+    "start_rank": "int",
+    "get_count": "int",
+    "get_pid": "int",
+    "get_cl_pid": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00562e60": [
+     "date",
+     "rank",
+     "rank_by_team",
+     "team_id",
+     "pid",
+     "win_count",
+     "lose_count",
+     "draw_count",
+     "point",
+     "score",
+     "loss",
+     "scorediff",
+     "update_date",
+     "rating",
+     "ml_point",
+     "continuous_win",
+     "npid",
+     "is_qualifier",
+     "name"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMPE_NOTFOUND",
+    "ERR_TEAM_NOTFOUND",
+    "ERR_INDEX_OUTOFRANGE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMPLG_TEAMRANKING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {
+    "compe_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0055ec30": [
+     "rank_list_num",
+     "rank_list",
+     "team_id",
+     "user_num"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMPE_NOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMPLG_TEAM_DATA": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {
+    "pid": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_PLAYERNOTINCOMPE",
+    "ERR_COMPE_NOT_SELECT_TEAM"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMPLG_TITLEHOLDER": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {
+    "is_ml_compe": "YES/NO"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00561a10": [
+     "compe_name",
+     "trophy",
+     "name",
+     "team_id",
+     "pid",
+     "npid",
+     "cup_file_name"
+    ],
+    "006461b0": [
+     "titleholder_num",
+     "titleholder_list",
+     "compe_name"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_COMPLG_TOURNAMENT": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {
+    "compe_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMPE_NOTFOUND",
+    "ERR_COMPE_STATUS"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_DIVISIONUPDATE": {
+   "class": "SENDRECV",
+   "server": "ACCOUNT",
+   "family": "Account",
+   "request": {
+    "svrtype": "string",
+    "mypid": "int"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"ACCOUNT\""
+    ],
+    "mypid": [
+     "1"
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {
+    "00512700": [
+     "updated",
+     "div_result.",
+     "newdiv",
+     "newrank",
+     "olddiv",
+     "oldrank",
+     "date",
+     "rating",
+     "div01",
+     "div02",
+     "div3A",
+     "div3B",
+     "div_result.divcount[",
+     "div_result.rankflag["
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [
+    "CMD_GET_PRIVATEINFO"
+   ],
+   "handledByServer": false
+  },
+  "CMD_GET_FD_GAMERESULTS": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {
+    "pid": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00625e10": [
+     "rlist_num",
+     "rlist",
+     "date",
+     "ex_type",
+     "pk_flag",
+     "no_match",
+     "cpu_lv",
+     "score",
+     "ex1st",
+     "ex2nd",
+     "pk",
+     "team",
+     "team_name",
+     "player",
+     "name",
+     "manner",
+     "pid",
+     "has_guestplayer",
+     "division",
+     "rating",
+     "side"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_FRIENDLIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {
+    "target_pid": "int"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"MENU\""
+    ],
+    "target_pid": [
+     "1"
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {
+    "00549460": [
+     "pid",
+     "name",
+     "manner",
+     "division",
+     "rating",
+     "status",
+     "lang",
+     "index",
+     "npid"
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_FRIENDREQ": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_GAMEADDPOINT": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005405c0": [
+     "player_count",
+     "player_list[",
+     "pid",
+     "addpoint",
+     "point",
+     "rating",
+     "oldrating",
+     "vs_count",
+     "trophy.sccessive5",
+     "trophy.high_success",
+     "trophy.final_advancement",
+     "trophy.competition_victory",
+     "rating_compe",
+     "get_spike_id[",
+     "get_ball_id["
+    ]
+   },
+   "errors": [
+    "ERR_NOTINROOM",
+    "ERR_ROOMNOTFOUND",
+    "ERR_ROOMSTATNOTMATCH"
+   ],
+   "followedBy": [
+    "CMD_ADD_SCORE",
+    "CMD_REQ_FORFEITEDGAME_REPLY",
+    "CMD_SEND_ABNORMALEND",
+    "CMD_SET_GAMETEAM",
+    "CMD_SET_INJURYGAMEEND"
+   ],
+   "follows": [
+    "CMD_ADD_FOUL",
+    "CMD_ADD_SCORE",
+    "CMD_REQ_FORFEITEDGAME_REPLY",
+    "CMD_SEND_ABNORMALEND",
+    "CMD_SEND_ML_GAMEPLAYERS",
+    "CMD_SET_GAMETEAM",
+    "CMD_SET_INJURYGAMEEND",
+    "CMD_UPDATE_ROOMSTATE",
+    "CMD_WATCH_ABNORMALEND",
+    "CMD_WATCH_FORFEITEDGAMEEND",
+    "CMD_WATCH_INJURYGAMEEND",
+    "CMD_WATCH_OWNGOALGAMEEND"
+   ],
+   "handledByServer": false
+  },
+  "CMD_GET_GAMEPLAN": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {
+    "pid": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATANOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_GAMERESULTS": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {
+    "pid": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00623420": [
+     "rlist_num",
+     "rlist",
+     "date",
+     "mode",
+     "ex_type",
+     "pk_flag",
+     "no_match",
+     "score",
+     "ex1st",
+     "ex2nd",
+     "pk",
+     "team",
+     "player",
+     "name",
+     "manner",
+     "pid",
+     "has_guestplayer",
+     "division",
+     "rating",
+     "side"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_HTTP": {
+   "class": null,
+   "server": "GATE",
+   "family": "Gate",
+   "request": {
+    "uri": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [
+    "CMD_GET_SVRLIST"
+   ],
+   "handledByServer": true
+  },
+  "CMD_GET_INFORMATIONLIST": {
+   "class": "SENDRECV",
+   "server": "GATE",
+   "family": "Gate",
+   "request": {
+    "svrtype": "enum 0x43",
+    "lang": "string",
+    "region": "string"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"GATE\""
+    ],
+    "lang": [
+     "\"EN\""
+    ],
+    "region": [
+     "\"REGION_ALL\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [
+    "CMD_DISCONNECT"
+   ],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_GET_IPANDPORT": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Room",
+   "request": {
+    "pid": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0050f860": [
+     "ex_ip",
+     "ex_port",
+     "in_ip",
+     "in_port",
+     "pid"
+    ]
+   },
+   "errors": [],
+   "followedBy": [
+    "CMD_LEAVE_ROOM"
+   ],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_GET_JOINEDCOMMULIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0054e980": [
+     "commu_id",
+     "member_count",
+     "logon_member_count",
+     "total_match_count",
+     "total_legends_count",
+     "total_compe_count",
+     "update_date",
+     "start_time",
+     "end_time",
+     "commu_name",
+     "commu_description",
+     "invite_only",
+     "password",
+     "week"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_KONAMIID": {
+   "class": "SENDRECV",
+   "server": "ACCOUNT",
+   "family": "Account",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005fefd0": [
+     "konamiid"
+    ]
+   },
+   "errors": [
+    "ERR_NOTREGISTERED"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_LEGENDSROOMMATCHING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Quick match / Legends",
+   "request": {
+    "timeout": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_MATCHING_FAILED",
+    "ERR_MATCHING_TIMEOUT",
+    "ERR_MATCHING_CANCELED"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_LEGENDS_PLAYHISTORY": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Quick match / Legends",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_LEGENDS_RANKING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Quick match / Legends",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_NOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_LEGENDS_RANKING_BYID": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Quick match / Legends",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_NOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_LEGENDS_ROOMSETTING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Quick match / Legends",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_LOBBYLIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Lobby / session",
+   "request": {
+    "svrtype": "string",
+    "lobby_type": "string"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"MENU\""
+    ],
+    "lobby_type": [
+     "\"OC\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {
+    "005ef7c0": [
+     "lobby_list_num",
+     "lobby_list[",
+     "lobby_id",
+     "name",
+     "player_num"
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_GET_MATCHID": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005f9350": [
+     "match_id"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_COMPE_GAMEPLAYERLIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_COMPE_PRIZE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00632460": [
+     "prize",
+     "team_funds",
+     "compe_result",
+     "compe_name",
+     "my_pre_rank"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_DIVISION": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0064d800": [
+     "is_update",
+     "div_before",
+     "div_after"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_DIVISIONRANKING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "start_index": "int",
+    "team_division": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00651e20": [
+     "date",
+     "rank_up",
+     "rank_down",
+     "rank_list_num",
+     "total_rank_num",
+     "team_division",
+     "rank_list",
+     "pid",
+     "rank",
+     "base_team_id",
+     "match_rec",
+     "win_num",
+     "draw_num",
+     "lose_num",
+     "division_point",
+     "name",
+     "team_name"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_NOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_DIVISIONRANKING_BYID": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "target_pid": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_NOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_DIVISIONUPDATE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0064df40": [
+     "up_point",
+     "down_point",
+     "up_rank",
+     "down_rank",
+     "next_update_date",
+     "rank"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_EVENTLIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "pid": "int",
+    "lang": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00647f50": [
+     "event_num",
+     "event_list",
+     "event_date",
+     "event_type",
+     "TEAM_CREATE",
+     "TEAM_NAME",
+     "TEAM_RESET",
+     "DIVISION_UP",
+     "DIVISION_DOWN",
+     "BUY",
+     "SELL",
+     "COMPE",
+     "REGULAR",
+     "title",
+     "item_list",
+     "item_name",
+     "item_text"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_GAMEPLAN": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0056f880": [
+     "gameplan_data_size",
+     "gameplan_data",
+     "result",
+     "ERR_DATANOTFOUND"
+    ]
+   },
+   "errors": [
+    "ERR_DATANOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_GAMERESULTS": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_MARKET_CHECKLIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00609c10": [
+     "player_list_num",
+     "player_list",
+     "gameplayer_id",
+     "market_price",
+     "market_price_old",
+     "buy_price",
+     "market_price_max",
+     "market_price_min",
+     "uniform_number",
+     "overall",
+     "goal",
+     "assist",
+     "games",
+     "trade_rate",
+     "is_trade_stop",
+     "trade_stop_date",
+     "trade_stop_term",
+     "injury",
+     "part",
+     "symptom",
+     "level",
+     "level_no_self_conscious",
+     "mcount_left"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_MARKET_ENV": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_MARKET_GAINRANKING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00616be0": [
+     "rank_list_num",
+     "rank_list",
+     "gameplayer_id",
+     "market_price_this_week",
+     "market_price_last_week"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_MARKET_GAMEPLAYERPRICEHISTORY": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "gameplayer_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0060e030": [
+     "owner_num",
+     "price_history_num",
+     "price_history"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_MARKET_POPULARRANKING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "006179a0": [
+     "rank_list_num",
+     "rank_list",
+     "gameplayer_id",
+     "owner_num"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_MARKET_PRICERANKING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00615c50": [
+     "rank_list_num",
+     "rank_list",
+     "gameplayer_id",
+     "market_price"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_MATCHEXPENSE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0064fa70": [
+     "expense"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_MATCHINCOME_INFO": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0064f240": [
+     "fee",
+     "prize",
+     "income",
+     "yellowcard_cnt",
+     "redcard_cnt",
+     "purchase_cnt",
+     "team_funds"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_INVALIDARG",
+    "ERR_NOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_MATCHRECORD": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "pid": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00644f20": [
+     "match_record",
+     "win_num",
+     "lose_num",
+     "draw_num",
+     "consecutive_win",
+     "consecutive_win_record",
+     "avr_get_goal",
+     "avr_loss_goal"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_MYRANKING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0064d240": [
+     "teampower_rank",
+     "teampower_total_rank_num",
+     "teamfunds_rank",
+     "teamfunds_total_rank_num",
+     "date"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_NOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_MYTEAM": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0056e780": [
+     "result",
+     "ERR_NOTFOUND",
+     "team_funds",
+     "team_name",
+     "team_name_short",
+     "stadium_id",
+     "division",
+     "ML_DIVISION_1",
+     "ML_DIVISION_2",
+     "ML_DIVISION_3",
+     "ML_DIVISION_4",
+     "base_team_id",
+     "enable_buy_num",
+     "point",
+     "team_power",
+     "total_price_old",
+     "team_resource",
+     "team_status",
+     "CREATED"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_INVALIDARG",
+    "ERR_NOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_MYTEAM_EVENTLIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_INVALIDARG"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_MYTEAM_GAMEPLAYERLIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005702d0": [
+     "player_list_num",
+     "player_list",
+     "gameplayer_id",
+     "uniform_number",
+     "injury",
+     "part",
+     "symptom",
+     "level",
+     "level_no_self_conscious",
+     "mcount_left"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_MYTEAM_GAMEPLAYERLIST_OLD": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "pid": "int",
+    "history_type": "string",
+    "history_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_MYTEAM_HISTORY": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "pid": "int",
+    "type": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00645870": [
+     "myteam_history_num",
+     "myteam_history",
+     "history_id",
+     "division",
+     "team_resource",
+     "date"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_INVALIDARG"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_NEWS_LIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "lang": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00571160": [
+     "news_list_num",
+     "news_list",
+     "text",
+     "comment"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_RANKING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "start_index": "int",
+    "order": "string",
+    "rankall_kind": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00652a80": [
+     "date",
+     "rank_list_num",
+     "total_rank_num",
+     "rank_list",
+     "pid",
+     "rank",
+     "base_team_id",
+     "division",
+     "team_power",
+     "name",
+     "team_name"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_NOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_RANKING_BYID": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "rankall_kind": "string",
+    "pid": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "006533f0": [
+     "date",
+     "rank_list_num",
+     "total_rank_num",
+     "rank_list",
+     "pid",
+     "rank",
+     "base_team_id",
+     "division",
+     "team_resource",
+     "name",
+     "team_name"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_NOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_REGULAREVENTLIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "pid": "int",
+    "lang": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00648d20": [
+     "daily_event_num",
+     "weekly_event_num",
+     "monthly_event_num",
+     "daily_event_list",
+     "event_date",
+     "title",
+     "item_list",
+     "item_name",
+     "item_text",
+     "weekly_event_list",
+     "monthly_event_list"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_ML_TRADEHISTORY": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00611b10": [
+     "trade_history_num",
+     "trade_history",
+     "date",
+     "gameplayer_id",
+     "trade_type",
+     "gameplayer_sell_price",
+     "gameplayer_buy_price",
+     "SELL"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_PLAYERINFO": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Lobby / session",
+   "request": {
+    "pid": "int"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"MENU\""
+    ],
+    "pid": [
+     "1"
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {
+    "00572590": [
+     "xuid",
+     "name",
+     "match_num",
+     "win_num",
+     "lose_num",
+     "draw_num",
+     "contWin_num",
+     "contWinMax_num",
+     "disconnect_num",
+     "disconWin_num",
+     "disconLose_num",
+     "birthmonth",
+     "birthday",
+     "country",
+     "area",
+     "favoriteTeam",
+     "favoritePlayer",
+     "intro",
+     "kind",
+     "rating",
+     "manner",
+     "goal",
+     "lostGoal",
+     "rank",
+     "lang",
+     "enable_chat",
+     "teamLog[",
+     "total_combination",
+     "max_combination",
+     "dlcontent",
+     "patch_version",
+     "selfreport_level",
+     "automatch_want",
+     "beginnermark",
+     "position_want",
+     "desired_position[",
+     "top10_num",
+     "top100_num",
+     "FD_match_num",
+     "FD_goal",
+     "FD_assist",
+     "FD_top10_num",
+     "FD_top100_num",
+     "is_star",
+     "star_event_flag",
+     "team_name",
+     "base_team_id",
+     "team_power",
+     "team_resource",
+     "ml_division",
+     "ml_point",
+     "ml_win_num",
+     "ml_lose_num",
+     "ml_draw_num",
+     "ml_contWin_num",
+     "ml_contWinMax_num",
+     "ml_goal",
+     "ml_lostGoal",
+     "list_num",
+     "compe_list[",
+     "compe_name",
+     "compe_kind",
+     "cup_file_name",
+     "mode",
+     "prize_num",
+     "playoff_num",
+     "join_num"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_GET_PLAYERLIST": {
+   "class": "SENDRECV",
+   "server": "ACCOUNT",
+   "family": "Account",
+   "request": {
+    "svrtype": "string"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"ACCOUNT\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {
+    "0050f550": [
+     "player_count"
+    ],
+    "00511b90": [
+     "player_count",
+     "player_data",
+     "pid",
+     "date",
+     "point",
+     "name",
+     "match_num",
+     "division",
+     "rating"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [
+    "CMD_GET_PRIVATEINFO",
+    "CMD_SET_LANGUAGE"
+   ],
+   "follows": [
+    "CMD_LOGIN"
+   ],
+   "handledByServer": true
+  },
+  "CMD_GET_PLAYERNUMBERS": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Ranking / search / stats",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005db480": [
+     "network_player_num",
+     "compe_player_num",
+     "commu_player_num",
+     "legends_player_num"
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_PRIVATEINFO": {
+   "class": "SENDRECV",
+   "server": "ACCOUNT",
+   "family": "Account",
+   "request": {
+    "svrtype": "string",
+    "pid": "int"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"ACCOUNT\""
+    ],
+    "pid": [
+     "1"
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {
+    "00513000": [
+     "count",
+     "privInfo[",
+     "reldate",
+     "iid",
+     "title",
+     "info",
+     "important"
+    ]
+   },
+   "errors": [],
+   "followedBy": [
+    "CMD_GET_DIVISIONUPDATE"
+   ],
+   "follows": [
+    "CMD_GET_PLAYERLIST"
+   ],
+   "handledByServer": true
+  },
+  "CMD_GET_QUICKMATCHNUMBERS": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Quick match / Legends",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005dad00": [
+     "rank_1vs1_num",
+     "rank_2vs2_num",
+     "free_2vs2_num"
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_QUICKMATCHOPTION": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Quick match / Legends",
+   "request": {},
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"MENU\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {
+    "00600200": [
+     "opp_lang",
+     "oc_is_rating_rank",
+     "oc_is_rating_free",
+     "ml_is_division",
+     "CMD_GET_QUICKMATCHOPTION"
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_RANKING": {
+   "class": null,
+   "server": "MENU",
+   "family": "Ranking / search / stats",
+   "request": {
+    "uri": "string",
+    "data": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005f15f0": [
+     "ranking_data"
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_SENDSHORTMAIL": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {
+    "smail_id": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005e7f50": [
+     "to_pid",
+     "to_name",
+     "date",
+     "mes_subject",
+     "mes_body"
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_SENDSHORTMAILLIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005f45a0": [
+     "smail_num",
+     "smlist[",
+     "smail_id",
+     "to_pid",
+     "to_name",
+     "date",
+     "mes_subject"
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_SHORTMAIL": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {
+    "smail_id": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005e87e0": [
+     "from_pid",
+     "from_name",
+     "mail_type",
+     "reply_enable",
+     "date",
+     "mes_subject",
+     "mes_body"
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_SHORTMAILLIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005f4e10": [
+     "smail_num",
+     "smlist[",
+     "smail_id",
+     "from_pid",
+     "from_name",
+     "mail_type",
+     "reply_enable",
+     "read_flag",
+     "date",
+     "mes_subject"
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_GET_SVRLIST": {
+   "class": "SENDRECV",
+   "server": "GATE",
+   "family": "Gate",
+   "request": {
+    "timeout": "uint",
+    "svrtype": "string",
+    "lang": "string"
+   },
+   "observedRequestSamples": {
+    "timeout": [
+     "20",
+     "5"
+    ],
+    "svrtype": [
+     "\"GATE\""
+    ],
+    "lang": [
+     "\"EN\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {
+    "005104f0": [
+     "server_num",
+     "svrlist",
+     "svrtype",
+     "svrport",
+     "svraddr",
+     "max_player_num",
+     "player_num",
+     "svrgid"
+    ],
+    "0056cfd0": [
+     "server_num",
+     "svrlist[",
+     "svrtype",
+     "svrport",
+     "svraddr",
+     "max_player_num",
+     "player_num",
+     "svrgid",
+     "userCount",
+     "MENU",
+     "ACCOUNT",
+     "VDPCHAT"
+    ]
+   },
+   "errors": [],
+   "followedBy": [
+    "CMD_GET_HTTP",
+    "CMD_GET_SVRVERSION"
+   ],
+   "follows": [
+    "CMD_REG_SVRLIST"
+   ],
+   "handledByServer": true
+  },
+  "CMD_GET_SVRTIME": {
+   "class": "SENDRECV",
+   "server": "GATE",
+   "family": "Gate",
+   "request": {
+    "svrtype": "string"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"GATE\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {
+    "0050f610": [
+     "date"
+    ]
+   },
+   "errors": [],
+   "followedBy": [
+    "CMD_GET_URLLIST"
+   ],
+   "follows": [
+    "CMD_GET_SVRVERSION"
+   ],
+   "handledByServer": true
+  },
+  "CMD_GET_SVRVERSION": {
+   "class": "SENDRECV",
+   "server": "GATE",
+   "family": "Gate",
+   "request": {
+    "svrtype": "string"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"GATE\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {
+    "005102c0": [
+     "version",
+     "patch_version",
+     "dlc_version",
+     "eula_version"
+    ]
+   },
+   "errors": [],
+   "followedBy": [
+    "CMD_GET_SVRTIME"
+   ],
+   "follows": [
+    "CMD_GET_SVRLIST"
+   ],
+   "handledByServer": true
+  },
+  "CMD_GET_URLLIST": {
+   "class": "SENDRECV",
+   "server": "GATE",
+   "family": "Gate",
+   "request": {
+    "svrtype": "string",
+    "lang": "string",
+    "region": "string"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"GATE\""
+    ],
+    "lang": [
+     "\"EN\""
+    ],
+    "region": [
+     "\"REGION_ALL\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {
+    "00513de0": [
+     "url_num",
+     "ulist[",
+     "type",
+     "url",
+     "version",
+     "file_size",
+     "md5"
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [
+    "CMD_GET_SVRTIME"
+   ],
+   "handledByServer": true
+  },
+  "CMD_GET_WEEKLYRANKINGDATELIST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Ranking / search / stats",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_WEEKLYRANKINGNOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_JOIN_BLOCK": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Lobby / session",
+   "request": {
+    "block_id": "uint"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"MENU\""
+    ],
+    "block_id": [
+     "0"
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {},
+   "errors": [
+    "ERR_BLOCKNOTEXIST",
+    "ERR_BLOCKISFULL",
+    "ERR_DIVISIONREFUSED"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_JOIN_COMMU": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "commu_id": "int",
+    "password": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_PASSWDINCORRECT",
+    "ERR_DATABASE",
+    "ERR_COMMUNITYISFULL",
+    "ERR_ALREADYINCOMMU",
+    "ERR_TOOMANYCOMMU"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_JOIN_COMMU_LEAGUE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "compe_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_COMMUCOMPENOTEXIST",
+    "ERR_DATABASE",
+    "ERR_DIFFDCVERSION"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_JOIN_COMPLG": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {
+    "compe_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMPE_JOIN_OTHERCOMPE",
+    "ERR_COMPE_BEFORE_ENTRYTIME",
+    "ERR_COMPE_AFTER_ENTRYTIME",
+    "ERR_COMPE_FULL",
+    "ERR_DIFFDCVERSION",
+    "ERR_COMPE_JOIN_DIVISION",
+    "ERR_COMPE_JOIN_RANKING",
+    "ERR_COMPE_FUNDSHORTAGE",
+    "ERR_COMPE_PLAYERSHORTAGE",
+    "ERR_NOTREGISTERED"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_JOIN_LOBBY": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Lobby / session",
+   "request": {
+    "lobby_id": "int"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"MENU\""
+    ],
+    "lobby_id": [
+     "1"
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {},
+   "errors": [
+    "ERR_LOBBYUSERMAX"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_JOIN_ROOM": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Room",
+   "request": {
+    "room_id": "int",
+    "is_invited": "YES/NO",
+    "password": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005e7460": [
+     "name",
+     "match_type",
+     "team_flag",
+     "is_invite_limit",
+     "team_name",
+     "short_teamname",
+     "is_legends_vs_player",
+     "lang",
+     "max_players",
+     "password",
+     "game_env",
+     "cpuLevel",
+     "gametime",
+     "injury",
+     "condition",
+     "ball_type",
+     "exGame",
+     "pkOnOff",
+     "substitution",
+     "limitTime"
+    ],
+    "0050f860": [
+     "ex_ip",
+     "ex_port",
+     "in_ip",
+     "in_port",
+     "pid"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_ROOMNOTFOUND",
+    "ERR_INVALIDARG",
+    "ERR_ALREADYINROOM",
+    "ERR_TOOMANYMEMBERS",
+    "ERR_PASSWDINCORRECT",
+    "ERR_DIFFDCVERSION",
+    "ERR_ROOMISFULL",
+    "ERR_ROOMSTATNOTMATCH"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_KICK_ROOMMEMBER": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Room",
+   "request": {
+    "target_pid": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTINROOM",
+    "ERR_NOTROOMOWNER",
+    "ERR_ROOMSTATNOTMATCH",
+    "ERR_TARGETPLAYERNOTEXIST",
+    "ERR_PLAYERISONESELF"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_LEAVE_COMMU_LEAGUE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_PLAYERNOTINCOMPE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_LEAVE_COMPLG": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMPE_NOTENTRY"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_LEAVE_LOBBY": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Lobby / session",
+   "request": {},
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"MENU\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_LEAVE_ROOM": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Room",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [
+    "CMD_CANCEL_DECIDE_QUICKMATCH",
+    "CMD_GET_IPANDPORT",
+    "CMD_SET_GUEST",
+    "CMD_START_QUICKMATCH"
+   ],
+   "handledByServer": true
+  },
+  "CMD_LOGIN": {
+   "class": null,
+   "server": "ACCOUNT",
+   "family": "Account",
+   "request": {
+    "svrtype": "string",
+    "platform": "string",
+    "style": "string",
+    "loginid": "string",
+    "loginid_password": "string",
+    "use_regcode": "YES/NO",
+    "regcode": "string",
+    "patchver": "string",
+    "dlcver": "string",
+    "parahash": "string",
+    "entryhash": "string",
+    "dont_check_heartbeat": "YES/NO"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTGETCCODE",
+    "ERR_PARAMCHECK_FAILED",
+    "ERR_INVALID_ACCOUNT",
+    "ERR_DIFFERENT_PATCHVERSION",
+    "ERR_DEFCLIENTVER",
+    "ERR_DATABASE",
+    "ERR_LOGIN_FAILED",
+    "ERR_ALREADYLOGGEDIN",
+    "ERR_REGCODENOTISSUED",
+    "ERR_REGCODE_FAILED",
+    "ERR_SERVERNOTREADY",
+    "ERR_REGCODEDIFLASTTIME"
+   ],
+   "followedBy": [
+    "CMD_DEL_PLAYER",
+    "CMD_GET_PLAYERLIST",
+    "CMD_SET_CURRENTPLAYER"
+   ],
+   "follows": [
+    "CMD_AUTH_GAMEID",
+    "CMD_DISCONNECT"
+   ],
+   "handledByServer": true
+  },
+  "CMD_QUIT_COMPLG": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMPE_NOTENTRY"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_REC_STATISTIC": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Misc",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_REG_SVRLIST": {
+   "class": null,
+   "server": "GATE",
+   "family": "Gate",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0056cfd0": [
+     "server_num",
+     "svrlist[",
+     "svrtype",
+     "svrport",
+     "svraddr",
+     "max_player_num",
+     "player_num",
+     "svrgid",
+     "userCount",
+     "MENU",
+     "ACCOUNT",
+     "VDPCHAT"
+    ]
+   },
+   "errors": [],
+   "followedBy": [
+    "CMD_GET_SVRLIST"
+   ],
+   "follows": [
+    "CMD_DISCONNECT"
+   ],
+   "handledByServer": true
+  },
+  "CMD_REPLY_COMMU_MATCH": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "match_id": "uint",
+    "reply": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_COMMUCOMPENOTEXIST",
+    "ERR_MATCHNOTEXIST",
+    "ERR_COMMUMATCHCANCELED"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_REPLY_FRIENDREQ": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {
+    "from_pid": "uint",
+    "answer": "YES/NO"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_REQWATCHL_BLOCKPLAYERLIST": {
+   "class": "REQWATCHL",
+   "server": "MENU",
+   "family": "Lobby / session",
+   "request": {},
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"MENU\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ],
+    "listnum_name": [
+     "\"blockplayer_list_num\""
+    ],
+    "list_name": [
+     "\"blockplayer_list\""
+    ],
+    "listid_name": [
+     "\"pid\""
+    ],
+    "list_max": [
+     "100"
+    ]
+   },
+   "responseParsers": {
+    "00514a80": [
+     "blockplayer_list_num",
+     "blockplayer_list[",
+     "pid",
+     "name",
+     "division",
+     "room_id",
+     "point",
+     "rating",
+     "mcount",
+     "win",
+     "lose",
+     "draw",
+     "kind",
+     "lang",
+     "npid",
+     "xuid",
+     "x36_ina",
+     "x36_ina_online",
+     "x36_port_online",
+     "x36_enet",
+     "x36_online",
+     "manner",
+     "selfreport_level",
+     "beginnermark",
+     "position_want",
+     "desired_position",
+     "player_name"
+    ]
+   },
+   "errors": [
+    "ERR_NOBLOCKBELONG"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_REQWATCHL_COMMU_COMPEMEMBERLIST": {
+   "class": "REQWATCHL",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "compe_id": "int",
+    "commu_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_COMMUCOMPENOTEXIST"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_REQWATCHL_COMMU_MATCHLIST": {
+   "class": "REQWATCHL",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "compe_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_COMMUCOMPENOTEXIST",
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_REQWATCHL_COMMU_MEMBERLIST": {
+   "class": "REQWATCHL",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "commu_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_COMMUCOMPENOTEXIST"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_REQWATCHL_COMMU_PLAYABLEMATCHLIST": {
+   "class": "REQWATCHL",
+   "server": "MENU",
+   "family": "Community",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_MATCHNOTEXIST",
+    "ERR_COMMUNOTENTRY"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_REQWATCHL_COMPLG_MATCHLIST": {
+   "class": "REQWATCHL",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_REQWATCHL_ROOMLIST": {
+   "class": "REQWATCHL",
+   "server": "MENU",
+   "family": "Room",
+   "request": {},
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"MENU\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ],
+    "listnum_name": [
+     "\"room_list_num\""
+    ],
+    "list_name": [
+     "\"room_list\""
+    ],
+    "listid_name": [
+     "\"room_id\""
+    ],
+    "list_max": [
+     "100"
+    ]
+   },
+   "responseParsers": {
+    "00515770": [
+     "room_list_num",
+     "room_list[",
+     "match_type",
+     "room_id",
+     "status",
+     "game_phase",
+     "name",
+     "cpuLevel",
+     "gametime",
+     "injury",
+     "condition",
+     "ball_type",
+     "exGame",
+     "pkOnOff",
+     "substitution",
+     "limitTime",
+     "team",
+     "score",
+     "score_1st",
+     "score_2nd",
+     "score_ex1st",
+     "score_ex2nd",
+     "score_pk",
+     "is_nogame",
+     "is_passwd",
+     "max_players",
+     "team_flag",
+     "is_invite_limit",
+     "team_name",
+     "short_teamname",
+     "is_legends_vs_player",
+     "total_combination",
+     "max_combination",
+     "dlcontent",
+     "gamer_num",
+     "enable_guest",
+     "gamer[",
+     "pid",
+     "is_room_owner",
+     "side",
+     "is_watcher",
+     "mpid",
+     "guest_mpid",
+     "enter_no",
+     "game_no"
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_REQWATCHL_ROOMPLAYERLIST": {
+   "class": "REQWATCHL",
+   "server": "MENU",
+   "family": "Room",
+   "request": {
+    "room_id": "int"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"MENU\""
+    ],
+    "room_id": [
+     "1"
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ],
+    "listnum_name": [
+     "\"roomplayer_list_num\""
+    ],
+    "list_name": [
+     "\"roomplayer_list\""
+    ],
+    "listid_name": [
+     "\"pid\""
+    ],
+    "list_max": [
+     "8"
+    ]
+   },
+   "responseParsers": {
+    "006407f0": [
+     "roomplayer_list_num",
+     "roomplayer_list[",
+     "pid",
+     "room_player_id",
+     "room_entry_no",
+     "game_entry_no",
+     "desiredPosition[",
+     "gameplayer_name"
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_REQWATCH_COMPLG_PLAYERNUM": {
+   "class": "REQWATCH",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMPE_NOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_REQWATCH_ML_MARKET_PRICE": {
+   "class": "REQWATCH",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "gameplayer_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTFOUND",
+    "ERR_COMPE_ENTRY"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_REQWATCH_NETWORK_PLAYERNUM": {
+   "class": "REQWATCH",
+   "server": "MENU",
+   "family": "Misc",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_REQWATCH_QUICK_PLAYERNUM": {
+   "class": "REQWATCH",
+   "server": "MENU",
+   "family": "Quick match / Legends",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_REQ_FORFEITEDGAME_REPLY": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [
+    "CMD_ADD_SCORE",
+    "CMD_GET_GAMEADDPOINT",
+    "CMD_SEND_ABNORMALEND",
+    "CMD_SET_GAMETEAM",
+    "CMD_SET_INJURYGAMEEND"
+   ],
+   "follows": [
+    "CMD_ADD_FOUL",
+    "CMD_ADD_SCORE",
+    "CMD_GET_GAMEADDPOINT",
+    "CMD_SEND_ABNORMALEND",
+    "CMD_SEND_ML_GAMEPLAYERS",
+    "CMD_SET_GAMETEAM",
+    "CMD_SET_INJURYGAMEEND",
+    "CMD_UPDATE_ROOMSTATE",
+    "CMD_WATCH_ABNORMALEND",
+    "CMD_WATCH_FORFEITEDGAMEEND",
+    "CMD_WATCH_INJURYGAMEEND",
+    "CMD_WATCH_OWNGOALGAMEEND"
+   ],
+   "handledByServer": false
+  },
+  "CMD_RESET_CURRENT_COMMU": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_PLAYERNOTINCOMMU",
+    "ERR_COMMUNOTEXIST",
+    "ERR_NOTJOINEDCOMMU"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_RESET_ML_MYTEAM": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_FORBIDDEN"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_RETRY_AUTOMATCH": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Misc",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEARCH_COMMU": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "keyword": "string",
+    "target": "enum 0x47",
+    "lang": "string",
+    "has_friends": "YES/NO",
+    "target_pid": "int",
+    "week": "raw/object",
+    "active_time": "enum 0x00",
+    "index": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0054e980": [
+     "commu_id",
+     "member_count",
+     "logon_member_count",
+     "total_match_count",
+     "total_legends_count",
+     "total_compe_count",
+     "update_date",
+     "start_time",
+     "end_time",
+     "commu_name",
+     "commu_description",
+     "invite_only",
+     "password",
+     "week"
+    ]
+   },
+   "errors": [
+    "ERR_TOOMANYLIST",
+    "ERR_INVALIDARG",
+    "ERR_NOPLAYER"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEARCH_COMMU_BYRANKING": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "ranking_kind": "enum 0x42"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_TOOMANYLIST",
+    "ERR_INVALIDARG",
+    "ERR_NOPLAYER"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEARCH_ML": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "lang": "string",
+    "sort": "string",
+    "order": "string",
+    "start_index": "int",
+    "name": "string",
+    "position": "enum 0x31",
+    "height": "enum 0x31",
+    "age": "enum 0x31",
+    "stronger_foot": "string",
+    "overall": "enum 0x31",
+    "market_price": "enum 0x31"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0060e380": [
+     "gameplayer_list_num",
+     "gameplayer_list",
+     "gameplayer_id",
+     "market_price",
+     "market_price_old",
+     "market_price_max",
+     "market_price_min",
+     "overall",
+     "trade_rate",
+     "is_trade_stop",
+     "trade_stop_date",
+     "trade_stop_term",
+     "total_gameplayer_num"
+    ]
+   },
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_INVALIDARG"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEARCH_ML_ALL": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "lang": "string",
+    "sort": "string",
+    "order": "string",
+    "start_index": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_INVALIDARG"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEARCH_ML_LEAGUE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "lang": "string",
+    "sort": "string",
+    "order": "string",
+    "start_index": "int",
+    "team_id": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_INVALIDARG"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEARCH_ML_NATIONAL": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "lang": "string",
+    "sort": "string",
+    "order": "string",
+    "start_index": "int",
+    "national": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_INVALIDARG"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEARCH_PLAYER": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Ranking / search / stats",
+   "request": {
+    "option": "string",
+    "pname": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_TOOMANYRECORDS"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SELL_ML_MARKET_GAMEPLAYER": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "gameplayer_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_TRADE_STOP",
+    "ERR_TEAM_MEMBER_LACK"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEND_ABNORMALEND": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {
+    "is_sync_failed": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTINROOM",
+    "ERR_ROOMNOTFOUND"
+   ],
+   "followedBy": [
+    "CMD_ADD_FOUL",
+    "CMD_ADD_SCORE",
+    "CMD_GET_GAMEADDPOINT",
+    "CMD_REQ_FORFEITEDGAME_REPLY",
+    "CMD_SET_INJURYGAMEEND"
+   ],
+   "follows": [
+    "CMD_ADD_FOUL",
+    "CMD_ADD_SCORE",
+    "CMD_GET_GAMEADDPOINT",
+    "CMD_REQ_FORFEITEDGAME_REPLY",
+    "CMD_SEND_ML_GAMEPLAYERS",
+    "CMD_SET_GAMETEAM",
+    "CMD_SET_INJURYGAMEEND",
+    "CMD_UPDATE_ROOMSTATE",
+    "CMD_WATCH_ABNORMALEND",
+    "CMD_WATCH_FORFEITEDGAMEEND",
+    "CMD_WATCH_INJURYGAMEEND",
+    "CMD_WATCH_OWNGOALGAMEEND"
+   ],
+   "handledByServer": false
+  },
+  "CMD_SEND_ALIVE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Room",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005e4080": [
+     "entry_count",
+     "entrygame["
+    ]
+   },
+   "errors": [
+    "ERR_NOTINROOM"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEND_CPUKIND": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEND_DISCON_PLAYER": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTINROOM",
+    "ERR_ROOMNOTFOUND",
+    "ERR_NOTFOUNDCLIENT"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEND_DISCON_SETPLAYER": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Misc",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTINROOM",
+    "ERR_ROOMNOTFOUND",
+    "ERR_NOTFOUNDCLIENT",
+    "ERR_NOTGAMEHOST"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEND_FRIENDREQ": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {
+    "to_pid": "int",
+    "mes_body": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_INFRIENDLIST",
+    "ERR_FRIENDCOUNTFULL",
+    "ERR_INBLACKLIST",
+    "ERR_FRIEND_PERMISSION_WAITING_STATE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEND_HEARTBEAT": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Lobby / session",
+   "request": {},
+   "observedRequestSamples": {
+    "result": [
+     "\"NOERR\""
+    ]
+   },
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_SEND_IPANDPORT": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Room",
+   "request": {},
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"MENU\""
+    ],
+    "ex_ip": [
+     "\"186.123.216.200\""
+    ],
+    "ex_port": [
+     "29602"
+    ],
+    "in_ip": [
+     "\"192.168.100.7\""
+    ],
+    "in_port": [
+     "25110"
+    ],
+    "nat": [
+     "\"FULL_CONE_NAT\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [
+    "CMD_SET_CURRENTPLAYER"
+   ],
+   "handledByServer": false
+  },
+  "CMD_SEND_ML_GAMEPLAYERS": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "gameplayer_id_list_num": "int",
+    "gameplayer_id_list": "raw/object"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [
+    "CMD_ADD_SCORE",
+    "CMD_GET_GAMEADDPOINT",
+    "CMD_REQ_FORFEITEDGAME_REPLY",
+    "CMD_SEND_ABNORMALEND",
+    "CMD_SET_INJURYGAMEEND"
+   ],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEND_NOTICE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Lobby / session",
+   "request": {
+    "pid_list_num": "int",
+    "data": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEND_OFFEROWNER": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Misc",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEND_P2PFAILED": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Room",
+   "request": {
+    "p2p_player_num": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_NOTINROOM",
+    "ERR_ROOMNOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEND_P2PSTATUS": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Room",
+   "request": {
+    "p2p_player_num": "int",
+    "p2p_event": "string"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"MENU\""
+    ],
+    "p2p_player_num": [
+     "1"
+    ],
+    "p2p_status": [
+     "["
+    ],
+    "pid": [
+     "1"
+    ],
+    "mpid": [
+     "1"
+    ],
+    "guest_mpid": [
+     "0"
+    ],
+    "p2p_event": [
+     "\"JOIN\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_NOTINROOM",
+    "ERR_ROOMNOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEND_PCSPEC": {
+   "class": null,
+   "server": "GATE",
+   "family": "Gate",
+   "request": {
+    "uri": "string",
+    "pcspec": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEND_QUICK_GAMEBEGINNING_HOPE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Quick match / Legends",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_MATCHPHASE",
+    "ERR_NOTFOUNDCLIENT"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEND_ROOMP2PDATA": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Room",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEND_ROOMP2PDATABYPID": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Room",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEND_SHORTMAIL": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {
+    "to_pid": "int",
+    "to_npid": "uint",
+    "mes_subject": "string",
+    "mes_body": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTFOUNDCLIENT"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SEND_TEXTCHAT": {
+   "class": "SENDRECV",
+   "server": "VDPCHAT",
+   "family": "Misc",
+   "request": {
+    "channel": "string",
+    "statement": "string",
+    "list_flg": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00510a20": [
+     "from_pid",
+     "channel",
+     "name",
+     "statement"
+    ]
+   },
+   "errors": [
+    "ERR_CHATENABLE",
+    "ERR_ISNOTGM",
+    "ERR_TARGETINGAME",
+    "ERR_TARGETISNOTLOGIN",
+    "ERR_ROOMNOTFOUND",
+    "ERR_ROOMSTATNOTMATCH",
+    "ERR_PLAYERISNOTGAMER"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_SET_CHATENABLE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Misc",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_COMMU_MATCHINFO": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "possession_average_h": "uint",
+    "shot_h": "uint",
+    "suffer_shot_h": "uint",
+    "possession_average_a": "uint",
+    "shot_a": "uint",
+    "suffer_shot_a": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_NOTJOINEDCOMMU",
+    "ERR_PLAYERNOTINCOMMU",
+    "ERR_ROOMSTATNOTMATCH",
+    "ERR_DATABASE",
+    "ERR_INVALIDARG"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_COMMU_OPTION": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "commu_name": "string",
+    "commu_description": "string",
+    "password": "string",
+    "invite_only": "YES/NO",
+    "week": "raw/object",
+    "start_time": "uint",
+    "end_time": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_NOTCOMMUOWNER",
+    "ERR_NGWORD"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_COMMU_TEAM": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUNOTEXIST",
+    "ERR_COMMUCOMPENOTEXIST"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_COMPLG_TEAM": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMPE_NOTFOUND",
+    "ERR_COMPE_NOTENTRY"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_CURRENTPLAYER": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Lobby / session",
+   "request": {
+    "svrtype": "string",
+    "lang": "string",
+    "frame_rate": "string",
+    "pcspec": "string",
+    "region": "string",
+    "name": "string"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"MENU\""
+    ],
+    "lang": [
+     "\"EN\""
+    ],
+    "frame_rate": [
+     "\"FRAME_60\""
+    ],
+    "pcspec": [
+     "\"HIGH\""
+    ],
+    "region": [
+     "\"REGION_ALL\""
+    ],
+    "name": [
+     "\"marcos\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {
+    "00513610": [
+     "useable_team_size",
+     "useable_team_id[",
+     "mailcount",
+     "newmail",
+     "chat_probi",
+     "camera_probi",
+     "voice_probi",
+     "band_probi",
+     "green_ping",
+     "green_band",
+     "green_loss",
+     "yellow_ping",
+     "yellow_band",
+     "yellow_loss",
+     "red_ping",
+     "red_band",
+     "red_loss",
+     "green_delay",
+     "yellow_delay",
+     "red_delay",
+     "p2ptimeout",
+     "first_login",
+     "lossframe_match",
+     "avg_max_combination",
+     "avg_total_combination",
+     "invite_num",
+     "check_lobbygame_ping_diff",
+     "check_game_ping_max",
+     "mcount10flg",
+     "delay_frame_2players",
+     "delay_frame_4players",
+     "max_input_delay_frames",
+     "proto_opt"
+    ]
+   },
+   "errors": [
+    "ERR_REFUSED",
+    "ERR_DATABASE",
+    "ERR_NOPLAYER"
+   ],
+   "followedBy": [
+    "CMD_SEND_IPANDPORT"
+   ],
+   "follows": [
+    "CMD_LOGIN"
+   ],
+   "handledByServer": true
+  },
+  "CMD_SET_CURRENT_COMMU": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "commu_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMMUNOTEXIST",
+    "ERR_NOTJOINEDCOMMU"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_FDPROFILE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Lobby / session",
+   "request": {
+    "player_name": "string",
+    "selfreport_level": "string",
+    "automatch_want": "string",
+    "beginnermark": "string",
+    "position_want": "string",
+    "desired_position": "raw/object",
+    "star_event_flag": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_FORFEITEDGAMEEND": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTINROOM",
+    "ERR_ROOMNOTFOUND",
+    "ERR_REFUSED",
+    "ERR_ROOMSTATNOTMATCH"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_GAMEENV": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Room",
+   "request": {},
+   "observedRequestSamples": {
+    "game_env": [
+     "{"
+    ],
+    "cpuLevel": [
+     "\"NORMAL\""
+    ],
+    "gametime": [
+     "\"10MINUTES\""
+    ],
+    "injury": [
+     "\"NO\""
+    ],
+    "condition": [
+     "\"RANDOM\""
+    ],
+    "ball_type": [
+     "8"
+    ],
+    "exGame": [
+     "\"YES\""
+    ],
+    "pkOnOff": [
+     "\"YES\""
+    ],
+    "substitution": [
+     "3"
+    ],
+    "limitTime": [
+     "\"MIDDLE\""
+    ],
+    "svrtype": [
+     "\"MENU\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTINROOM",
+    "ERR_ROOMNOTFOUND",
+    "ERR_NORFOUNDCLIENT",
+    "ERR_ROOMSTATNOTMATCH",
+    "ERR_NOTGAMEHOST"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_SET_GAMEMEMBER": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Room",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005eb880": [
+     "try_info.",
+     "try_count",
+     "ping",
+     "ping_add",
+     "band_try_count",
+     "band",
+     "band_add",
+     "player_num",
+     "member[",
+     "pid",
+     "matching_order",
+     "name",
+     "is_owner",
+     "side",
+     "is_leader",
+     "is_begin",
+     "lang",
+     "division",
+     "rating",
+     "ml_point",
+     "ml_division",
+     "manner",
+     "frrate",
+     "country",
+     "area",
+     "player_name",
+     "ex_ip",
+     "ex_port",
+     "in_ip",
+     "in_port",
+     "det_ip",
+     "det_port",
+     "ping_result",
+     "fd_pic_url",
+     "fd_selfreport_level",
+     "fd_beginnermark",
+     "fd_position_want",
+     "fd_desired_position",
+     "has_guestplayer"
+    ]
+   },
+   "errors": [],
+   "followedBy": [
+    "CMD_CANCEL_DECIDE_QUICKMATCH"
+   ],
+   "follows": [
+    "CMD_SET_GAMEMEMBERENV"
+   ],
+   "handledByServer": false
+  },
+  "CMD_SET_GAMEMEMBERENV": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Room",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005eb880": [
+     "try_info.",
+     "try_count",
+     "ping",
+     "ping_add",
+     "band_try_count",
+     "band",
+     "band_add",
+     "player_num",
+     "member[",
+     "pid",
+     "matching_order",
+     "name",
+     "is_owner",
+     "side",
+     "is_leader",
+     "is_begin",
+     "lang",
+     "division",
+     "rating",
+     "ml_point",
+     "ml_division",
+     "manner",
+     "frrate",
+     "country",
+     "area",
+     "player_name",
+     "ex_ip",
+     "ex_port",
+     "in_ip",
+     "in_port",
+     "det_ip",
+     "det_port",
+     "ping_result",
+     "fd_pic_url",
+     "fd_selfreport_level",
+     "fd_beginnermark",
+     "fd_position_want",
+     "fd_desired_position",
+     "has_guestplayer"
+    ]
+   },
+   "errors": [
+    "ERR_ROOMSTATNOTMATCH",
+    "ERR_NOTGAMEHOST",
+    "ERR_MSGFORMAT",
+    "ERR_NOTINROOM",
+    "ERR_ROOMNOTFOUND"
+   ],
+   "followedBy": [
+    "CMD_SET_GAMEMEMBER"
+   ],
+   "follows": [
+    "CMD_START_QUICKMATCH"
+   ],
+   "handledByServer": false
+  },
+  "CMD_SET_GAMEPLAN": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {
+    "gameplan_data_size": "int",
+    "gameplan_data": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_GAMETEAM": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {
+    "home_team_id": "uint",
+    "away_team_id": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTINROOM",
+    "ERR_ROOMNOTFOUND",
+    "ERR_ROOMSTATNOTMATCH",
+    "ERR_NOTGAMEHOST"
+   ],
+   "followedBy": [
+    "CMD_ADD_SCORE",
+    "CMD_GET_GAMEADDPOINT",
+    "CMD_REQ_FORFEITEDGAME_REPLY",
+    "CMD_SEND_ABNORMALEND",
+    "CMD_SET_INJURYGAMEEND"
+   ],
+   "follows": [
+    "CMD_GET_GAMEADDPOINT",
+    "CMD_REQ_FORFEITEDGAME_REPLY",
+    "CMD_SET_INJURYGAMEEND"
+   ],
+   "handledByServer": false
+  },
+  "CMD_SET_GUEST": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Room",
+   "request": {
+    "has_guestplayer": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTINROOM",
+    "ERR_ROOMNOTFOUND",
+    "ERR_ROOMSTATNOTMATCH",
+    "ERR_ROOMISFULL",
+    "ERR_TOOMANYGUEST",
+    "ERR_NOGUEST",
+    "ERR_CANTADDGUEST"
+   ],
+   "followedBy": [
+    "CMD_LEAVE_ROOM"
+   ],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_SET_INJURYGAMEEND": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {
+    "side": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTINROOM",
+    "ERR_ROOMNOTFOUND",
+    "ERR_NOTGAMEHOST",
+    "ERR_ROOMSTATNOTMATCH"
+   ],
+   "followedBy": [
+    "CMD_ADD_SCORE",
+    "CMD_GET_GAMEADDPOINT",
+    "CMD_REQ_FORFEITEDGAME_REPLY",
+    "CMD_SEND_ABNORMALEND",
+    "CMD_SET_GAMETEAM"
+   ],
+   "follows": [
+    "CMD_ADD_FOUL",
+    "CMD_ADD_SCORE",
+    "CMD_GET_GAMEADDPOINT",
+    "CMD_REQ_FORFEITEDGAME_REPLY",
+    "CMD_SEND_ABNORMALEND",
+    "CMD_SEND_ML_GAMEPLAYERS",
+    "CMD_SET_GAMETEAM",
+    "CMD_UPDATE_ROOMSTATE",
+    "CMD_WATCH_ABNORMALEND",
+    "CMD_WATCH_FORFEITEDGAMEEND",
+    "CMD_WATCH_INJURYGAMEEND",
+    "CMD_WATCH_OWNGOALGAMEEND"
+   ],
+   "handledByServer": false
+  },
+  "CMD_SET_KONAMIID": {
+   "class": "SENDRECV",
+   "server": "ACCOUNT",
+   "family": "Account",
+   "request": {
+    "konamiid": "string",
+    "konamiid_password": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_LOGIN_FAILED",
+    "ERR_ALREADYREGISTERED"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_LANGUAGE": {
+   "class": "SENDRECV",
+   "server": "ACCOUNT",
+   "family": "Account",
+   "request": {
+    "svrtype": "string",
+    "lang": "string"
+   },
+   "observedRequestSamples": {
+    "svrtype": [
+     "\"ACCOUNT\""
+    ],
+    "lang": [
+     "\"EN\""
+    ],
+    "client": [
+     "\"NETCLIENT\""
+    ]
+   },
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [
+    "CMD_CREATE_PLAYER",
+    "CMD_GET_PLAYERLIST"
+   ],
+   "handledByServer": true
+  },
+  "CMD_SET_ML_GAMEPLAN": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "gameplan_data_size": "int",
+    "gameplan_data": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_ML_MYTEAM_BASE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "base_team_id": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_FORBIDDEN"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_ML_MYTEAM_NAME": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "team_name": "string",
+    "team_name_short": "string",
+    "check_team_name": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_NGWORD",
+    "ERR_LICENCE",
+    "ERR_NOTFOUND",
+    "ERR_FORBIDDEN"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_ML_MYTEAM_TYPE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_INVALIDARG"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_ML_MYTEAM_UNIFORMNUMBER": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "no_list_num": "uint"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_FORBIDDEN"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_ML_NEWS_COMMENT": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Master League",
+   "request": {
+    "comment": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_NGWORD"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_PLAYERPROFILE": {
+   "class": "SENDRECV",
+   "server": "ACCOUNT",
+   "family": "Account",
+   "request": {
+    "svrtype": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_INVALIDDATE",
+    "ERR_NGWORDININTRO",
+    "ERR_DATABASE"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_QUICKMATCHOPTION": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Quick match / Legends",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_TRACKRECORD": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Misc",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_XNADDR": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Misc",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_SET_XSESSION": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTINROOM",
+    "ERR_NOTROOMOWNER",
+    "ERR_ROOMNOTFOUND"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_START_QUICKMATCH": {
+   "class": null,
+   "server": "MENU",
+   "family": "Quick match / Legends",
+   "request": {
+    "my_pid": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005eb880": [
+     "try_info.",
+     "try_count",
+     "ping",
+     "ping_add",
+     "band_try_count",
+     "band",
+     "band_add",
+     "player_num",
+     "member[",
+     "pid",
+     "matching_order",
+     "name",
+     "is_owner",
+     "side",
+     "is_leader",
+     "is_begin",
+     "lang",
+     "division",
+     "rating",
+     "ml_point",
+     "ml_division",
+     "manner",
+     "frrate",
+     "country",
+     "area",
+     "player_name",
+     "ex_ip",
+     "ex_port",
+     "in_ip",
+     "in_port",
+     "det_ip",
+     "det_port",
+     "ping_result",
+     "fd_pic_url",
+     "fd_selfreport_level",
+     "fd_beginnermark",
+     "fd_position_want",
+     "fd_desired_position",
+     "has_guestplayer"
+    ],
+    "00fffdf0": [
+     "MSG_QUICK_MATCHING_START_RES",
+     "NOERR",
+     "tryCount",
+     "ping",
+     "pingAdd",
+     "bandTryCount",
+     "band",
+     "bandAdd",
+     "result",
+     "ERR_QMATCH_STARTMATCHING",
+     "try_info",
+     "try_count",
+     "ping_add",
+     "band_try_count",
+     "band_add",
+     "MSG_QUICK_MATCH_MEMBER_NOTICE",
+     "member_num",
+     "is_old_member",
+     "member",
+     "matching_order",
+     "is_owner",
+     "YES",
+     "pid",
+     "pname",
+     "has_guestplayer",
+     "is_begin",
+     "ex_ip",
+     "ex_port",
+     "in_ip",
+     "in_port",
+     "manner",
+     "from_country",
+     "from_area",
+     "player_name",
+     "fd_pic_url",
+     "fd_selfreport_level",
+     "fd_beginnermark",
+     "fd_position_want",
+     "fd_desired_position",
+     "division",
+     "rating",
+     "ml_division",
+     "ml_point",
+     "MSG_QUICK_MATCHING_RES",
+     "ERR_QMATCH_PRECONNECT",
+     "MSG_QUICK_ACCEPT_MATCH_OFFER_RES",
+     "frrate",
+     "FRAME_60",
+     "player_num",
+     "name",
+     "side",
+     "is_leader",
+     "det_ip",
+     "det_port",
+     "ping_result",
+     "country",
+     "area",
+     "CMD_CANCEL_STARTQUICKMATCH",
+     "ERR_QMATCH_CANCELED",
+     "MSG_QUICK_REQ_MATCHING_START",
+     "MSG_QUICK_ACCEPT_MATCH_OFFER",
+     "MSG_QUICK_MATCH_MEMBER_REPLY"
+    ]
+   },
+   "errors": [
+    "ERR_GETPLAYERFAIL",
+    "ERR_QMATCH_STARTMATCHING",
+    "ERR_QMATCH_NOTICE",
+    "ERR_QMATCH_PRECONNECT",
+    "ERR_QMATCH_CANCELED",
+    "ERR_PING_FAILED",
+    "ERR_PLAYERNOTEXIST",
+    "ERR_REFUSED",
+    "ERR_QMATCH_CONNECTFAILED",
+    "ERR_CHECK_LANG",
+    "ERR_CHECK_GUEST",
+    "ERR_CHECK_CPU",
+    "ERR_CHECK_NATTYPE",
+    "ERR_CHECK_BLACKLIST"
+   ],
+   "followedBy": [
+    "CMD_CANCEL_DECIDE_QUICKMATCH",
+    "CMD_CANCEL_STARTQUICKMATCH",
+    "CMD_LEAVE_ROOM",
+    "CMD_SET_GAMEMEMBERENV"
+   ],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_UPDATE_COMBINATION": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_NOTINROOM",
+    "ERR_ROOMNOTFOUND",
+    "ERR_NOTFOUNDCLIENT"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_UPDATE_ROOMSTATE": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Room",
+   "request": {
+    "status": "string"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [
+    "CMD_ADD_SCORE",
+    "CMD_GET_GAMEADDPOINT",
+    "CMD_REQ_FORFEITEDGAME_REPLY",
+    "CMD_SEND_ABNORMALEND",
+    "CMD_SET_INJURYGAMEEND"
+   ],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_WATCH_ABNORMALEND": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [
+    "CMD_ADD_SCORE",
+    "CMD_GET_GAMEADDPOINT",
+    "CMD_REQ_FORFEITEDGAME_REPLY",
+    "CMD_SEND_ABNORMALEND",
+    "CMD_SET_INJURYGAMEEND"
+   ],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_ALIVE": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Room",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005e4080": [
+     "entry_count",
+     "entrygame["
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_COMMU_MATCH": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Community",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_COMMU_MATCH_WAITING": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Community",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_COMMUMATCHCANCELED"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_COMPLG_END": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_COMPLG_END_MATCH": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_COMPLG_GAMEDATA": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_COMPLG_MATCHNOTICE": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_COMPLG_MATCH_START": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_COMPLG_MATCH_START_TIME": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Competition (COMPLG)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_DECIDE_GAMEENV": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Room",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_DECIDE_GAMEPLAYER": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Room",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_DECIDE_GAMEPLAYERENV": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Room",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_DISCON_PLAYERENV": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_DISCON_PLAYERMATCH": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_EMERGENCY": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Lobby / session",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_ENTRY_GAME": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Room",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "005e4080": [
+     "entry_count",
+     "entrygame["
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_WATCH_FORCELEAVEROOM": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Room",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_FORFEITEDGAMEEND": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [
+    "CMD_ADD_SCORE",
+    "CMD_GET_GAMEADDPOINT",
+    "CMD_REQ_FORFEITEDGAME_REPLY",
+    "CMD_SEND_ABNORMALEND",
+    "CMD_SET_INJURYGAMEEND"
+   ],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_FRIENDLIST": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00549460": [
+     "pid",
+     "name",
+     "manner",
+     "division",
+     "rating",
+     "status",
+     "lang",
+     "index",
+     "npid"
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_FRIENDREQ": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_INJURYGAMEEND": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [
+    "CMD_ADD_SCORE",
+    "CMD_GET_GAMEADDPOINT",
+    "CMD_REQ_FORFEITEDGAME_REPLY",
+    "CMD_SEND_ABNORMALEND",
+    "CMD_SET_INJURYGAMEEND"
+   ],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_INVITATION": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Misc",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_IPANDPORT": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Room",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0050f860": [
+     "ex_ip",
+     "ex_port",
+     "in_ip",
+     "in_port",
+     "pid"
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_WATCH_MAINTETIME": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Lobby / session",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_NOTICE": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Lobby / session",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_OWNGOALGAMEEND": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [
+    "CMD_ADD_SCORE",
+    "CMD_GET_GAMEADDPOINT",
+    "CMD_REQ_FORFEITEDGAME_REPLY",
+    "CMD_SEND_ABNORMALEND",
+    "CMD_SET_INJURYGAMEEND"
+   ],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_ROOMSTATE": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Room",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "0051c110": [
+     "event",
+     "owner_pid",
+     "state"
+    ]
+   },
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_WATCH_SERVERMATCHEND": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "In-match / results",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_SHORTMAIL": {
+   "class": "WATCH",
+   "server": "MENU",
+   "family": "Social (mail / friends / blacklist)",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  },
+  "CMD_WATCH_TEXTCHAT": {
+   "class": "WATCH",
+   "server": "VDPCHAT",
+   "family": "Misc",
+   "request": {},
+   "observedRequestSamples": {},
+   "responseParsers": {
+    "00510a20": [
+     "from_pid",
+     "channel",
+     "name",
+     "statement"
+    ]
+   },
+   "errors": [
+    "ERR_CHATENABLE",
+    "ERR_ISNOTGM",
+    "ERR_ROOMSTATNOTMATCH"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": true
+  },
+  "CMD_WITHDRAW_COMMU": {
+   "class": "SENDRECV",
+   "server": "MENU",
+   "family": "Community",
+   "request": {
+    "commu_id": "int"
+   },
+   "observedRequestSamples": {},
+   "responseParsers": {},
+   "errors": [
+    "ERR_DATABASE",
+    "ERR_COMMUNOTEXIST",
+    "ERR_PLAYERNOTINCOMMU"
+   ],
+   "followedBy": [],
+   "follows": [],
+   "handledByServer": false
+  }
+ }
+}
