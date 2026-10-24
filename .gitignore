@@ -40,3 +40,6 @@ docker/
 .claude/
 .codex/
 .agents/
+
+# Stray Python packages
+*.whl
