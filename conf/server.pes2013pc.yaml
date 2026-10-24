@@ -18,7 +18,7 @@ Server:
     - Role: Gate
       Name: Gate
       Gid: 1
-      Port: 28017
+      Port: 15010
       MaxPlayers: 1000
     - Role: FdLobby
       Name: FdLobby
