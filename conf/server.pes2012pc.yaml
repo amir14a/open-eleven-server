@@ -28,27 +28,27 @@ Server:
     - Role: FdLobby
       Name: FdLobby
       Gid: 2
-      Port: 28011
+      Port: 28031
       MaxPlayers: 1000
     - Role: Lobby
       Name: Open Eleven Server
       Gid: 3
-      Port: 28012
+      Port: 28032
       MaxPlayers: 1000
     - Role: Menu
       Name: Menu
       Gid: 4
-      Port: 28013
+      Port: 28033
       MaxPlayers: 1000
     - Role: Account
       Name: Account
       Gid: 5
-      Port: 28014
+      Port: 28034
       MaxPlayers: 1000
     - Role: VdpChat
       Name: VdpChat
       Gid: 6
-      Port: 28015
+      Port: 28035
       MaxPlayers: 1000
 
   Lobbies:
