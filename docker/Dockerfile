@@ -3,7 +3,7 @@
 # TITLE is one of Pes2010Pc | Pes2011Pc | Pes2012Pc | Pes2013Pc.
 # Ports are published per title in docker-compose.yml.
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
 ARG TITLE=Pes2010Pc
 WORKDIR /src
 
@@ -19,7 +19,9 @@ COPY src/ src/
 COPY conf/ conf/
 RUN dotnet publish "src/OpenEleven.${TITLE}/OpenEleven.${TITLE}.csproj" -c Release -o /app --no-restore
 
-FROM mcr.microsoft.com/dotnet/aspnet:9.0
+# Alpine: about half the size of the Debian image. It has no ICU, so .NET runs in invariant
+# globalization mode, which the server does not depend on.
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine
 ARG TITLE=Pes2010Pc
 WORKDIR /app
 
