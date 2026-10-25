@@ -5,6 +5,7 @@
 
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenEleven.Data;
 using OpenEleven.Data.Entities;
@@ -19,7 +20,7 @@ namespace OpenEleven.Server.Handlers;
 /// Rank screens: the ranking tables (CMD_GET_RANKING), the archived weeks, the
 /// season-end division report and the player's notices.
 /// </summary>
-public sealed class RankHandlers(GameDbContext db, TimeProvider time)
+public sealed class RankHandlers(GameDbContext db, TimeProvider time, ILogger<RankHandlers> log)
 {
     private const ServiceRole AccountRoles = ServiceRole.Account | ServiceRole.Menu | ServiceRole.Gate;
 
@@ -30,6 +31,22 @@ public sealed class RankHandlers(GameDbContext db, TimeProvider time)
     private const int WeeksShown = 8;
 
     /// <summary>
+    /// The pid the client names in <paramref name="key"/>, if it is a player on the logged-in
+    /// account. These requests come before CMD_SET_CURRENTPLAYER and on a connection of their
+    /// own, so the session's pid is not set yet; reading marks the data seen, so another
+    /// account's player must not count.
+    /// </summary>
+    private async Task<int?> OwnPidAsync(CommandContext ctx, string key)
+    {
+        var pid = ctx.Request.GetInt32(key, ctx.Session.Pid);
+        if (await db.Players.AnyAsync(p => p.Pid == pid && p.AccountId == ctx.Session.AccountId, ctx.CancellationToken))
+            return pid;
+
+        log.LogWarning("{Msg} from {Session} named pid {Pid}, which is not on its account", ctx.Msg, ctx.Session, pid);
+        return null;
+    }
+
+    /// <summary>
     /// The player's messages (FUN_00513000): count, then privInfo[i].reldate (unix), iid,
     /// title, info and important (enum 0x01, TRUE|FALSE). Promotions and friend requests land here.
     /// </summary>
@@ -37,7 +54,8 @@ public sealed class RankHandlers(GameDbContext db, TimeProvider time)
     public async ValueTask<KvMessage[]> GetPrivateInfo(CommandContext ctx)
     {
         // Each notice is shown once: what goes out now is marked delivered and not sent again.
-        var pid = ctx.Request.GetInt32("pid", ctx.Session.Pid);
+        if (await OwnPidAsync(ctx, "pid") is not { } pid)
+            return [ctx.Ok().Set("count", 0)];
         var notices = await db.Notices.Where(n => n.Pid == pid && !n.Delivered)
             .OrderByDescending(n => n.CreatedAt).Take(NoticesShown).ToListAsync(ctx.CancellationToken);
         foreach (var n in notices)
@@ -65,7 +83,8 @@ public sealed class RankHandlers(GameDbContext db, TimeProvider time)
     [Command("CMD_GET_DIVISIONUPDATE", Roles = AccountRoles, RequiredState = SessionState.Authenticated)]
     public async ValueTask<KvMessage[]> GetDivisionUpdate(CommandContext ctx)
     {
-        var pid = ctx.Request.GetInt32("mypid", ctx.Session.Pid);
+        if (await OwnPidAsync(ctx, "mypid") is not { } pid)
+            return [ctx.Ok().Set("updated", false)];
         var player = await db.Players.FindAsync([pid], ctx.CancellationToken);
         var parts = player?.PendingDivisionUpdate.Split(',') ?? [];
         if (player is null || parts.Length != 5)

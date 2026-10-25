@@ -33,6 +33,8 @@ public class Pes2011SocialTests
         var s = harness.NewSession(ServiceRole.Menu, state);
         s.Pid = pid;
         s.PlayerName = $"p{pid}";
+        using var scope = harness.Services.CreateScope();
+        s.AccountId = scope.ServiceProvider.GetRequiredService<GameDbContext>().Players.Single(p => p.Pid == pid).AccountId;
         return s;
     }
 
@@ -67,6 +69,20 @@ public class Pes2011SocialTests
         // Shown once: the next login has nothing new.
         var again = Assert.Single(await harness.DispatchAsync(them, "CMD_GET_PRIVATEINFO", withFields: r => r.Set("pid", other)));
         Assert.Equal(0, again.GetInt32("count"));
+    }
+
+    [Fact]
+    public async Task Another_accounts_notices_cannot_be_read_or_cleared()
+    {
+        await using var harness = await Harness();
+        var other = await AddPlayerAsync(harness, "victim");
+        var (me, them) = (Player(harness, 1), Player(harness, other));
+        await harness.DispatchAsync(me, "CMD_SEND_FRIENDREQ", withFields: r => r.Set("to_pid", other));
+
+        // The notices connection has no player selected yet; only the account decides.
+        var snoop = harness.NewSession(ServiceRole.Account, SessionState.Authenticated);
+        Assert.Equal(0, Assert.Single(await harness.DispatchAsync(snoop, "CMD_GET_PRIVATEINFO", withFields: r => r.Set("pid", other))).GetInt32("count"));
+        Assert.Equal(1, Assert.Single(await harness.DispatchAsync(them, "CMD_GET_PRIVATEINFO", withFields: r => r.Set("pid", other))).GetInt32("count"));
     }
 
     [Fact]
