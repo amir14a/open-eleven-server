@@ -46,7 +46,7 @@ public sealed class Pes2011Handlers(
     /// <c>FUN_0051fc00("NETCLIENT")</c>, and <c>FUN_005228a0</c> only advances its state
     /// machine once the reply arrives. Empty body; a bare NOERR envelope is the whole contract.
     /// </summary>
-    [Command("NETCLIENT", Profiles = GameProfile.Pes2011Pc)]
+    [Command("NETCLIENT", Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.Connected)]
     public ValueTask<KvMessage[]> NetClient(CommandContext ctx) => Reply.Of(ctx.Ok());
 
     /// <summary>
@@ -56,7 +56,7 @@ public sealed class Pes2011Handlers(
     /// <c>0xfaa</c> in that function) and expects a bare acknowledgement. The advertised
     /// address is the client's own idea of where the gate lives, so it is logged and not stored.
     /// </summary>
-    [Command("CMD_REG_SVRLIST", Roles = ServiceRole.Gate, Profiles = GameProfile.Pes2011Pc)]
+    [Command("CMD_REG_SVRLIST", Roles = ServiceRole.Gate, Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.Connected)]
     public ValueTask<KvMessage[]> RegisterServerList(CommandContext ctx)
     {
         log.LogDebug(
@@ -544,7 +544,7 @@ public sealed class Pes2011Handlers(
     /// <c>ERR_CLIENT_OPTFORMAT</c> for any entry missing one of those four fields, so the
     /// payload carries exactly those and nothing else.
     /// </summary>
-    [Command("CMD_GET_SVRLIST", Roles = ServiceRole.Gate, Profiles = GameProfile.Pes2011Pc)]
+    [Command("CMD_GET_SVRLIST", Roles = ServiceRole.Gate, Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.Connected)]
     public ValueTask<KvMessage[]> GetServerList(CommandContext ctx)
     {
         var entries = catalog.BuildServerEntries();
@@ -581,7 +581,7 @@ public sealed class Pes2011Handlers(
     /// <c>read_buffer</c>, so the /eula_pes.txt endpoint is what really answers; this socket
     /// handler gives the same text for a client that does send it here.
     /// </summary>
-    [Command("CMD_GET_HTTP", Profiles = GameProfile.Pes2011Pc)]
+    [Command("CMD_GET_HTTP", Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.Connected)]
     public ValueTask<KvMessage[]> GetHttp(CommandContext ctx)
     {
         var uri = ctx.Request.GetString("uri") ?? "";
@@ -614,7 +614,7 @@ public sealed class Pes2011Handlers(
     /// rather than guessed: the key that would unwrap <c>gameid_password</c> has not been
     /// recovered, so accepting the value would mean trusting a ciphertext as a password.
     /// </remarks>
-    [Command("CMD_AUTH_GAMEID", Roles = LoginRoles, Profiles = GameProfile.Pes2011Pc)]
+    [Command("CMD_AUTH_GAMEID", Roles = LoginRoles, Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.Connected)]
     public async ValueTask<KvMessage[]> AuthGameId(CommandContext ctx)
     {
         var gameId = ctx.Request.GetString("gameid")?.Trim();
@@ -682,7 +682,7 @@ public sealed class Pes2011Handlers(
     /// 0x0130c9b8). <c>accountid</c> does not exist as a literal anywhere in pes2011.exe, so it
     /// is deliberately not invented here.
     /// </remarks>
-    [Command("CMD_LOGIN", Roles = LoginRoles, Profiles = GameProfile.Pes2011Pc)]
+    [Command("CMD_LOGIN", Roles = LoginRoles, Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.Connected)]
     public async ValueTask<KvMessage[]> Login(CommandContext ctx)
     {
         var style = ctx.Request.GetString("style");

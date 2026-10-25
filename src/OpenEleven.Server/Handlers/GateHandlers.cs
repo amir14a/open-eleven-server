@@ -28,11 +28,11 @@ public sealed class GateHandlers(
     // PES 2011 answers CMD_GET_SVRLIST with a different payload shape and has its own
     // handler (Pes2011Handlers), so this one stays declared for the titles whose client
     // parses svrlist/svrgid.
-    [Command("CMD_GET_SVRLIST", Roles = ServiceRole.Gate, Profiles = GameProfile.All & ~GameProfile.Pes2011Pc)]
+    [Command("CMD_GET_SVRLIST", Roles = ServiceRole.Gate, Profiles = GameProfile.All & ~GameProfile.Pes2011Pc, RequiredState = SessionState.Connected)]
     public ValueTask<KvMessage[]> GetServerList(CommandContext ctx)
         => Reply.Of(ctx.Ok().SetList("server_num", catalog.ServerListKey, catalog.BuildServerEntries()));
 
-    [Command("CMD_GET_SVRVERSION", Roles = AnyServiceRole)]
+    [Command("CMD_GET_SVRVERSION", Roles = AnyServiceRole, RequiredState = SessionState.Connected)]
     public ValueTask<KvMessage[]> GetVersion(CommandContext ctx)
     {
         var protocol = options.CurrentValue.Protocol;
@@ -43,11 +43,11 @@ public sealed class GateHandlers(
             .Set("eula_version", protocol.EulaVersion));
     }
 
-    [Command("CMD_GET_SVRTIME", Roles = AnyServiceRole)]
+    [Command("CMD_GET_SVRTIME", Roles = AnyServiceRole, RequiredState = SessionState.Connected)]
     public ValueTask<KvMessage[]> GetTime(CommandContext ctx)
         => Reply.Of(ctx.Ok().Set("date", DateTimeOffset.UtcNow.ToUnixTimeSeconds()));
 
-    [Command("CMD_GET_EULA", Roles = ServiceRole.Gate | ServiceRole.Account)]
+    [Command("CMD_GET_EULA", Roles = ServiceRole.Gate | ServiceRole.Account, RequiredState = SessionState.Connected)]
     public ValueTask<KvMessage[]> GetEula(CommandContext ctx)
     {
         ctx.Session.EulaAccepted = true;
@@ -57,7 +57,7 @@ public sealed class GateHandlers(
         return Reply.Of(ctx.Ok().Set("eula", "1"));
     }
 
-    [Command("CMD_GET_URLLIST", Roles = ServiceRole.Gate | ServiceRole.Account)]
+    [Command("CMD_GET_URLLIST", Roles = ServiceRole.Gate | ServiceRole.Account, RequiredState = SessionState.Connected)]
     public ValueTask<KvMessage[]> GetUrlList(CommandContext ctx)
     {
         // The client fetches these over HTTP right after this reply and does not come
@@ -119,7 +119,7 @@ public sealed class GateHandlers(
         return Reply.Of(ctx.Ok().SetList("url_num", "ulist", entries));
     }
 
-    [Command("CMD_GET_INFORMATIONLIST", Roles = AnyServiceRole)]
+    [Command("CMD_GET_INFORMATIONLIST", Roles = AnyServiceRole, RequiredState = SessionState.Connected)]
     public async ValueTask<KvMessage[]> GetInformation(CommandContext ctx)
     {
         var items = await repository.GetInformationAsync(ctx.CancellationToken);
@@ -153,7 +153,7 @@ public sealed class GateHandlers(
                 : (important ? "1" : "0"))
             .Set("present", present ? "1" : "0");
 
-    [Command("CMD_DISCONNECT", Roles = AnyServiceRole)]
+    [Command("CMD_DISCONNECT", Roles = AnyServiceRole, RequiredState = SessionState.Connected)]
     public ValueTask<KvMessage[]> Disconnect(CommandContext ctx)
     {
         // The reference server echoed the whole server list back on disconnect; the

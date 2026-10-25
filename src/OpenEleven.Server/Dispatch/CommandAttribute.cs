@@ -30,6 +30,11 @@ public sealed class CommandAttribute(string msg) : Attribute
     /// </summary>
     public GameProfile Profiles { get; init; } = GameProfile.All;
 
-    /// <summary>Minimum session state; anything earlier is rejected before the handler runs.</summary>
-    public SessionState RequiredState { get; init; } = SessionState.Connected;
+    /// <summary>
+    /// Minimum session state; anything earlier is rejected before the handler runs. Defaults to
+    /// <see cref="SessionState.Authenticated"/> so a new command is closed until it opts out:
+    /// only the gate and login commands the client sends before logging in declare
+    /// <see cref="SessionState.Connected"/>.
+    /// </summary>
+    public SessionState RequiredState { get; init; } = SessionState.Authenticated;
 }

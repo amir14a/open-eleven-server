@@ -31,7 +31,7 @@ public sealed class AccountHandlers(
     // Captures show the client repeats this handshake on Account, Menu and Lobby.
     private const ServiceRole AuthRoles = ServiceRole.All;
 
-    [Command("MSG_REQCCODE", Roles = AuthRoles)]
+    [Command("MSG_REQCCODE", Roles = AuthRoles, RequiredState = SessionState.Connected)]
     public ValueTask<KvMessage[]> RequestChallengeCode(CommandContext ctx)
     {
         var challengeCode = options.CurrentValue.Protocol.ChallengeCode.ToLowerInvariant();

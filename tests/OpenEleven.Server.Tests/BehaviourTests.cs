@@ -1146,4 +1146,37 @@ public class RegistryTests
         Assert.NotEmpty(registry.Entries);
         Assert.All(registry.Entries, entry => Assert.NotEqual(ServiceRole.None, entry.Roles));
     }
+
+    [Theory]
+    [InlineData("Pes2010Pc")]
+    [InlineData("Pes2011Pc")]
+    public async Task Only_the_gate_and_login_commands_are_open_before_login(string profile)
+    {
+        // RequiredState defaults to Authenticated; anything opting out must be on this list,
+        // so a new command cannot become reachable from an unauthenticated connection by accident.
+        string[] preLogin =
+        [
+            "CMD_GET_SVRLIST", "CMD_GET_SVRVERSION", "CMD_GET_SVRTIME", "CMD_GET_EULA", "CMD_GET_URLLIST",
+            "CMD_GET_INFORMATIONLIST", "CMD_DISCONNECT", "CMD_SEND_HEARTBEAT", "MSG_REQCCODE", "MSG_REQAUTH",
+            "NETCLIENT", "CMD_REG_SVRLIST", "CMD_GET_HTTP", "CMD_AUTH_GAMEID", "CMD_LOGIN",
+            "CMD_WATCH_ROOMSTATE", "CMD_WATCH_IPANDPORT",
+        ];
+        await using var harness = await ServerHarness.CreateAsync(s => s["Server:GameProfile"] = profile);
+        var registry = (Dispatch.CommandRegistry)harness.Services.GetService(typeof(Dispatch.CommandRegistry))!;
+
+        var open = registry.Entries.Where(e => e.RequiredState < SessionState.Authenticated).Select(e => e.Msg);
+
+        Assert.Empty(open.Except(preLogin));
+    }
+
+    [Fact]
+    public async Task An_unauthenticated_connection_cannot_report_match_events()
+    {
+        await using var harness = await ServerHarness.CreateAsync(s => s["Server:GameProfile"] = "Pes2011Pc");
+        var stranger = harness.NewSession(ServiceRole.Menu, SessionState.Connected);
+
+        var reply = Assert.Single(await harness.DispatchAsync(stranger, "CMD_ADD_FOUL"));
+
+        Assert.Equal(("ERR", "SEQUENCE"), (reply.GetString("result"), reply.GetString("reason")));
+    }
 }

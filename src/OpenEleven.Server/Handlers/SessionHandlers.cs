@@ -27,7 +27,7 @@ public sealed class SessionHandlers(
     /// MSG_REQAUTH advertises <c>dont_check_heartbeat="NO"</c>, so the client expects the
     /// server to be watching. A bare NOERR is the whole reply; the value is the timestamp.
     /// </summary>
-    [Command("CMD_SEND_HEARTBEAT", Roles = ServiceRole.All)]
+    [Command("CMD_SEND_HEARTBEAT", Roles = ServiceRole.All, RequiredState = SessionState.Connected)]
     public ValueTask<KvMessage[]> Heartbeat(CommandContext ctx)
     {
         ctx.Session.LastActivity = DateTimeOffset.UtcNow;
