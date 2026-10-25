@@ -131,7 +131,7 @@ the framing is listed as verified rather than assumed.
 | Login stage 1 `CMD_AUTH_GAMEID` (mints a ticket) | `Pes2011Handlers.AuthGameId`, `GameIdTicketStore` | `FUN_0061c360` state 2 |
 | Login stage 2 `CMD_LOGIN` (redeems the ticket) | `Pes2011Handlers.Login` | `FUN_0061c360` state 7, `account_first_login` |
 | Cached-ticket replay across connections | `GameIdTicketStore` (not single-use) | `FUN_0061c360` state 1 |
-| Credential redaction in packet logs | `ProtocolSecrets`, `PacketLogFormatter` | local policy; verified by test + log inspection |
+| Credential redaction in packet logs | `PacketLogFormatter.Redact` | local policy; verified by test + log inspection |
 | `CMD_GET_URLLIST` needs **no** PES 2011 variant — the shared handler's `url_num`/`ulist` shape and its four `type` tokens are all in this binary's vocabulary | shared `GateHandlers` | `0x012e4a20`, `0x013bee08`–`0x013bee90` |
 | `CMD_GET_SVRVERSION` needs **no** PES 2011 variant — `version`/`patch_version`/`dlc_version`/`eula_version` is exactly the literal run the client reads | shared `GateHandlers` | `0x012e49e8`–`0x012e4a0c` |
 | 1024-byte outbound frame diagnostic | `GameConnection` | `FUN_01006660` |
