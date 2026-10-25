@@ -49,7 +49,7 @@ public static class GameEndpoints
             var dlc = options.CurrentValue.Urls.FirstOrDefault(u => u is { Type: "DOWNLOAD", File.Length: > 0 });
             if (dlc is null || !File.Exists(dlc.FullPath))
                 return Results.NotFound();
-            var package = $"http://{http.Request.Host}/files/{Path.GetFileName(dlc.File)}";
+            var package = $"{http.Request.Scheme}://{http.Request.Host}/files/{Path.GetFileName(dlc.File)}";
             var description = dlc.Description.Length > 0 ? dlc.Description : ServerText.Get("dlc.description", lang);
             return Results.Text(DownloadFiles.Manifest(dlc, package, description), "text/plain", Encoding.UTF8);
         });

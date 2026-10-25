@@ -61,6 +61,27 @@ public class ReferenceParityTests
         Assert.Equal(expected, actual);
     }
 
+    [Fact]
+    public async Task Url_list_uses_https_the_host_name_and_its_port_when_https_is_on()
+    {
+        // The client turns TLS on for every port but 80, so each title can take its own port.
+        await using var harness = await ServerHarness.CreateAsync(s =>
+        {
+            s["Server:Https:Enabled"] = "true";
+            s["Server:AdvertiseIp"] = "oe.test";
+            s["Server:Listen:Https"] = "8444";
+        });
+        var session = harness.NewSession();
+
+        var replies = await harness.DispatchAsync(session, "CMD_GET_URLLIST");
+        var urls = replies[0].GetList("ulist").Select(e => e.GetString("url")).ToArray();
+
+        Assert.Contains("https://oe.test:8444/pcspec.bin", urls);
+        Assert.Contains("https://oe.test:8444/gameid_auth", urls);
+        Assert.Contains("https://oe.test:8444/register", urls);
+        Assert.DoesNotContain(KonamiIdReferenceUrl, urls);
+    }
+
     [Theory]
     [InlineData("192.168.100.7", 443)] // an IP cannot match a public certificate
     [InlineData("", 443)]

@@ -63,10 +63,14 @@ public sealed class GateHandlers(
         // The client fetches these over HTTP right after this reply and does not come
         // back until it succeeds, so the URLs must name the port actually being served.
         // Port 80 is left implicit to keep the payload identical to the reference server.
-        var httpPort = options.CurrentValue.Listen.Http;
-        var host = httpPort == 80
-            ? $"http://{catalog.AdvertiseIp}"
-            : $"http://{catalog.AdvertiseIp}:{httpPort}";
+        // https on the title's own port, or plain http on 80 for local development: the client
+        // turns TLS on for every port except 80 (pes2011.exe 0x00c4965b).
+        var tls = options.CurrentValue.Https.Enabled;
+        var scheme = tls ? "https" : "http";
+        var port = tls ? options.CurrentValue.Listen.Https : options.CurrentValue.Listen.Http;
+        var host = port == (tls ? 443 : 80)
+            ? $"{scheme}://{catalog.AdvertiseIp}"
+            : $"{scheme}://{catalog.AdvertiseIp}:{port}";
 
         var entries = new List<KvMessage>
         {
