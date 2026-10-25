@@ -6,11 +6,10 @@
 # PES_DOMAIN (in .env) is the host name players connect to. docker/certs must hold fullchain.pem and
 # privkey.pem for it (see certbot-deploy-hook.sh). Published ports must equal the ports in
 # each title's config, because those are the ports the server tells the client to use.
+# Each title reads its config from conf/ on the host: edit it and restart, no rebuild.
 
 x-title: &title
   restart: unless-stopped
-  volumes:
-    - ./certs:/app/certs:ro
   depends_on:
     mysql: { condition: service_healthy }
 
@@ -18,6 +17,10 @@ services:
   pes2010pc:
     <<: *title
     build: { context: .., dockerfile: docker/Dockerfile, args: { TITLE: Pes2010Pc } }
+    volumes:
+      - ./certs:/app/certs:ro
+      - ../conf/server.pes2010pc.yaml:/app/conf/server.yaml:ro
+      - pes2010pc-logs:/app/logs
     sysctls:
       net.ipv4.ip_unprivileged_port_start: 0   # lets the non-root server bind 443
     ports:
@@ -37,6 +40,10 @@ services:
   pes2011pc:
     <<: *title
     build: { context: .., dockerfile: docker/Dockerfile, args: { TITLE: Pes2011Pc } }
+    volumes:
+      - ./certs:/app/certs:ro
+      - ../conf/server.pes2011pc.yaml:/app/conf/server.yaml:ro
+      - pes2011pc-logs:/app/logs
     ports:
       - "8444:8444"     # https
       - "4010:4010"     # gate
@@ -54,6 +61,10 @@ services:
   pes2012pc:
     <<: *title
     build: { context: .., dockerfile: docker/Dockerfile, args: { TITLE: Pes2012Pc } }
+    volumes:
+      - ./certs:/app/certs:ro
+      - ../conf/server.pes2012pc.yaml:/app/conf/server.yaml:ro
+      - pes2012pc-logs:/app/logs
     ports:
       - "8445:8445"     # https
       - "28016:28016"   # gate
@@ -71,6 +82,10 @@ services:
   pes2013pc:
     <<: *title
     build: { context: .., dockerfile: docker/Dockerfile, args: { TITLE: Pes2013Pc } }
+    volumes:
+      - ./certs:/app/certs:ro
+      - ../conf/server.pes2013pc.yaml:/app/conf/server.yaml:ro
+      - pes2013pc-logs:/app/logs
     ports:
       - "8446:8446"     # https
       - "15010:15010"   # gate
@@ -112,3 +127,7 @@ services:
 
 volumes:
   mysql-data:
+  pes2010pc-logs:
+  pes2011pc-logs:
+  pes2012pc-logs:
+  pes2013pc-logs:
