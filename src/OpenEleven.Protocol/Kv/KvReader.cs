@@ -15,11 +15,14 @@ namespace OpenEleven.Protocol.Kv;
 /// </summary>
 public sealed class KvReader
 {
+    /// <summary>Records nest a level or two in real traffic; deeper input would overflow the stack.</summary>
+    private const int MaxDepth = 32;
+
     public KvMessage Parse(string payload)
     {
         var text = payload.TrimEnd('\0');
         var position = 0;
-        var message = ParseFields(text, ref position, terminator: '\0');
+        var message = ParseFields(text, ref position, terminator: '\0', depth: 0);
 
         if (position < text.Length)
             throw new ProtocolException(
@@ -41,8 +44,11 @@ public sealed class KvReader
         }
     }
 
-    private static KvMessage ParseFields(string s, ref int i, char terminator)
+    private static KvMessage ParseFields(string s, ref int i, char terminator, int depth)
     {
+        if (depth > MaxDepth)
+            throw new ProtocolException($"Payload nests deeper than {MaxDepth} levels.");
+
         var message = new KvMessage();
 
         SkipWhitespace(s, ref i);
@@ -55,7 +61,7 @@ public sealed class KvReader
 
             var key = ParseKey(s, ref i);
             Expect(s, ref i, '=');
-            var value = ParseValue(s, ref i);
+            var value = ParseValue(s, ref i, depth);
             message.Set(key, value);
 
             SkipWhitespace(s, ref i);
@@ -81,7 +87,7 @@ public sealed class KvReader
         return s[start..i].Trim();
     }
 
-    private static object ParseValue(string s, ref int i)
+    private static object ParseValue(string s, ref int i, int depth)
     {
         if (i >= s.Length)
             return new KvRaw(string.Empty);
@@ -89,8 +95,8 @@ public sealed class KvReader
         return s[i] switch
         {
             '"' => ParseQuoted(s, ref i),
-            '[' => ParseList(s, ref i),
-            '{' => ParseRecord(s, ref i),
+            '[' => ParseList(s, ref i, depth + 1),
+            '{' => ParseRecord(s, ref i, depth + 1),
             _ => ParseBare(s, ref i),
         };
     }
@@ -100,10 +106,10 @@ public sealed class KvReader
     /// The client sends this for CMD_SET_PLAYERPROFILE, without the enclosing brackets
     /// that record lists use.
     /// </summary>
-    private static KvMessage ParseRecord(string s, ref int i)
+    private static KvMessage ParseRecord(string s, ref int i, int depth)
     {
         Expect(s, ref i, '{');
-        var record = ParseFields(s, ref i, terminator: '}');
+        var record = ParseFields(s, ref i, terminator: '}', depth);
         Expect(s, ref i, '}');
         return record;
     }
@@ -131,7 +137,7 @@ public sealed class KvReader
         throw new ProtocolException("Unterminated quoted string.");
     }
 
-    private static object ParseList(string s, ref int i)
+    private static object ParseList(string s, ref int i, int depth)
     {
         i++;                                    // '['
         var items = new List<KvMessage>();
@@ -152,7 +158,7 @@ public sealed class KvReader
         {
             SkipWhitespace(s, ref i);
             Expect(s, ref i, '{');
-            items.Add(ParseFields(s, ref i, terminator: '}'));
+            items.Add(ParseFields(s, ref i, terminator: '}', depth));
             Expect(s, ref i, '}');
 
             SkipWhitespace(s, ref i);

@@ -188,4 +188,11 @@ public class KvReaderTests
     {
         Assert.Null(_reader.TryParse("this is not a payload"));
     }
+
+    [Fact]
+    public void Deep_nesting_is_refused_instead_of_overflowing_the_stack()
+    {
+        Assert.Null(_reader.TryParse(string.Concat(Enumerable.Repeat("a={", 20_000))));
+        Assert.Null(_reader.TryParse(string.Concat(Enumerable.Repeat("a=[{", 20_000))));
+    }
 }
