@@ -16,6 +16,7 @@ public sealed record GameIdAuthResult(bool Success, string Body, string Reason);
 public sealed class GameIdAuthService(
     IAccountRepository accounts,
     PendingLoginStore pendingLogins,
+    LoginThrottle throttle,
     ILogger<GameIdAuthService> log)
 {
     public async Task<GameIdAuthResult> AuthenticateAsync(
@@ -24,6 +25,9 @@ public sealed class GameIdAuthService(
         IPAddress remoteAddress,
         CancellationToken ct = default)
     {
+        if (!throttle.TryAttempt(remoteAddress))
+            return Failure("THROTTLED");
+
         gameId = gameId.Trim();
         if (string.IsNullOrEmpty(gameId)
             || !AuthProof.TryNormalizeMd5(passwordHash.Trim(), out var credential))

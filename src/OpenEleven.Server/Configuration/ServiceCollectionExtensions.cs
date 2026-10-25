@@ -86,6 +86,7 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<PendingLoginStore>();
         services.AddSingleton<GameIdTicketStore>();
+        services.AddSingleton<LoginThrottle>();
         services.AddSingleton<ServerCatalog>();
         services.AddSingleton<LobbyCatalog>();
         services.AddSingleton<ProtocolTextPolicy>();

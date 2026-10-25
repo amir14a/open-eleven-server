@@ -275,6 +275,28 @@ public class Pes2011Tests
     }
 
     [Fact]
+    public async Task Password_guessing_is_throttled_across_http_and_socket_logins()
+    {
+        await using var harness = await CreateHarnessAsync();
+        await SeedAccountAsync(harness, TestGameId, TestPassword);
+        var session = harness.NewSession(ServiceRole.Account);
+        Task<IReadOnlyList<KvMessage>> Guess(string password) => harness.DispatchAsync(session, "CMD_AUTH_GAMEID", withFields: m => m
+            .Set("gameid", TestGameId).Set("gameid_password", password).Set("password_type", "PASS_PLAIN"));
+
+        for (var i = 0; i < LoginThrottle.AttemptsPerMinute / 2; i++)
+        {
+            await harness.AuthenticateHttpAsync(TestGameId, new string('0', 32));
+            await Guess("wrong");
+        }
+
+        // The right password is refused too until the window passes, on either path.
+        Assert.Equal("ERR_AUTHGID_AUTH", (await Guess(TestPassword))[0].GetString("result"));
+        Assert.Equal("THROTTLED", (await harness.AuthenticateHttpAsync(TestGameId, new string('0', 32))).Reason);
+        Assert.Equal("NOERR", (await harness.DispatchAsync(harness.NewSession(ServiceRole.Account, remoteAddress: System.Net.IPAddress.Parse("10.0.0.2")),
+            "CMD_AUTH_GAMEID", withFields: m => m.Set("gameid", TestGameId).Set("gameid_password", TestPassword)))[0].GetString("result"));
+    }
+
+    [Fact]
     public async Task A_cached_ticket_can_be_replayed_on_a_later_connection()
     {
         // FUN_0061c360 state 1 replays the cached loginid/loginid_password instead of calling

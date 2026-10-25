@@ -29,6 +29,7 @@ namespace OpenEleven.Server.Handlers;
 public sealed class Pes2011Handlers(
     ServerCatalog catalog,
     GameIdTicketStore tickets,
+    LoginThrottle throttle,
     IAccountRepository accounts,
     IPlayerRepository players,
     IMatchRepository matches,
@@ -652,6 +653,12 @@ public sealed class Pes2011Handlers(
             log.LogWarning(
                 "CMD_AUTH_GAMEID from {Session} used unsupported password_type {Type}",
                 ctx.Session, passwordType);
+            return [ctx.Fail("ERR_AUTHGID_AUTH")];
+        }
+
+        if (!throttle.TryAttempt(ctx.Session.Remote.Address))
+        {
+            log.LogWarning("CMD_AUTH_GAMEID from {Session} refused: too many login attempts", ctx.Session);
             return [ctx.Fail("ERR_AUTHGID_AUTH")];
         }
 
