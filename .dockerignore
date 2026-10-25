@@ -12,5 +12,4 @@ data/
 *.db
 *.user
 docker/.env
-docker/certs/
-docker/logs/
+certs/

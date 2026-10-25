@@ -31,8 +31,7 @@ PES2010_SERVER_RE_HANDOFF.md
 
 # Docker secrets: passwords and the TLS private key
 docker/.env
-docker/certs/
-docker/logs/
+certs/
 
 # Local machine configuration (MCP server wiring)
 .mcp.json

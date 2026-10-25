@@ -8,7 +8,7 @@
 #     --deploy-hook "/path/to/repo/docker/certbot-deploy-hook.sh"
 set -e
 DOCKER_DIR="$(cd "$(dirname "$0")" && pwd)"
-CERTS="$DOCKER_DIR/certs"
+CERTS="$DOCKER_DIR/../certs"
 
 mkdir -p "$CERTS"
 cp -L "$RENEWED_LINEAGE/fullchain.pem" "$CERTS/fullchain.pem"

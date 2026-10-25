@@ -3,12 +3,12 @@
 #   cp docker/.env.example docker/.env   # then edit it
 #   docker compose -f docker/docker-compose.yml up --build
 #
-# PES_DOMAIN (in .env) is the host name players connect to. docker/certs must hold fullchain.pem and
+# PES_DOMAIN (in .env) is the host name players connect to. certs/ must hold fullchain.pem and
 # privkey.pem for it (see certbot-deploy-hook.sh). Published ports must equal the ports in
 # each title's config, because those are the ports the server tells the client to use.
 # Each title reads its config from conf/ on the host (edit it and restart, no rebuild) and
-# writes logs to docker/logs/<title>. On Linux the containers run as uid 1654, so once:
-#   mkdir -p docker/logs && sudo chown -R 1654:1654 docker/logs
+# writes logs to logs/<title>. On Linux the containers run as uid 1654, so once:
+#   mkdir -p logs && sudo chown -R 1654:1654 logs
 
 x-title: &title
   restart: unless-stopped
@@ -22,9 +22,9 @@ services:
     container_name: openeleven-pes2010pc
     build: { context: .., dockerfile: docker/Dockerfile, args: { TITLE: Pes2010Pc } }
     volumes:
-      - ./certs:/app/certs:ro
+      - ../certs:/app/certs:ro
       - ../conf/server.pes2010pc.yaml:/app/conf/server.yaml:ro
-      - ./logs/pes2010pc:/app/logs
+      - ../logs/pes2010pc:/app/logs
     sysctls:
       net.ipv4.ip_unprivileged_port_start: 0   # lets the non-root server bind 443
     ports:
@@ -46,9 +46,9 @@ services:
     container_name: openeleven-pes2011pc
     build: { context: .., dockerfile: docker/Dockerfile, args: { TITLE: Pes2011Pc } }
     volumes:
-      - ./certs:/app/certs:ro
+      - ../certs:/app/certs:ro
       - ../conf/server.pes2011pc.yaml:/app/conf/server.yaml:ro
-      - ./logs/pes2011pc:/app/logs
+      - ../logs/pes2011pc:/app/logs
     ports:
       - "8444:8444"     # https
       - "4010:4010"     # gate
@@ -68,9 +68,9 @@ services:
     container_name: openeleven-pes2012pc
     build: { context: .., dockerfile: docker/Dockerfile, args: { TITLE: Pes2012Pc } }
     volumes:
-      - ./certs:/app/certs:ro
+      - ../certs:/app/certs:ro
       - ../conf/server.pes2012pc.yaml:/app/conf/server.yaml:ro
-      - ./logs/pes2012pc:/app/logs
+      - ../logs/pes2012pc:/app/logs
     ports:
       - "8445:8445"     # https
       - "28016:28016"   # gate
@@ -90,9 +90,9 @@ services:
     container_name: openeleven-pes2013pc
     build: { context: .., dockerfile: docker/Dockerfile, args: { TITLE: Pes2013Pc } }
     volumes:
-      - ./certs:/app/certs:ro
+      - ../certs:/app/certs:ro
       - ../conf/server.pes2013pc.yaml:/app/conf/server.yaml:ro
-      - ./logs/pes2013pc:/app/logs
+      - ../logs/pes2013pc:/app/logs
     ports:
       - "8446:8446"     # https
       - "15010:15010"   # gate
