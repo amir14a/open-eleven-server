@@ -1,0 +1,114 @@
+# One service per title, sharing a single MySQL instance with a separate schema per title.
+# From the repository root:
+#   cp docker/.env.example docker/.env   # then edit it
+#   docker compose -f docker/docker-compose.yml up --build
+#
+# PES_DOMAIN (in .env) is the host name players connect to. docker/certs must hold fullchain.pem and
+# privkey.pem for it (see certbot-deploy-hook.sh). Published ports must equal the ports in
+# each title's config, because those are the ports the server tells the client to use.
+
+x-title: &title
+  restart: unless-stopped
+  volumes:
+    - ./certs:/app/certs:ro
+  depends_on:
+    mysql: { condition: service_healthy }
+
+services:
+  pes2010pc:
+    <<: *title
+    build: { context: .., dockerfile: docker/Dockerfile, args: { TITLE: Pes2010Pc } }
+    sysctls:
+      net.ipv4.ip_unprivileged_port_start: 0   # lets the non-root server bind 443
+    ports:
+      - "443:443"       # https
+      - "28010:28010"   # gate
+      - "28011:28011"   # fdlobby
+      - "28012:28012"   # lobby
+      - "28013:28013"   # menu
+      - "28014:28014"   # account
+      - "28015:28015"   # vdpchat
+    environment:
+      OPENELEVEN_Server__AdvertiseIp: "${PES_DOMAIN:?set PES_DOMAIN}"
+      OPENELEVEN_Server__Database__Provider: "MySql"
+      OPENELEVEN_Server__Database__ConnectionString: >-
+        Server=mysql;Port=3306;Database=pes2010pc;User=openeleven;Password=${MYSQL_PASSWORD:?set MYSQL_PASSWORD};
+
+  pes2011pc:
+    <<: *title
+    build: { context: .., dockerfile: docker/Dockerfile, args: { TITLE: Pes2011Pc } }
+    ports:
+      - "8444:8444"     # https
+      - "4010:4010"     # gate
+      - "28021:28021"   # fdlobby
+      - "28022:28022"   # lobby
+      - "28023:28023"   # menu
+      - "28024:28024"   # account
+      - "28025:28025"   # vdpchat
+    environment:
+      OPENELEVEN_Server__AdvertiseIp: "${PES_DOMAIN:?set PES_DOMAIN}"
+      OPENELEVEN_Server__Database__Provider: "MySql"
+      OPENELEVEN_Server__Database__ConnectionString: >-
+        Server=mysql;Port=3306;Database=pes2011pc;User=openeleven;Password=${MYSQL_PASSWORD:?set MYSQL_PASSWORD};
+
+  pes2012pc:
+    <<: *title
+    build: { context: .., dockerfile: docker/Dockerfile, args: { TITLE: Pes2012Pc } }
+    ports:
+      - "8445:8445"     # https
+      - "28016:28016"   # gate
+      - "28031:28031"   # fdlobby
+      - "28032:28032"   # lobby
+      - "28033:28033"   # menu
+      - "28034:28034"   # account
+      - "28035:28035"   # vdpchat
+    environment:
+      OPENELEVEN_Server__AdvertiseIp: "${PES_DOMAIN:?set PES_DOMAIN}"
+      OPENELEVEN_Server__Database__Provider: "MySql"
+      OPENELEVEN_Server__Database__ConnectionString: >-
+        Server=mysql;Port=3306;Database=pes2012pc;User=openeleven;Password=${MYSQL_PASSWORD:?set MYSQL_PASSWORD};
+
+  pes2013pc:
+    <<: *title
+    build: { context: .., dockerfile: docker/Dockerfile, args: { TITLE: Pes2013Pc } }
+    ports:
+      - "8446:8446"     # https
+      - "15010:15010"   # gate
+      - "28041:28041"   # fdlobby
+      - "28042:28042"   # lobby
+      - "28043:28043"   # menu
+      - "28044:28044"   # account
+      - "28045:28045"   # vdpchat
+    environment:
+      OPENELEVEN_Server__AdvertiseIp: "${PES_DOMAIN:?set PES_DOMAIN}"
+      OPENELEVEN_Server__Database__Provider: "MySql"
+      OPENELEVEN_Server__Database__ConnectionString: >-
+        Server=mysql;Port=3306;Database=pes2013pc;User=openeleven;Password=${MYSQL_PASSWORD:?set MYSQL_PASSWORD};
+
+  mysql:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      # One shared user; init-multidb.sh creates the four per-title schemas.
+      MYSQL_USER: openeleven
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:?set MYSQL_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD}"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init-multidb.sh:/docker-entrypoint-initdb.d/init-multidb.sh:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  adminer:
+    image: adminer:latest
+    restart: unless-stopped
+    ports:
+      - "8090:8080"
+    depends_on:
+      - mysql
+
+volumes:
+  mysql-data:
