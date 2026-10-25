@@ -43,6 +43,18 @@ public static class ServiceCollectionExtensions
         {
             if (o.Database.Provider == DatabaseProvider.Sqlite)
                 o.Database.ConnectionString = DatabasePath.ResolveSqlite(o.Database.ConnectionString);
+
+            // Plain variable names so a docker .env can pass them through even when unset:
+            // an empty one leaves the YAML value alone.
+            static void FromEnv(string name, Action<string> set)
+            {
+                if (Environment.GetEnvironmentVariable(name) is { Length: > 0 } value)
+                    set(value);
+            }
+
+            FromEnv("CAPTCHA_PROVIDER", v => o.Captcha.Provider = v);
+            FromEnv("CAPTCHA_SITE_KEY", v => o.Captcha.SiteKey = v);
+            FromEnv("CAPTCHA_SECRET_KEY", v => o.Captcha.SecretKey = v);
         });
 
         var options = configuration.GetSection(ServerOptions.SectionName).Get<ServerOptions>()
@@ -81,6 +93,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<WebAssets>();
         services.AddScoped<GameIdAuthService>();
         services.AddScoped<RegistrationService>();
+        services.AddHttpClient<CaptchaVerifier>(http => http.Timeout = TimeSpan.FromSeconds(10));
 
         // The core assembly always supplies the shared commands. The configured title's
         // profile assembly (when the host references it) adds or overrides with its

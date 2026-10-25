@@ -15,6 +15,11 @@ Server:
     CertificatePath: "certs/fullchain.pem"
     KeyPath: "certs/privkey.pem"
 
+  Captcha:
+    Provider: None                # None | Turnstile | HCaptcha | ReCaptcha | Custom
+    SiteKey: ""
+    SecretKey: ""
+
   Database:
     Provider: Sqlite              # Sqlite | MySql
     ConnectionString: "Data Source=data/pes2011pc.db"

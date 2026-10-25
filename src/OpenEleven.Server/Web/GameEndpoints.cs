@@ -20,8 +20,14 @@ public static class GameEndpoints
         app.MapPost("/api/register", async (
             RegisterAccountRequest request,
             RegistrationService registrations,
+            CaptchaVerifier captcha,
+            HttpContext http,
             CancellationToken ct) =>
         {
+            // Same gate as the form, or the API would be the way around it.
+            if (!await captcha.VerifyAsync(request.CaptchaToken, http.Connection.RemoteIpAddress?.ToString(), ct))
+                return Results.BadRequest(new { error = "captchaToken is missing or was not accepted." });
+
             var outcome = await registrations.RegisterAsync(request, ct);
 
             return outcome.Failure switch

@@ -106,6 +106,18 @@ public sealed class ServerOptionsValidator : IValidateOptions<ServerOptions>
                 failures.Add("Listen.Http must be 80: the client switches to TLS on any other port.");
         }
 
+        var captcha = options.Captcha;
+        if (!CaptchaOptions.Providers.Contains(captcha.Provider, StringComparer.OrdinalIgnoreCase))
+            failures.Add($"Captcha.Provider: unknown '{captcha.Provider}'. Valid: {string.Join(", ", CaptchaOptions.Providers)}.");
+        else if (Web.CaptchaProvider.From(captcha) is { } provider)
+        {
+            if (captcha.SiteKey.Length == 0 || captcha.SecretKey.Length == 0)
+                failures.Add($"Captcha.Provider {captcha.Provider} needs SiteKey and SecretKey.");
+            if (provider.ScriptUrl.Length == 0 || provider.VerifyUrl.Length == 0
+                || provider.WidgetClass.Length == 0 || provider.ResponseField.Length == 0)
+                failures.Add("Captcha.Provider Custom needs ScriptUrl, VerifyUrl, WidgetClass and ResponseField.");
+        }
+
         // An unknown type silently inherits the previous entry's type in the client's parser.
         foreach (var url in options.Urls)
         {

@@ -31,10 +31,15 @@ public class RegistrationMarkupTests
         => Assert.Contains("method=\"post\"", View);
 
     [Fact]
-    public void Needs_no_javascript()
+    public void Needs_no_javascript_of_its_own()
     {
-        // The whole point of hashing server-side was to remove the hand-rolled MD5.
-        Assert.DoesNotContain("<script", View, StringComparison.OrdinalIgnoreCase);
+        // The whole point of hashing server-side was to remove the hand-rolled MD5. The only
+        // scripts belong to the optional captcha: the provider's, from its configured URL, and
+        // the two callbacks that enable the button once the challenge is passed.
+        var captchaBlock = View[View.IndexOf("@if (Model.Captcha is { } widget)", StringComparison.Ordinal)..];
+        Assert.Equal(2, View.Split("<script", StringSplitOptions.None).Length - 1);
+        Assert.Equal(2, captchaBlock.Split("<script", StringSplitOptions.None).Length - 1);
+        Assert.Contains("<script src=\"@widget.ScriptUrl\"", View);
         Assert.DoesNotContain("fetch(", View);
     }
 
@@ -63,4 +68,12 @@ public class RegistrationMarkupTests
     [Fact]
     public void Pins_its_route_explicitly()
         => Assert.StartsWith("@page \"/register\"", View);
+
+    [Fact]
+    public void Keeps_the_button_disabled_until_the_captcha_is_passed()
+    {
+        Assert.Contains("disabled=\"@(Model.Captcha is not null)\"", View);
+        Assert.Contains("data-callback=\"captchaPassed\"", View);
+        Assert.Contains("data-expired-callback=\"captchaReset\"", View);
+    }
 }

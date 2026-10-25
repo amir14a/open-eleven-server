@@ -62,6 +62,7 @@ public sealed class ServerOptions
     public RankOptions Rank { get; set; } = new();
 
     public HttpsOptions Https { get; set; } = new();
+    public CaptchaOptions Captcha { get; set; } = new();
     public DatabaseOptions Database { get; set; } = new();
     public ProtocolOptions Protocol { get; set; } = new();
     public DebugOptions Debug { get; set; } = new();
@@ -248,6 +249,27 @@ public sealed class UrlOptions
 
     /// <summary>DOWNLOAD only: the text the client shows for the update (manifest line 5); empty = built-in, translated.</summary>
     public string Description { get; set; } = "";
+}
+
+/// <summary>
+/// Captcha on the registration page (and /api/register). The CAPTCHA_PROVIDER,
+/// CAPTCHA_SITE_KEY and CAPTCHA_SECRET_KEY environment variables override these when set.
+/// </summary>
+public sealed class CaptchaOptions
+{
+    public static readonly string[] Providers = ["None", "Turnstile", "HCaptcha", "ReCaptcha", "Custom"];
+
+    /// <summary>None, Turnstile, HCaptcha, ReCaptcha (v2 checkbox) or Custom.</summary>
+    public string Provider { get; set; } = "None";
+
+    public string SiteKey { get; set; } = "";
+    public string SecretKey { get; set; } = "";
+
+    /// <summary>Required for Custom; for the named providers they override the built-in values.</summary>
+    public string ScriptUrl { get; set; } = "";
+    public string VerifyUrl { get; set; } = "";
+    public string WidgetClass { get; set; } = "";
+    public string ResponseField { get; set; } = "";
 }
 
 public sealed class HttpsOptions

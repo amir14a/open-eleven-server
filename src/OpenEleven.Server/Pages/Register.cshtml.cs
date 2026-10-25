@@ -23,7 +23,7 @@ namespace OpenEleven.Server.Pages;
 /// <see cref="RegistrationEndpoint"/>.
 /// </remarks>
 [SensitiveBody]
-public sealed class RegisterModel(RegistrationService registrations) : PageModel
+public sealed class RegisterModel(RegistrationService registrations, CaptchaVerifier captcha) : PageModel
 {
     [BindProperty]
     public string? GameId { get; set; }
@@ -43,12 +43,20 @@ public sealed class RegisterModel(RegistrationService registrations) : PageModel
 
     public string? Error { get; private set; }
 
+    /// <summary>The captcha widget to render, or null when the captcha is off.</summary>
+    public CaptchaProvider? Captcha => captcha.Provider;
+
     public void OnGet()
     {
     }
 
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
+        // Request is only touched with the captcha on, so a hostless PageModel still works.
+        if (Captcha is { } provider && !await captcha.VerifyAsync(
+                Request.Form[provider.ResponseField], HttpContext.Connection.RemoteIpAddress?.ToString(), cancellationToken))
+            return Failed("Please complete the captcha.");
+
         // Checked before hashing: the digest is only meaningful once the plaintext is known
         // to be within the range every candidate encoding agrees on.
         if (RegistrationEndpoint.ValidatePassword(Password, Confirm) is { } problem)

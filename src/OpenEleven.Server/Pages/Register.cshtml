@@ -55,8 +55,24 @@
         </label>
         <input asp-for="RegCode" maxlength="@RegistrationEndpoint.MaxRegCodeLength" required>
 
-        <button type="submit">Create account</button>
+        @if (Model.Captcha is { } captcha)
+        {
+            <div class="captcha @captcha.WidgetClass" data-sitekey="@captcha.SiteKey"
+                 data-callback="captchaPassed" data-expired-callback="captchaReset"
+                 data-error-callback="captchaReset"></div>
+        }
+
+        @* Disabled until the challenge is passed; the server checks the token regardless. *@
+        <button type="submit" id="submit" disabled="@(Model.Captcha is not null)">Create account</button>
     </form>
 </main>
+@if (Model.Captcha is { } widget)
+{
+    <script>
+        function captchaPassed() { document.getElementById("submit").disabled = false; }
+        function captchaReset() { document.getElementById("submit").disabled = true; }
+    </script>
+    <script src="@widget.ScriptUrl" async defer></script>
+}
 </body>
 </html>

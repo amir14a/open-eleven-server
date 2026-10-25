@@ -101,6 +101,10 @@ input[name="RegCode"] {
     letter-spacing: .05em;
 }
 
+.captcha {
+    margin: 16px 0;
+}
+
 button {
     width: 100%;
     padding: 11px;

@@ -24,7 +24,8 @@ public class RegisterPageModelTests
     private const string Serial = "5HRVLVRUF75RMV2LRK45";
 
     private static RegisterModel NewModel(IServiceProvider scope) => new(
-        scope.GetRequiredService<RegistrationService>())
+        scope.GetRequiredService<RegistrationService>(),
+        scope.GetRequiredService<CaptchaVerifier>())
     {
         GameId = "marcos",
         Password = Password,

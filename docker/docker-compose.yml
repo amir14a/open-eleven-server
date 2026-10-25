@@ -41,6 +41,9 @@ services:
     environment:
       OPENELEVEN_Server__AdvertiseIp: "${PES_DOMAIN:?set PES_DOMAIN}"
       OPENELEVEN_Server__Database__Provider: "MySql"
+      CAPTCHA_PROVIDER: "${CAPTCHA_PROVIDER:-}"
+      CAPTCHA_SITE_KEY: "${CAPTCHA_SITE_KEY:-}"
+      CAPTCHA_SECRET_KEY: "${CAPTCHA_SECRET_KEY:-}"
       OPENELEVEN_Server__Database__ConnectionString: >-
         Server=mysql;Port=3306;Database=pes2010pc;User=openeleven;Password=${MYSQL_PASSWORD:?set MYSQL_PASSWORD};
 
@@ -64,6 +67,9 @@ services:
     environment:
       OPENELEVEN_Server__AdvertiseIp: "${PES_DOMAIN:?set PES_DOMAIN}"
       OPENELEVEN_Server__Database__Provider: "MySql"
+      CAPTCHA_PROVIDER: "${CAPTCHA_PROVIDER:-}"
+      CAPTCHA_SITE_KEY: "${CAPTCHA_SITE_KEY:-}"
+      CAPTCHA_SECRET_KEY: "${CAPTCHA_SECRET_KEY:-}"
       OPENELEVEN_Server__Database__ConnectionString: >-
         Server=mysql;Port=3306;Database=pes2011pc;User=openeleven;Password=${MYSQL_PASSWORD:?set MYSQL_PASSWORD};
 
@@ -87,6 +93,9 @@ services:
     environment:
       OPENELEVEN_Server__AdvertiseIp: "${PES_DOMAIN:?set PES_DOMAIN}"
       OPENELEVEN_Server__Database__Provider: "MySql"
+      CAPTCHA_PROVIDER: "${CAPTCHA_PROVIDER:-}"
+      CAPTCHA_SITE_KEY: "${CAPTCHA_SITE_KEY:-}"
+      CAPTCHA_SECRET_KEY: "${CAPTCHA_SECRET_KEY:-}"
       OPENELEVEN_Server__Database__ConnectionString: >-
         Server=mysql;Port=3306;Database=pes2012pc;User=openeleven;Password=${MYSQL_PASSWORD:?set MYSQL_PASSWORD};
 
@@ -110,6 +119,9 @@ services:
     environment:
       OPENELEVEN_Server__AdvertiseIp: "${PES_DOMAIN:?set PES_DOMAIN}"
       OPENELEVEN_Server__Database__Provider: "MySql"
+      CAPTCHA_PROVIDER: "${CAPTCHA_PROVIDER:-}"
+      CAPTCHA_SITE_KEY: "${CAPTCHA_SITE_KEY:-}"
+      CAPTCHA_SECRET_KEY: "${CAPTCHA_SECRET_KEY:-}"
       OPENELEVEN_Server__Database__ConnectionString: >-
         Server=mysql;Port=3306;Database=pes2013pc;User=openeleven;Password=${MYSQL_PASSWORD:?set MYSQL_PASSWORD};
 

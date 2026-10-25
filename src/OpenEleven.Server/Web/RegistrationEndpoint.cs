@@ -16,7 +16,8 @@ namespace OpenEleven.Server.Web;
 public sealed record RegisterAccountRequest(
     [property: JsonPropertyName("gameId")] string? GameId,
     [property: JsonPropertyName("passwordHash")] string? PasswordHash,
-    [property: JsonPropertyName("regCode")] string? RegCode);
+    [property: JsonPropertyName("regCode")] string? RegCode,
+    [property: JsonPropertyName("captchaToken")] string? CaptchaToken = null);
 
 public sealed record RegisterAccountResponse(
     [property: JsonPropertyName("id")] int Id,
