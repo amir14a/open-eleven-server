@@ -1,47 +1,29 @@
-# Sample configuration. Copy to conf/server.yaml and edit:
-#
-#     cp conf/server.sample.yaml conf/server.yaml
-#
-# conf/server.yaml is gitignored, so your machine's addresses, certificates and
-# database credentials stay out of the repository. Values here are defaults or
-# placeholders — the only one you must change is AdvertiseIp.
-#
-# Anything in this file can also be overridden by environment variables using a
-# OpenEleven_ prefix and __ for nesting, which is how the launch profiles work:
-#
-#     OpenEleven_Server__AdvertiseIp=192.168.1.20
-#     OpenEleven_Server__Database__Provider=MySql
-
 Server:
-  # Written into svraddr of every server-list entry, so it must be the address the
-  # game machine can reach this server on. "auto" resolves the primary outbound NIC.
-  # 127.0.0.1 only works when the game runs on this same machine. Getting this wrong
-  # is the most common misconfiguration: the client connects to the gate, is handed
-  # this address for every other service, and then silently fails to reach them.
-  AdvertiseIp: "auto"
-
-  # The single title this process serves: Pes2010Pc, Pes2011Pc, Pes2012Pc or
-  # Pes2013Pc. It selects which profile-gated commands register at startup; one
-  # process serves exactly one title, so run one instance per title.
+  AdvertiseIp: "pes.example.com"   # your domain; an IP or "auto" only with Https.Enabled: false
   GameProfile: Pes2010Pc
 
   Listen:
     Host: 0.0.0.0
-    # Ports below 1024 need elevation on Windows. For a non-elevated dev run use
-    # 8080/8443 here, or the "dev ports" launch profile.
-    Http: 80
     Https: 443
+    Http: 80
     Backlog: 128
     IdleTimeoutSeconds: 300
 
-  # One TCP listener per logical service. Only the gate port is fixed: the client
-  # hardcodes it. Every other port is discovered from the svrlist the gate returns,
-  # so these may be moved freely to separate traffic per stage.
+  Https:
+    Enabled: true                 # false = plain HTTP on port 80
+    CertificatePath: "certs/fullchain.pem"
+    KeyPath: "certs/privkey.pem"
+
+  Database:
+    Provider: Sqlite              # Sqlite | MySql
+    ConnectionString: "Data Source=data/OpenEleven.db"
+    AutoCreate: true
+
   Services:
     - Role: Gate
       Name: Gate
       Gid: 1
-      Port: 28010          # fixed — the client will not look this up
+      Port: 28010
       MaxPlayers: 1000
     - Role: FdLobby
       Name: FdLobby
@@ -49,7 +31,7 @@ Server:
       Port: 28011
       MaxPlayers: 1000
     - Role: Lobby
-      Name: OpenEleven      # shown to players as the server name
+      Name: Open Eleven Server
       Gid: 3
       Port: 28012
       MaxPlayers: 1000
@@ -69,11 +51,6 @@ Server:
       Port: 28015
       MaxPlayers: 1000
 
-  # Blocks offered by CMD_GET_BLOCKLIST. Maximum 10; the server refuses to start with
-  # more. The client joins one by its POSITION in this list (CMD_JOIN_BLOCK sends
-  # index=N), so reordering entries changes what an already running client selects.
-  # Set Id explicitly to keep occupancy bookkeeping stable across a reorder; left at 0
-  # it is assigned from the position.
   Lobbies:
     - Name: Beginner
       MaxPlayers: 100
@@ -85,27 +62,10 @@ Server:
       MaxPlayers: 100
       Type: open
 
-  Https:
-    Enabled: true
-    # Leave empty to skip port 443 entirely. There is no plaintext fallback: with a
-    # path set but unreadable, HTTPS does not start.
-    CertificatePath: ""
-    CertificatePassword: ""
-
-  Database:
-    Provider: Sqlite            # Sqlite | MySql
-    # SQLite needs no setup and is created and seeded on first run. For MySQL use:
-    #   ConnectionString: "Server=localhost;Port=3306;Database=OpenEleven;User=…;Password=…"
-    # Put real credentials in conf/server.local.yaml (also gitignored) rather than here.
-    ConnectionString: "Data Source=data/OpenEleven.db"
-    AutoCreate: true
-
   Protocol:
-    # Fixed challenge: the handshake is stubbed and accepts any credential.
     ChallengeCode: "00112233445566778899aabbccddeeff"
     PendingLoginLifetimeSeconds: 300
     PlayerSearchLimit: 100
-    # Substrings refused in player-supplied text (names, room names, chat).
     BlockedTerms: []
     ServerVersion: "1.0"
     PatchVersion: "1.03"
@@ -114,32 +74,15 @@ Server:
     AckUnknownCommands: true
     AckBinaryPackets: true
     EnforceSessionState: true
-    # Per-service command declarations are logged but not refused until captures
-    # confirm which command belongs on which port.
     EnforceServiceRoles: false
-    # Unsafe behind NAT because IP alone is not an identity. Captured clients repeat
-    # MSG_REQCCODE/MSG_REQAUTH on service connections, so keep this disabled.
     ShareIdentityByRemoteAddress: false
-    # Currently gates MSG_ROOMINNOTICE only. Off by default: it reproducibly closes
-    # the receiving client's Lobby connection and the cause is not yet understood.
     EmitUnconfirmedMessages: false
 
   Debug:
-    # Packet logging. Verbose by design — this is a reverse-engineering server.
-    # Hex + ASCII of each packet's data, both directions, including binary packets
-    # that carry no readable payload.
     HexDump: true
-    # Bytes dumped per packet before truncating; 0 removes the cap. A room list runs
-    # past a kilobyte, which is ~75 lines of hex and buries everything around it.
     HexDumpMaxBytes: 1024
-    # Render key=value payloads as an indented tree instead of one long line.
     PrettyPrintPayloads: true
-    # Auto | Always | Never. Auto colours only on a real terminal, and stays off when
-    # output is redirected, a debugger is attached, or NO_COLOR is set. That last part
-    # matters in Visual Studio: its Output window comes from the Debug logger provider,
-    # which prints escape sequences literally as ←[36m. Use a terminal to see colour,
-    # or Always if you have one that renders them anyway.
-    Colors: Auto
+    Colors: Auto                # Auto | Always | Never
     LogUnknownCommands: true
     LogOutboundPayloads: true
 

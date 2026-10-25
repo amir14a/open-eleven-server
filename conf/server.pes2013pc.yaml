@@ -1,18 +1,23 @@
-# Pes2013Pc configuration. Cipher keys are shared by all titles and compiled into the
-# server (GameCrypto); only ports, version strings and the database differ per title.
 Server:
-  # Written into svraddr of every server-list entry; must be reachable by the client.
-  AdvertiseIp: "auto"
-
+  AdvertiseIp: "pes.example.com"   # your domain; an IP or "auto" only with Https.Enabled: false
   GameProfile: Pes2013Pc
 
   Listen:
     Host: 0.0.0.0
-    # Per-title HTTP/HTTPS so all four titles can run side-by-side on one host.
-    Http: 8083
     Https: 8446
+    Http: 80
     Backlog: 128
     IdleTimeoutSeconds: 300
+
+  Https:
+    Enabled: true                 # false = plain HTTP on port 80
+    CertificatePath: "certs/fullchain.pem"
+    KeyPath: "certs/privkey.pem"
+
+  Database:
+    Provider: Sqlite              # Sqlite | MySql
+    ConnectionString: "Data Source=data/pes2013pc.db"
+    AutoCreate: true
 
   Services:
     - Role: Gate
@@ -26,7 +31,7 @@ Server:
       Port: 28011
       MaxPlayers: 1000
     - Role: Lobby
-      Name: Lobby
+      Name: Open Eleven Server
       Gid: 3
       Port: 28012
       MaxPlayers: 1000
@@ -56,16 +61,6 @@ Server:
     - Name: Expert
       MaxPlayers: 100
       Type: open
-
-  Https:
-    Enabled: false
-    CertificatePath: ""
-    CertificatePassword: ""
-
-  Database:
-    Provider: Sqlite
-    ConnectionString: "Data Source=data/pes2013pc.db"
-    AutoCreate: true
 
   Protocol:
     ChallengeCode: "00112233445566778899aabbccddeeff"

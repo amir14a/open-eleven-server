@@ -1,30 +1,24 @@
-# Pes2011Pc configuration. Cipher keys are shared by all titles and compiled into the
-# server (GameCrypto); only ports, version strings and the database differ per title.
 Server:
-  # Written into svraddr of every server-list entry and into every ulist URL; must be
-  # reachable by the client. 127.0.0.1 is right while the game runs on this machine;
-  # switch it to the LAN address to drive the client from another PC.
-  AdvertiseIp: "127.0.0.1"
-
+  AdvertiseIp: "pes.example.com"   # your domain; an IP or "auto" only with Https.Enabled: false
   GameProfile: Pes2011Pc
-
-  # Durable copy of the console log, relative to the executable's directory.
-  # A client attempt that fails in under a second leaves nothing on the console after it
-  # scrolls, so every reverse-engineering run needs this file. Empty disables it.
   LogFile: "logs/pes2011pc.log"
 
   Listen:
     Host: 0.0.0.0
-    # Port 80, not 8081. The client stops right after CMD_GET_URLLIST when it cannot fetch
-    # the URLs that reply advertises, and a live run showed it never issued a single HTTP
-    # request while they carried an explicit ":8081". On port 80 the URL is written without
-    # a port, which is the shape the working PES 2010 setup uses. Windows lets a normal
-    # (non-elevated) process bind 80, so this needs no administrator rights here.
-    # Per-title HTTPS stays separate.
-    Http: 80
     Https: 8444
+    Http: 80
     Backlog: 128
     IdleTimeoutSeconds: 300
+
+  Https:
+    Enabled: true                 # false = plain HTTP on port 80
+    CertificatePath: "certs/fullchain.pem"
+    KeyPath: "certs/privkey.pem"
+
+  Database:
+    Provider: Sqlite              # Sqlite | MySql
+    ConnectionString: "Data Source=data/pes2011pc.db"
+    AutoCreate: true
 
   Services:
     - Role: Gate
@@ -38,7 +32,7 @@ Server:
       Port: 28011
       MaxPlayers: 1000
     - Role: Lobby
-      Name: Lobby
+      Name: Open Eleven Server
       Gid: 3
       Port: 28012
       MaxPlayers: 1000
@@ -69,61 +63,38 @@ Server:
       MaxPlayers: 100
       Type: open
 
-  # KONAMI CUP ONLINE competitions. Times are UTC; the status (entry, started, finished) and
-  # the list a cup shows in (schedule / now playing / past) follow from them. Keep Id stable:
-  # player entries point at it.
   Competitions:
     - Id: 1
       Name: OpenEleven Cup
-      Category: GOLD          # PLATINUM | GOLD | SILVER | BRONZE
+      Category: GOLD              # PLATINUM | GOLD | SILVER | BRONZE
       EntryStart: 2026-10-01T00:00:00Z
       EntryEnd: 2026-12-31T00:00:00Z
       MatchStart: 2026-10-01T00:00:00Z
       MatchEnd: 2027-01-15T00:00:00Z
       End: 2027-01-31T00:00:00Z
       Capacity: 64
-      GameTime: TIME_10       # TIME_5 | TIME_10 | TIME_15
-      # DlcVersion: "1.00"    # overrides Protocol.DlcVersion for this cup only
+      GameTime: TIME_10           # TIME_5 | TIME_10 | TIME_15
 
-  # Extra CMD_GET_URLLIST entries. A listed type changes client behaviour, so add only what
-  # has something real behind it. File = served from disk at /files/<name> (size + md5
-  # computed); Url = hosted elsewhere (give FileSize/Md5). The DLC download menu needs
-  # DOWNLOAD and a Protocol.DlcVersion above the client's installed szDLContentsVersion.
-  # Rank system. Rating (Elo) = skill; points = activity (weekly ranking, monthly season).
-  # At each month end, inside each division, the top PromotePercent (by season points, with at
-  # least MinSeasonMatches rated matches) move up and the bottom RelegatePercent move down, and
-  # ratings drift back toward StartRating by SeasonRatingCarry. Weeks close Monday 00:00 UTC.
   Rank:
     StartRating: 1000
-    KNew: 40                    # Elo K for a player's first SettledAfterMatches matches
+    KNew: 40
     KSettled: 24
     SettledAfterMatches: 30
     WinPoints: 3
     DrawPoints: 1
     CleanSheetBonus: 1
-    MaxRatedPerOpponentPerDay: 3  # anti-farming: later matches vs the same player are unrated
-    RequireSameParaHash: true     # anti-farming: unrated when the two clients' game data differ
+    MaxRatedPerOpponentPerDay: 3
+    RequireSameParaHash: true
     PromotePercent: 20
     RelegatePercent: 20
     MinSeasonMatches: 5
     SeasonRatingCarry: 0.75
-    HistoryLimit: 30              # matches shown in the match history
+    HistoryLimit: 30
 
-  # For DOWNLOAD the client fetches a signed manifest (/dlc/manifest) that points at the file.
   # Urls:
   #   - Type: DOWNLOAD
   #     File: dlc/pes2011_dlc.bin
   #     Description: Data pack 1.00
-
-  Https:
-    Enabled: false
-    CertificatePath: ""
-    CertificatePassword: ""
-
-  Database:
-    Provider: Sqlite
-    ConnectionString: "Data Source=data/pes2011pc.db"
-    AutoCreate: true
 
   Protocol:
     ChallengeCode: "00112233445566778899aabbccddeeff"
