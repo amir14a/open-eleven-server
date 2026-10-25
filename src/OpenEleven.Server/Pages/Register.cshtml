@@ -1,5 +1,7 @@
 @page "/register"
 @model RegisterModel
+@using OpenEleven.Server.Configuration
+@inject GameProfile Game
 @{
     Layout = null;
 }
@@ -14,7 +16,7 @@
 <body>
 <main class="card">
     <h1>Create an account</h1>
-    <p class="sub">PES 2010 online server</p>
+    <p class="sub">@TitleProfiles.DisplayName(Game) online server</p>
 
     @if (Model.Created is { Length: > 0 })
     {

@@ -70,6 +70,13 @@ public class RegistrationMarkupTests
         => Assert.StartsWith("@page \"/register\"", View);
 
     [Fact]
+    public void Names_the_running_title_instead_of_a_fixed_one()
+    {
+        Assert.Contains("@TitleProfiles.DisplayName(Game) online server", View);
+        Assert.DoesNotContain("PES 2010 online server", View);
+    }
+
+    [Fact]
     public void Keeps_the_button_disabled_until_the_captcha_is_passed()
     {
         Assert.Contains("disabled=\"@(Model.Captcha is not null)\"", View);
