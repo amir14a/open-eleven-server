@@ -34,10 +34,10 @@ public static class RankSystem
 
     public const string WeekKey = "rank.week", SeasonKey = "rank.season", InitializedKey = "rank.initialized";
 
-    /// <summary>A never-played profile starts at the start rating, and every profile in a 2011 division.</summary>
+    /// <summary>A never-played profile sits at the start rating, and every profile in a 2011 division.</summary>
     public static void Normalize(Player p, RankOptions rank)
     {
-        if (p.Rating == 0 && p.Stats.MatchCount == 0)
+        if (p.Stats.MatchCount == 0)
             p.Rating = rank.StartRating;
         if (!Divisions.Contains(p.Division))
             p.Division = "D5";

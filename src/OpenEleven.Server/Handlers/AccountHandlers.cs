@@ -248,8 +248,13 @@ public sealed class AccountHandlers(
 
         try
         {
+            // PES 2010 ranks on D1..D3C and starts in D3C; the rank-system titles start in D5.
+            var profile = options.CurrentValue.GameProfile;
             var (result, player) = await players.CreateForAccountAsync(
-                ctx.Session.AccountId, name, normalizedName, language, ctx.CancellationToken);
+                ctx.Session.AccountId, name, normalizedName, language,
+                options.CurrentValue.Rank.StartRating,
+                RankSystem.Applies(profile) ? RankSystem.Divisions[0] : "D3C",
+                ctx.CancellationToken);
 
             if (result != PlayerCreateResult.Created || player is null)
                 return [ctx.Fail("ERR_ALREADYEXISTS")];

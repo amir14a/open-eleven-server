@@ -35,7 +35,7 @@ public sealed class MatchResultsTests : IDisposable
         foreach (var (pid, name) in new[] { (1, "home"), (2, "away") })
         {
             var account = new Account { GameId = name, PasswordHash = "x" };
-            account.Players.Add(new Player { Pid = pid, Name = name, NormalizedName = name.ToUpperInvariant(), Rating = 500 });
+            account.Players.Add(new Player { Pid = pid, Name = name, NormalizedName = name.ToUpperInvariant(), Rating = 1000 });
             db.Accounts.Add(account);
         }
 
@@ -68,10 +68,10 @@ public sealed class MatchResultsTests : IDisposable
         // New players' K (40) times the 2-goal margin factor (1 + ln 3 / 2) times 0.5 = 31;
         // the winner kept a clean sheet: 3 points + 1.
         var (home, away) = (Load(1), Load(2));
-        Assert.Equal((0, 1, 469), (home.Stats.WinCount, home.Stats.LoseCount, home.Rating));
-        Assert.Equal((1, 0, 531, 4), (away.Stats.WinCount, away.Stats.LoseCount, away.Rating, away.Point));
+        Assert.Equal((0, 1, 969), (home.Stats.WinCount, home.Stats.LoseCount, home.Rating));
+        Assert.Equal((1, 0, 1031, 4), (away.Stats.WinCount, away.Stats.LoseCount, away.Rating, away.Point));
         Assert.Equal((1, 4, 4), (away.Stats.MatchCount, away.WeeklyPoints, away.SeasonPoints));
-        Assert.Equal((31, 531), (room.LastResults[2].Rating - room.LastResults[2].OldRating, room.LastResults[2].Rating));
+        Assert.Equal((31, 1031), (room.LastResults[2].Rating - room.LastResults[2].OldRating, room.LastResults[2].Rating));
     }
 
     [Fact]
@@ -104,7 +104,7 @@ public sealed class MatchResultsTests : IDisposable
         Assert.Contains("gametime=\"10MINUTES\"", stored.Settings);
         Assert.Contains("match_type=\"OC_FREE\"", stored.Settings);
         Assert.Empty(await new MatchRepository(db).GetRecentAsync(1, 10));
-        Assert.Equal(500, Load(1).Rating);
+        Assert.Equal(1000, Load(1).Rating);
     }
 
     [Fact]
@@ -131,7 +131,7 @@ public sealed class MatchResultsTests : IDisposable
 
         await Results.RecordAsync(room, (1, 2), leaverPid: null, noMatch: false);
 
-        Assert.Equal((500, 1), (Load(1).Rating, Load(1).Stats.WinCount));
+        Assert.Equal((1000, 1), (Load(1).Rating, Load(1).Stats.WinCount));
     }
 
     [Fact]
@@ -229,7 +229,7 @@ public sealed class MatchResultsTests : IDisposable
 
         await Results.RecordAsync(room, (1, 2), leaverPid: null, noMatch: true);
 
-        Assert.Equal((0, 500), (Load(1).Stats.MatchCount, Load(1).Rating));
-        Assert.Equal((0, 500), (Load(2).Stats.MatchCount, Load(2).Rating));
+        Assert.Equal((0, 1000), (Load(1).Stats.MatchCount, Load(1).Rating));
+        Assert.Equal((0, 1000), (Load(2).Stats.MatchCount, Load(2).Rating));
     }
 }

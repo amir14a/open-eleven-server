@@ -39,8 +39,9 @@ public sealed class PlayerLifecycleTests
         Assert.Equal(1, list.GetInt32("player_count"));
         var entry = Assert.Single(list.GetList("player_data"));
         Assert.Equal("Fresh Player", entry.GetString("name"));
+        // PES 2010 (the harness default): its own entry division, and the configured start rating.
         Assert.Equal("D3C", entry.GetString("division"));
-        Assert.Equal(500, entry.GetInt32("rating"));
+        Assert.Equal(1000, entry.GetInt32("rating"));
 
         var info = (await harness.DispatchAsync(session, "CMD_GET_PLAYERINFO"))[0];
         Assert.Equal("Fresh Player", info.GetString("name"));
@@ -49,6 +50,37 @@ public sealed class PlayerLifecycleTests
         Assert.True(Assert.IsType<bool>(info.GetValue("automatch_want")));
         Assert.True(Assert.IsType<bool>(info.GetValue("beginnermark")));
         Assert.True(Assert.IsType<bool>(info.GetValue("enable_chat")));
+    }
+
+    [Fact]
+    public async Task Rank_system_titles_create_profiles_in_d5_at_the_start_rating()
+    {
+        await using var harness = await ServerHarness.CreateAsync(s =>
+        {
+            s["Server:GameProfile"] = "Pes2011Pc";
+            s["Server:Rank:StartRating"] = "1200";
+        });
+        var account = await RegisterAsync(harness, "rank-account");
+        var session = AccountSession(harness, account.Id);
+
+        await harness.DispatchAsync(session, "CMD_CREATE_PLAYER", withFields: r => r.Set("name", "Ranked"));
+
+        await using var scope = harness.Services.CreateAsyncScope();
+        var player = scope.ServiceProvider.GetRequiredService<GameDbContext>().Players.Single(p => p.Name == "Ranked");
+        Assert.Equal(("D5", 1200), (player.Division, player.Rating));
+    }
+
+    [Fact]
+    public void Unplayed_profiles_are_moved_to_the_start_rating_and_played_ones_are_kept()
+    {
+        var rank = new RankOptions { StartRating = 1000 };
+        var unplayed = new Player { Rating = 500, Division = "D5", Stats = new PlayerStats() };
+        var played = new Player { Rating = 742, Division = "D5", Stats = new PlayerStats { MatchCount = 3 } };
+
+        RankSystem.Normalize(unplayed, rank);
+        RankSystem.Normalize(played, rank);
+
+        Assert.Equal((1000, 742), (unplayed.Rating, played.Rating));
     }
 
     [Fact]

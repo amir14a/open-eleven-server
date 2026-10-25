@@ -20,9 +20,10 @@ public interface IPlayerRepository
 
     /// <summary>Teams the player used in its latest completed matches, newest first.</summary>
     Task<IReadOnlyList<int>> GetRecentTeamsAsync(int pid, int count, CancellationToken ct = default);
+    /// <summary>Creates the account's profile with the title's starting rating and division.</summary>
     Task<(PlayerCreateResult Result, Player? Player)> CreateForAccountAsync(
         int accountId, string name, string normalizedName, string language,
-        CancellationToken ct = default);
+        int rating, string division, CancellationToken ct = default);
     Task<PlayerDeleteResult> DeleteForAccountAsync(int accountId, CancellationToken ct = default);
     Task SaveAsync(CancellationToken ct = default);
 }
@@ -137,7 +138,7 @@ public sealed class PlayerRepository(GameDbContext db) : IPlayerRepository
 
     public async Task<(PlayerCreateResult Result, Player? Player)> CreateForAccountAsync(
         int accountId, string name, string normalizedName, string language,
-        CancellationToken ct = default)
+        int rating, string division, CancellationToken ct = default)
     {
         if (await db.Players.AnyAsync(
                 p => p.AccountId == accountId || p.NormalizedName == normalizedName, ct))
@@ -149,9 +150,9 @@ public sealed class PlayerRepository(GameDbContext db) : IPlayerRepository
             Name = name,
             NormalizedName = normalizedName,
             Lang = language,
-            Division = "D3C",
+            Division = division,
             Kind = "NORMAL",
-            Rating = 500,
+            Rating = rating,
             Manner = 3,
             SelfReportLevel = "PRO",
             PositionWant = "CF",
