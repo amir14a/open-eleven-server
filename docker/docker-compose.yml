@@ -10,6 +10,8 @@
 # writes logs to logs/<title>. On Linux the containers run as uid 1654, so once:
 #   mkdir -p logs && sudo chown -R 1654:1654 logs
 
+name: openeleven
+
 x-title: &title
   restart: unless-stopped
   networks: [openeleven]
@@ -20,6 +22,7 @@ services:
   pes2010pc:
     <<: *title
     container_name: openeleven-pes2010pc
+    image: openeleven-pes2010pc
     build: { context: .., dockerfile: docker/Dockerfile, args: { TITLE: Pes2010Pc } }
     volumes:
       - ../certs:/app/certs:ro
@@ -44,6 +47,7 @@ services:
   pes2011pc:
     <<: *title
     container_name: openeleven-pes2011pc
+    image: openeleven-pes2011pc
     build: { context: .., dockerfile: docker/Dockerfile, args: { TITLE: Pes2011Pc } }
     volumes:
       - ../certs:/app/certs:ro
@@ -66,6 +70,7 @@ services:
   pes2012pc:
     <<: *title
     container_name: openeleven-pes2012pc
+    image: openeleven-pes2012pc
     build: { context: .., dockerfile: docker/Dockerfile, args: { TITLE: Pes2012Pc } }
     volumes:
       - ../certs:/app/certs:ro
@@ -88,6 +93,7 @@ services:
   pes2013pc:
     <<: *title
     container_name: openeleven-pes2013pc
+    image: openeleven-pes2013pc
     build: { context: .., dockerfile: docker/Dockerfile, args: { TITLE: Pes2013Pc } }
     volumes:
       - ../certs:/app/certs:ro
