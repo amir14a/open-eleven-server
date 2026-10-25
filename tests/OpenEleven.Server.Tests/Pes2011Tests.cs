@@ -212,6 +212,27 @@ public class Pes2011Tests
         Assert.Contains("read_buffer=\"Play fair.\"", text);
     }
 
+    [Fact]
+    public void Eula_language_cannot_walk_out_of_the_eula_folder()
+    {
+        var root = Directory.CreateTempSubdirectory().FullName;
+        try
+        {
+            var folder = Directory.CreateDirectory(Path.Combine(root, "eula")).FullName;
+            File.WriteAllText(Path.Combine(folder, "eula.txt"), "english");
+            File.WriteAllText(Path.Combine(folder, "eula.SP.txt"), "spanish");
+            File.WriteAllText(Path.Combine(root, "SECRET.txt"), "secret");
+            var options = new ServerOptions { Protocol = { EulaText = Path.Combine(folder, "eula.txt") } };
+
+            Assert.Equal("spanish", Web.GameEndpoints.EulaText(options, "sp"));
+            Assert.Equal("english", Web.GameEndpoints.EulaText(options, "/../../secret"));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     // ---- login -----------------------------------------------------------
 
     [Fact]

@@ -153,8 +153,11 @@ public static class GameEndpoints
         }
         else if (File.Exists(eula))
         {
+            // lang goes into a file name: letters only, or ?lang=../.. reads other files.
+            if (lang is null || lang.Length is < 2 or > 3 || !lang.All(char.IsAsciiLetter))
+                lang = "EN";
             var localized = Path.Combine(Path.GetDirectoryName(eula) ?? "",
-                $"{Path.GetFileNameWithoutExtension(eula)}.{(lang ?? "EN").ToUpperInvariant()}{Path.GetExtension(eula)}");
+                $"{Path.GetFileNameWithoutExtension(eula)}.{lang.ToUpperInvariant()}{Path.GetExtension(eula)}");
             text = File.ReadAllText(File.Exists(localized) ? localized : eula);
         }
         else
