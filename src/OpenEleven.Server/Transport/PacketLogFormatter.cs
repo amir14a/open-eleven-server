@@ -5,6 +5,7 @@
 
 using System.Text;
 using OpenEleven.Protocol;
+using OpenEleven.Protocol.Crypto;
 using OpenEleven.Protocol.Framing;
 using OpenEleven.Protocol.Kv;
 using OpenEleven.Server.Configuration;
@@ -33,9 +34,37 @@ internal static class PacketLogFormatter
         _ => TerminalSupportsColor ? AnsiPalette.Default : AnsiPalette.None,
     };
 
+    /// <summary>
+    /// Fields that would let whoever reads the log sign in as the player: passwords, login
+    /// tickets and serials. PES 2010's uname is the MD5 credential itself; PES 2011 puts the
+    /// plain game id there, which stays readable.
+    /// </summary>
+    private static bool IsSecret(string key, object? value) => key switch
+    {
+        "gameid_password" or "loginid_password" or "regcode" or "tmpRegcode" => true,
+        "uname" => AuthProof.TryNormalizeMd5(value?.ToString(), out _),
+        _ => false,
+    };
+
+    /// <summary>The message with secret values masked, or the message itself when it has none.</summary>
+    internal static KvMessage Redact(KvMessage message)
+    {
+        if (!message.Fields.Any(f => IsSecret(f.Key, f.Value)))
+            return message;
+
+        var masked = new KvMessage();
+        foreach (var (key, value) in message.Fields)
+            masked.Set(key, IsSecret(key, value) ? "***" : value);
+        return masked;
+    }
+
     /// <summary>A parsed key=value packet: pretty payload, then the bytes.</summary>
     public static string Format(KvMessage message, string payloadText, DebugOptions debug)
     {
+        var redacted = Redact(message);
+        if (!ReferenceEquals(redacted, message))
+            (message, payloadText) = (redacted, new KvWriter().Write(redacted).TrimEnd('\0'));
+
         var palette = PaletteFor(debug);
         var sb = new StringBuilder();
 

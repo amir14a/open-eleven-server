@@ -113,9 +113,10 @@ public static class GameEndpoints
             var passwordHash = form["game_id_password"].ToString();
             if (passwordHash.Length == 0) passwordHash = form["passwd"].ToString();
 
+            // The hash is password-equivalent, so it never reaches the log.
             log.LogInformation(
-                "GAMEID auth: game_id={GameId} hash={Hash} valid_md5={Valid}",
-                gameId, passwordHash, GameIdAuthEndpoint.LooksLikeMd5(passwordHash));
+                "GAMEID auth: game_id={GameId} valid_md5={Valid}",
+                gameId, GameIdAuthEndpoint.LooksLikeMd5(passwordHash));
 
             var authenticator = http.RequestServices.GetRequiredService<GameIdAuthService>();
             var result = await authenticator.AuthenticateAsync(
@@ -127,12 +128,9 @@ public static class GameEndpoints
             if (!result.Success)
                 log.LogWarning("GAMEID auth rejected for {GameId}: {Reason}", gameId, result.Reason);
 
-            log.LogInformation(
-                "GAMEID auth response: {Body}", result.Body.Replace("\n", "\\n"));
-
             // Legacy client errors are encoded in the first response line, not HTTP status.
             return Results.Text(result.Body, "text/plain", Encoding.ASCII);
-        });
+        }).WithMetadata(new SensitiveBodyAttribute());
 
         app.MapFallback(() => Results.NotFound());
 
