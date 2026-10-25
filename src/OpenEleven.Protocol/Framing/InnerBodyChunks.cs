@@ -19,6 +19,9 @@ namespace OpenEleven.Protocol.Framing;
 /// </summary>
 public sealed class InnerBodyChunks
 {
+    /// <summary>Ceiling on Y, so a small zlib stream cannot inflate without bound.</summary>
+    private const int MaxInflated = 1024 * 1024;
+
     private byte[]? _buffer;
     private int _filled;
     private int _inflated;
@@ -40,6 +43,8 @@ public sealed class InnerBodyChunks
             _compressed = inner[12] != 0;
             if (total < 0 || total > InnerBody.MaxMessage || _inflated < 0)
                 throw new ProtocolException($"Chunked message declares {total} bytes, above the {InnerBody.MaxMessage} limit.");
+            if (_compressed && _inflated > MaxInflated)
+                throw new ProtocolException($"Chunked message inflates to {_inflated} bytes, above the {MaxInflated} limit.");
 
             _buffer = new byte[total];
             _filled = 0;
@@ -75,8 +80,21 @@ public sealed class InnerBodyChunks
 
         using var input = new MemoryStream(stored);
         using var zlib = new ZLibStream(input, CompressionMode.Decompress);
-        using var output = new MemoryStream();
-        zlib.CopyTo(output);
-        return Encoding.UTF8.GetString(output.ToArray()).TrimEnd('\0');
+        var output = new byte[_inflated];
+        var length = 0;
+        try
+        {
+            int read;
+            while (length < output.Length && (read = zlib.Read(output, length, output.Length - length)) > 0)
+                length += read;
+            if (zlib.ReadByte() >= 0)
+                throw new ProtocolException($"Chunked message inflates past its declared {_inflated} bytes.");
+        }
+        catch (InvalidDataException ex)
+        {
+            throw new ProtocolException($"Chunked message is not a valid zlib stream: {ex.Message}");
+        }
+
+        return Encoding.UTF8.GetString(output, 0, length).TrimEnd('\0');
     }
 }

@@ -44,11 +44,9 @@ public class ChunkedMessageTests
         Assert.Equal(text, done);
     }
 
-    [Fact]
-    public void Compressed_flag_is_inflated()
+    /// <summary>A start chunk carrying all of <paramref name="raw"/> zlib-packed, declaring <paramref name="inflated"/>.</summary>
+    private static byte[] CompressedStart(byte[] raw, int inflated)
     {
-        var text = new string('x', 3000);
-        var raw = Encoding.ASCII.GetBytes(text);
         using var packed = new MemoryStream();
         using (var z = new ZLibStream(packed, CompressionLevel.Optimal, leaveOpen: true))
             z.Write(raw);
@@ -57,13 +55,31 @@ public class ChunkedMessageTests
         var body = new byte[13 + stored.Length];
         System.Buffers.Binary.BinaryPrimitives.WriteInt32BigEndian(body.AsSpan(0, 4), stored.Length);
         System.Buffers.Binary.BinaryPrimitives.WriteInt32BigEndian(body.AsSpan(4, 4), stored.Length);
-        System.Buffers.Binary.BinaryPrimitives.WriteInt32BigEndian(body.AsSpan(8, 4), raw.Length);
+        System.Buffers.Binary.BinaryPrimitives.WriteInt32BigEndian(body.AsSpan(8, 4), inflated);
         body[12] = 1;
         stored.CopyTo(body, 13);
+        return body;
+    }
 
+    [Fact]
+    public void Compressed_flag_is_inflated()
+    {
+        var text = new string('x', 3000);
         var chunks = new InnerBodyChunks();
-        Assert.Null(chunks.Feed(InnerBody.ChunkStart, body));
-        var end = new byte[4];
-        Assert.Equal(text, chunks.Feed(InnerBody.ChunkEnd, end));
+        Assert.Null(chunks.Feed(InnerBody.ChunkStart, CompressedStart(Encoding.ASCII.GetBytes(text), text.Length)));
+        Assert.Equal(text, chunks.Feed(InnerBody.ChunkEnd, new byte[4]));
+    }
+
+    [Theory]
+    [InlineData(1000)]              // inflates past what it declared
+    [InlineData(64 * 1024 * 1024)]  // declares more than the server accepts
+    public void A_decompression_bomb_is_refused(int declared)
+    {
+        var chunks = new InnerBodyChunks();
+        Assert.Throws<ProtocolException>(() =>
+        {
+            chunks.Feed(InnerBody.ChunkStart, CompressedStart(new byte[8 * 1024 * 1024], declared));
+            chunks.Feed(InnerBody.ChunkEnd, new byte[4]);
+        });
     }
 }
