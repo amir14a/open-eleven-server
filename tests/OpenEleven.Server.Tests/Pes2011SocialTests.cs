@@ -119,6 +119,33 @@ public class Pes2011SocialTests
     }
 
     [Fact]
+    public async Task Only_the_match_host_during_a_match_can_report_goals_and_phases()
+    {
+        await using var harness = await Harness();
+        var other = await AddPlayerAsync(harness, "guest");
+        var owner = Player(harness, 1, SessionState.InBlock);
+        var created = Assert.Single(await harness.DispatchAsync(owner, "CMD_CREATEJOIN_ROOM", withFields: r => r
+            .Set("name", "r").Set("max_players", 2)), m => m.MsgName == "CMD_CREATEJOIN_ROOM");
+        var room = harness.Hub.FindRoom(created.GetInt32("room_id"))!;
+        var guest = Player(harness, other, SessionState.InBlock);
+        await harness.DispatchAsync(guest, "CMD_JOIN_ROOM", withFields: r => r.Set("room_id", room.Id));
+
+        async Task Goal(Session s) => await harness.DispatchAsync(s, "CMD_ADD_SCORE", withFields: r => r.Set("goal_side", "HOME"));
+
+        await Goal(owner);                                   // before the match started
+        await Goal(guest);                                   // not the host
+        await harness.DispatchAsync(guest, "CMD_CHANGE_GAMEPHASE", withFields: r => r.Set("phase", "END"));
+        Assert.Equal((0, "ENTRY"), (room.HomeGoals, room.Phase));
+
+        await harness.DispatchAsync(owner, "CMD_SET_GAMEMEMBERENV");
+        await harness.DispatchAsync(owner, "CMD_CHANGE_GAMEPHASE", withFields: r => r.Set("phase", "1ST"));
+        await Goal(guest);
+        await Goal(owner);
+
+        Assert.Equal((1, "1ST", "GAME"), (room.HomeGoals, room.Phase, room.Status));
+    }
+
+    [Fact]
     public async Task Ranking_lists_played_players_by_the_requested_type()
     {
         await using var harness = await Harness();

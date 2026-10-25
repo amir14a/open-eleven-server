@@ -185,6 +185,8 @@ public sealed class Pes2011Handlers(
         var room = ctx.Session.RoomId is { } id ? ctx.Hub.FindRoom(id) : null;
         if (room is null)
             return [ctx.Fail("ERR_NOTINROOM")];
+        if (!IsMatchHost(ctx, room))
+            return [ctx.Ok()];
 
         var phase = ctx.Request.GetString("phase") ?? "";
         if (phase == "1ST")
@@ -240,6 +242,8 @@ public sealed class Pes2011Handlers(
         var room = ctx.Session.RoomId is { } id ? ctx.Hub.FindRoom(id) : null;
         if (room is null)
             return Reply.Of(ctx.Fail("ERR_NOTINROOM"));
+        if (!IsMatchHost(ctx, room))
+            return Reply.Of(ctx.Ok());
 
         var away = ctx.Request.GetString("goal_side") == "AWAY";
         // Shoot-out goals are kept apart: they decide a draw but are not part of the score.
@@ -265,10 +269,10 @@ public sealed class Pes2011Handlers(
     /// A card or an injury (FUN_005fa030): card_pid/card_side/card_gameplayer_id/card_kind
     /// (YELLOW|RED|NONE) and injury_side/injury_gameplayer_id. Kept with the match record.
     /// </summary>
-    [Command("CMD_ADD_FOUL", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc)]
+    [Command("CMD_ADD_FOUL", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.InRoom)]
     public ValueTask<KvMessage[]> AddFoul(CommandContext ctx)
     {
-        if (ctx.Session.RoomId is { } id && ctx.Hub.FindRoom(id) is { } room)
+        if (ctx.Session.RoomId is { } id && ctx.Hub.FindRoom(id) is { } room && IsMatchHost(ctx, room))
         {
             var r = ctx.Request;
             if (r.GetString("card_kind") is { } kind and not "NONE")
@@ -282,10 +286,10 @@ public sealed class Pes2011Handlers(
     }
 
     /// <summary>The host's combination play for the match (total_comb, max_comb); credited to the host.</summary>
-    [Command("CMD_UPDATE_COMBINATION", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc)]
+    [Command("CMD_UPDATE_COMBINATION", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.InRoom)]
     public ValueTask<KvMessage[]> UpdateCombination(CommandContext ctx)
     {
-        if (ctx.Session.RoomId is { } id && ctx.Hub.FindRoom(id) is { } room)
+        if (ctx.Session.RoomId is { } id && ctx.Hub.FindRoom(id) is { } room && IsMatchHost(ctx, room))
         {
             var (total, max) = (ctx.Request.GetInt32("total_comb", 0), ctx.Request.GetInt32("max_comb", 0));
             room.Sheet.Combination(ctx.Session.Pid, total, max);
@@ -294,6 +298,22 @@ public sealed class Pes2011Handlers(
         }
 
         return Reply.Of(ctx.Ok());
+    }
+
+    /// <summary>
+    /// Match events (phase, goals, fouls, combinations) count only from the match host — the room
+    /// owner, who also sends CMD_SET_GAMEMEMBERENV — and only once that has started the match.
+    /// Live captures show the other client never sends them, so anything else is ignored (with
+    /// a plain NOERR, which keeps a confused client on its feet) rather than trusted.
+    /// </summary>
+    private bool IsMatchHost(CommandContext ctx, Room room)
+    {
+        if (room.OwnerPid == ctx.Session.Pid && room.MatchStarting)
+            return true;
+
+        log.LogWarning("Ignored {Msg} from pid {Pid} in room {RoomId}: not the match host during a match (owner {Owner}, started {Started})",
+            ctx.Msg, ctx.Session.Pid, room.Id, room.OwnerPid, room.MatchStarting);
+        return false;
     }
 
     /// <summary>
