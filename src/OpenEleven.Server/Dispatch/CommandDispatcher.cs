@@ -60,6 +60,9 @@ public sealed class CommandDispatcher(
             }
         }
 
+        // ponytail: a rejected command is only answered with SEQUENCE; the connection stays open and
+        // nothing limits how fast or how many connections a client opens. Upgrade: close a session
+        // after a few rejections, rate-limit commands per session, cap connections per IP in GameListener.
         if (protocol.EnforceSessionState && session.State < entry.RequiredState)
         {
             log.LogWarning(
