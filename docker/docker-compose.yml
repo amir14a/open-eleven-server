@@ -12,6 +12,7 @@
 
 x-title: &title
   restart: unless-stopped
+  networks: [openeleven]
   depends_on:
     mysql: { condition: service_healthy }
 
@@ -110,6 +111,7 @@ services:
     container_name: openeleven-mysql
     image: mysql:8
     restart: unless-stopped
+    networks: [openeleven]           # no ports: reachable only from this network
     environment:
       # One shared user; init-multidb.sh creates the four per-title schemas.
       MYSQL_USER: openeleven
@@ -124,14 +126,9 @@ services:
       timeout: 5s
       retries: 20
 
-  adminer:
-    container_name: openeleven-adminer
-    image: adminer:latest
-    restart: unless-stopped
-    ports:
-      - "8090:8080"
-    depends_on:
-      - mysql
+networks:
+  openeleven:
+    name: openeleven
 
 volumes:
   mysql-data:
