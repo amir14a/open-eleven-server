@@ -25,9 +25,7 @@ WORKDIR /app
 
 COPY --from=build /app ./
 
-RUN mkdir -p /app/data /app/logs && chown -R app:app /app
-
-USER app
+RUN mkdir -p /app/data /app/logs
 
 ENV TITLE=${TITLE}
 ENTRYPOINT dotnet "OpenEleven.${TITLE}.dll" --config conf/server.yaml
