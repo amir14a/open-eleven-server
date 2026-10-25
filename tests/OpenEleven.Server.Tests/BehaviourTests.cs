@@ -37,6 +37,22 @@ public class ServerListTests
     }
 
     [Fact]
+    public async Task A_host_name_is_sent_as_its_ip_in_the_server_list_and_kept_in_urls()
+    {
+        await using var harness = await ServerHarness.CreateAsync(s =>
+        {
+            s["Server:AdvertiseIp"] = "localhost";
+            s["Server:Https:Enabled"] = "true";
+        });
+
+        var servers = await harness.DispatchAsync(harness.NewSession(), "CMD_GET_SVRLIST");
+        var urls = await harness.DispatchAsync(harness.NewSession(), "CMD_GET_URLLIST");
+
+        Assert.All(servers[0].GetList("svrlist"), e => Assert.Equal("127.0.0.1", e.GetString("svraddr")));
+        Assert.Contains("https://localhost/pcspec.bin", urls[0].GetList("ulist").Select(e => e.GetString("url")));
+    }
+
+    [Fact]
     public async Task Every_entry_advertises_the_configured_address()
     {
         await using var harness = await ServerHarness.CreateAsync();

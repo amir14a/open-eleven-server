@@ -23,6 +23,27 @@ public static class AdvertiseIpResolver
         return DetectPrimaryAddress() ?? "127.0.0.1";
     }
 
+    /// <summary>
+    /// The IPv4 address for <paramref name="host"/>: an IP is returned as is, a host name is
+    /// resolved. Falls back to the host name when it does not resolve.
+    /// </summary>
+    public static string ToIPv4(string host)
+    {
+        if (IPAddress.TryParse(host, out _))
+            return host;
+
+        try
+        {
+            return Dns.GetHostAddresses(host)
+                .FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork)
+                ?.ToString() ?? host;
+        }
+        catch (SocketException)
+        {
+            return host;
+        }
+    }
+
     private static string? DetectPrimaryAddress()
     {
         try

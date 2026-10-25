@@ -24,10 +24,17 @@ public sealed class ServerCatalog
         _options = options;
         _hub = hub;
         AdvertiseIp = AdvertiseIpResolver.Resolve(options.CurrentValue.AdvertiseIp);
+        ServerAddress = AdvertiseIpResolver.ToIPv4(AdvertiseIp);
     }
 
     /// <summary>Resolved once at startup so every response agrees on one address.</summary>
     public string AdvertiseIp { get; }
+
+    /// <summary>
+    /// <see cref="AdvertiseIp"/> as an IPv4 address, for <c>svraddr</c>: the server list carries
+    /// IPs (as Konami's did), while the URLs keep the host name the certificate is issued for.
+    /// </summary>
+    public string ServerAddress { get; }
 
     public IReadOnlyList<ServiceEndpointOptions> Endpoints
         => _options.CurrentValue.Services.Where(s => s.Enabled).ToArray();
@@ -60,7 +67,7 @@ public sealed class ServerCatalog
             .Where(x => x.SvrType is not null)
             .Select(x => new KvMessage()
                 .Set("svrtype", x.SvrType!)
-                .Set("svraddr", AdvertiseIp)
+                .Set("svraddr", ServerAddress)
                 .Set("svrport", x.Endpoint.Port)
                 .Set("userCount", _hub.PlayerCount(x.Endpoint.Role)))
             .ToArray();
@@ -74,7 +81,7 @@ public sealed class ServerCatalog
             .Select(s => new KvMessage()
                 .Set("svrtype", s.Role.ToSvrType())
                 .Set("svrport", s.Port)
-                .Set("svraddr", AdvertiseIp)
+                .Set("svraddr", ServerAddress)
                 .Set("max_player_num", s.MaxPlayers)
                 .Set("player_num", _hub.PlayerCount(s.Role))
                 .Set("svrgid", s.Gid))
@@ -88,7 +95,7 @@ public sealed class ServerCatalog
                 .Set("svrtype", s.Role.ToSvrType())
                 .Set("svrname", s.Name)
                 .Set("svrport", s.Port)
-                .Set("svraddr", AdvertiseIp)
+                .Set("svraddr", ServerAddress)
                 .Set("max_player_num", s.MaxPlayers)
                 .Set("player_num", _hub.PlayerCount(s.Role))
                 .Set("svrgid", s.Gid))
