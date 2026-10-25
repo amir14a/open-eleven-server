@@ -39,7 +39,7 @@ public static class GameEndpoints
                     new RegisterAccountResponse(
                         outcome.Account.Id, outcome.Account.GameId, outcome.Account.RegCode)),
             };
-        }).WithMetadata(new SensitiveBodyAttribute());
+        }).WithMetadata(new SensitiveBodyAttribute()).RequireRateLimiting(HttpRateLimits.Register);
 
         // Server.Urls entries backed by a file (the DLC package and friends), streamed with range
         // support so an interrupted download can resume.
@@ -67,6 +67,8 @@ public static class GameEndpoints
             var data = http.Request.QueryString.Value ?? "";
             if (HttpMethods.IsPost(http.Request.Method))
             {
+                // The real query is under 100 bytes.
+                http.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>()!.MaxRequestBodySize = 4096;
                 using var reader = new StreamReader(http.Request.Body, Encoding.ASCII);
                 var body = await reader.ReadToEndAsync(http.RequestAborted);
                 if (body.Length > 0)
@@ -75,7 +77,7 @@ public static class GameEndpoints
 
             var text = await new State.RankingQuery(db).RenderAsync(data, time.GetUtcNow().UtcDateTime, http.RequestAborted);
             return Results.Text(text, "text/plain", Encoding.UTF8);
-        });
+        }).RequireRateLimiting(HttpRateLimits.Ranking);
 
         // The terms screen: the client GETs the EULA_PES url and shows the body (read_buffer="...").
         // The url list puts the client's language in it (?lang=SP).

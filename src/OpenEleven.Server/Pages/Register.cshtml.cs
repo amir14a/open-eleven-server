@@ -5,6 +5,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.RateLimiting;
 using OpenEleven.Protocol.Crypto;
 using OpenEleven.Server.Web;
 
@@ -23,6 +24,7 @@ namespace OpenEleven.Server.Pages;
 /// <see cref="RegistrationEndpoint"/>.
 /// </remarks>
 [SensitiveBody]
+[EnableRateLimiting(HttpRateLimits.Register)]
 public sealed class RegisterModel(RegistrationService registrations, CaptchaVerifier captcha) : PageModel
 {
     [BindProperty]

@@ -60,6 +60,7 @@ public static class OpenElevenServerHost
         // Serves the registration form at /register. Razor Pages ships in the shared
         // framework, so this needs no package reference.
         builder.Services.AddRazorPages();
+        builder.Services.AddHttpRateLimits();
 
         // Antiforgery tokens are protected with Data Protection keys, which default to a
         // per-user directory that a container does not persist. Without this, every restart
@@ -136,6 +137,7 @@ public static class OpenElevenServerHost
         app.UseRouting();
 
         app.UseMiddleware<HttpTraceMiddleware>();
+        app.UseRateLimiter();
 
         app.MapRazorPages();
         app.MapGameEndpoints();
