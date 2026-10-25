@@ -3,6 +3,7 @@
 //
 // This file is part of OpenEleven. See the LICENSE file at the repository root.
 
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Options;
@@ -97,29 +98,23 @@ public static class OpenElevenServerHost
                 sp.GetRequiredService<ILoggerFactory>()));
         }
 
-        // Kestrel serves the small HTTP surface the client fetches before logging in.
+        // Kestrel serves the small HTTP surface the client fetches before logging in: HTTPS, or
+        // plain HTTP on 80 when Https.Enabled is false (local development). With HTTPS there is
+        // no fallback: without a certificate the client cannot get past CMD_GET_URLLIST, so a
+        // missing one stops the server here instead.
+        var certificate = startupOptions.Https.Enabled ? LoadCertificate(startupOptions.Https) : null;
         builder.WebHost.ConfigureKestrel(kestrel =>
         {
-            kestrel.ListenAnyIP(startupOptions.Listen.Http, listen => listen.Protocols = HttpProtocols.Http1);
-
-            var https = startupOptions.Https;
-            if (!https.Enabled)
-                return;
-
-            if (string.IsNullOrWhiteSpace(https.CertificatePath) || !File.Exists(https.CertificatePath))
+            if (certificate is null)
             {
-                // Deliberately no plaintext fallback: a silent downgrade hides a
-                // misconfiguration that resurfaces later as an unexplained client failure.
-                Console.Error.WriteLine(
-                    $"[warn] HTTPS disabled: certificate '{https.CertificatePath}' not found. " +
-                    $"Port {startupOptions.Listen.Https} will not be served.");
+                kestrel.ListenAnyIP(startupOptions.Listen.Http, listen => listen.Protocols = HttpProtocols.Http1);
                 return;
             }
 
             kestrel.ListenAnyIP(startupOptions.Listen.Https, listen =>
             {
                 listen.Protocols = HttpProtocols.Http1;
-                listen.UseHttps(https.CertificatePath!, https.CertificatePassword);
+                listen.UseHttps(certificate);
             });
         });
 
@@ -168,6 +163,22 @@ public static class OpenElevenServerHost
         await initializer.InitializeAsync();
     }
 
+    /// <summary>Loads the PEM chain + key named in <see cref="HttpsOptions"/>.</summary>
+    internal static X509Certificate2 LoadCertificate(HttpsOptions https)
+    {
+        var certPath = Path.GetFullPath(https.CertificatePath, AppContext.BaseDirectory);
+        var keyPath = Path.GetFullPath(https.KeyPath, AppContext.BaseDirectory);
+        if (https.CertificatePath.Length == 0 || !File.Exists(certPath))
+            throw new InvalidOperationException($"Https.CertificatePath: certificate '{certPath}' not found.");
+        if (https.KeyPath.Length == 0 || !File.Exists(keyPath))
+            throw new InvalidOperationException($"Https.KeyPath: private key '{keyPath}' not found.");
+
+        using var pem = X509Certificate2.CreateFromPemFile(certPath, keyPath);
+        // SChannel on Windows refuses the ephemeral key a PEM import produces; a PKCS#12
+        // round trip gives it a persisted one.
+        return X509CertificateLoader.LoadPkcs12(pem.Export(X509ContentType.Pkcs12), null);
+    }
+
     private static void LogStartupSummary(
         WebApplication app, ServerOptions options, FileLoggerProvider? fileLog)
     {
@@ -176,9 +187,12 @@ public static class OpenElevenServerHost
         var registry = app.Services.GetRequiredService<CommandRegistry>();
 
         log.LogInformation(
-            "Serving {Title}: advertising {Ip} (configured as {Configured})",
-            TitleProfiles.DisplayName(options.GameProfile), catalog.AdvertiseIp, options.AdvertiseIp);
+            "Serving {Title}: advertising {Host}", TitleProfiles.DisplayName(options.GameProfile), catalog.AdvertiseIp);
         log.LogInformation("{Count} commands registered", registry.Count);
+        if (options.Https.Enabled)
+            log.LogInformation("HTTPS: https://{Host}:{Port}/", catalog.AdvertiseIp, options.Listen.Https);
+        else
+            log.LogWarning("HTTPS disabled: plain http://{Host}:{Port}/ (local development only)", catalog.AdvertiseIp, options.Listen.Http);
 
         if (fileLog is { IsOpen: true })
             log.LogInformation("Log file: {LogFile}", fileLog.Path);

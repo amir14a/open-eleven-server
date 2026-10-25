@@ -15,9 +15,10 @@ public sealed class ServerOptions
     public const int MaxLobbies = 10;
 
     /// <summary>
-    /// IP written into <c>svraddr</c> of the server list. "auto" resolves the primary
-    /// outbound NIC at startup. A literal 127.0.0.1 only works when the game runs on
-    /// this same machine, which is why it is not the default.
+    /// Address the client reaches this server on: written into <c>svraddr</c> of the server list
+    /// and into every URL of CMD_GET_URLLIST. With HTTPS it must be a host name the certificate
+    /// covers (the client validates it with no way to ignore errors); an IP is only accepted
+    /// with <c>Https.Enabled: false</c>, where "auto" also resolves the primary outbound NIC.
     /// </summary>
     public string AdvertiseIp { get; set; } = "auto";
 
@@ -74,11 +75,19 @@ public sealed class ListenOptions
 {
     public string Host { get; set; } = "0.0.0.0";
 
-    [Range(0, 65535)]
-    public int Http { get; set; } = 80;
-
-    [Range(0, 65535)]
+    /// <summary>
+    /// HTTPS port. The PES clients turn TLS on for every port except 80, so each title can take
+    /// its own port here.
+    /// </summary>
+    [Range(1, 65535)]
     public int Https { get; set; } = 443;
+
+    /// <summary>
+    /// Plain-HTTP port, used only with <c>Https.Enabled: false</c> (local development). The
+    /// clients only speak plain HTTP to port 80, so that is the only value they accept.
+    /// </summary>
+    [Range(1, 65535)]
+    public int Http { get; set; } = 80;
 
     /// <summary>Idle timeout for a game connection with no traffic at all.</summary>
     public int IdleTimeoutSeconds { get; set; } = 300;
@@ -243,12 +252,21 @@ public sealed class UrlOptions
 
 public sealed class HttpsOptions
 {
+    /// <summary>
+    /// HTTPS on <c>Listen.Https</c> with the PEM certificate below. False switches to plain HTTP
+    /// on <c>Listen.Http</c> for local development; never for a public server.
+    /// </summary>
     public bool Enabled { get; set; } = true;
 
-    /// <summary>PFX path. When missing, 443 is skipped with a warning rather than silently downgraded.</summary>
-    public string? CertificatePath { get; set; }
+    /// <summary>
+    /// PEM certificate chain for <see cref="ServerOptions.AdvertiseIp"/>, e.g. Let's Encrypt's
+    /// fullchain.pem. Relative paths resolve against the application directory. Read at startup,
+    /// so a renewed certificate takes effect on the next restart.
+    /// </summary>
+    public string CertificatePath { get; set; } = "";
 
-    public string? CertificatePassword { get; set; }
+    /// <summary>PEM private key for <see cref="CertificatePath"/>, e.g. privkey.pem.</summary>
+    public string KeyPath { get; set; } = "";
 }
 
 public enum DatabaseProvider

@@ -61,23 +61,61 @@ public class ReferenceParityTests
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
-    public async Task Url_list_carries_the_http_port_when_it_is_not_the_default()
+    [Theory]
+    [InlineData("192.168.100.7", 443)] // an IP cannot match a public certificate
+    [InlineData("", 443)]
+    [InlineData("auto", 443)]         // resolves to an IP
+    [InlineData("oe.test", 80)]        // port 80 means plain HTTP to the client
+    public void With_https_the_address_must_be_a_name_and_the_port_not_80(string host, int port)
     {
-        // The client fetches these URLs immediately and stalls when they 404, so a
-        // relocated HTTP port has to reach the payload — including the registration page,
-        // which is now served by this server rather than by Konami.
-        await using var harness = await ServerHarness.CreateAsync(s =>
-            s["Server:Listen:Http"] = "8080");
-        var session = harness.NewSession();
+        var options = new ServerOptions { AdvertiseIp = host, Listen = { Https = port } };
+        // Plain HTTP (local development) takes an IP, but only on port 80.
+        Assert.True(new ServerOptionsValidator().Validate(null, new ServerOptions
+        {
+            AdvertiseIp = "192.168.100.7", Https = { Enabled = false },
+        }).Succeeded);
+        Assert.True(new ServerOptionsValidator().Validate(null, new ServerOptions
+        {
+            AdvertiseIp = "192.168.100.7", Https = { Enabled = false }, Listen = { Http = 8080 },
+        }).Failed);
 
-        var replies = await harness.DispatchAsync(session, "CMD_GET_URLLIST");
-        var urls = replies[0].GetList("ulist").Select(e => e.GetString("url")).ToArray();
+        var result = new ServerOptionsValidator().Validate(null, options);
 
-        Assert.Contains("http://127.0.0.1:8080/pcspec.bin", urls);
-        Assert.Contains("http://127.0.0.1:8080/gameid_auth", urls);
-        Assert.Contains("http://127.0.0.1:8080/register", urls);
-        Assert.DoesNotContain(KonamiIdReferenceUrl, urls);
+        Assert.Contains(result.Failures ?? [], f => f.Contains("AdvertiseIp") || f.Contains("Listen.Https"));
+    }
+
+    [Fact]
+    public void Pem_certificate_and_key_load_with_a_usable_private_key()
+    {
+        using var key = System.Security.Cryptography.RSA.Create(2048);
+        var request = new System.Security.Cryptography.X509Certificates.CertificateRequest(
+            "CN=oe.test", key, System.Security.Cryptography.HashAlgorithmName.SHA256,
+            System.Security.Cryptography.RSASignaturePadding.Pkcs1);
+        using var issued = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(1));
+        var dir = Directory.CreateTempSubdirectory("oe-pem-").FullName;
+        try
+        {
+            File.WriteAllText(Path.Combine(dir, "fullchain.pem"), issued.ExportCertificatePem());
+            File.WriteAllText(Path.Combine(dir, "privkey.pem"), key.ExportPkcs8PrivateKeyPem());
+
+            using var loaded = OpenElevenServerHost.LoadCertificate(new HttpsOptions
+            {
+                CertificatePath = Path.Combine(dir, "fullchain.pem"),
+                KeyPath = Path.Combine(dir, "privkey.pem"),
+            });
+
+            Assert.True(loaded.HasPrivateKey);
+            Assert.Equal("CN=oe.test", loaded.Subject);
+            Assert.Throws<InvalidOperationException>(() => OpenElevenServerHost.LoadCertificate(new HttpsOptions
+            {
+                CertificatePath = Path.Combine(dir, "missing.pem"),
+                KeyPath = Path.Combine(dir, "privkey.pem"),
+            }));
+        }
+        finally
+        {
+            Directory.Delete(dir, true);
+        }
     }
 
     [Fact]

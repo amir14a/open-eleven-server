@@ -47,9 +47,10 @@ public sealed class ServerHarness : IAsyncDisposable
 
         var settings = new Dictionary<string, string?>
         {
-            // 127.0.0.1 matches what the reference server hardcoded, so the golden
-            // comparisons below line up field for field.
+            // Plain HTTP on 127.0.0.1, as the reference server ran, so the golden comparisons
+            // line up field for field. HTTPS tests switch Https:Enabled on with a host name.
             ["Server:AdvertiseIp"] = "127.0.0.1",
+            ["Server:Https:Enabled"] = "false",
             ["Server:Database:Provider"] = "Sqlite",
             ["Server:Database:ConnectionString"] = $"Data Source={databaseFile}",
             ["Server:Database:AutoCreate"] = "true",

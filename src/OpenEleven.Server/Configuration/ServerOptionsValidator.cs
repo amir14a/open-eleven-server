@@ -88,6 +88,24 @@ public sealed class ServerOptionsValidator : IValidateOptions<ServerOptions>
         if (duplicatePorts.Length > 0)
             failures.Add($"Two services cannot share a port; repeated: {string.Join(", ", duplicatePorts)}.");
 
+        // With HTTPS the URLs must carry the name on the certificate, and the client only does
+        // TLS off port 80. Plain HTTP (local development) works only on 80.
+        if (options.Https.Enabled)
+        {
+            if (Uri.CheckHostName(options.AdvertiseIp) != UriHostNameType.Dns
+                || string.Equals(options.AdvertiseIp, "auto", StringComparison.OrdinalIgnoreCase))
+                failures.Add($"AdvertiseIp must be a host name with HTTPS (not an IP or empty); got '{options.AdvertiseIp}'. 'auto' only works with Https.Enabled: false.");
+            if (options.Listen.Https == 80)
+                failures.Add("Listen.Https cannot be 80: the client speaks plain HTTP there, not TLS.");
+        }
+        else
+        {
+            if (Uri.CheckHostName(options.AdvertiseIp) == UriHostNameType.Unknown)
+                failures.Add($"AdvertiseIp must be a host name or IP; got '{options.AdvertiseIp}'.");
+            if (options.Listen.Http != 80)
+                failures.Add("Listen.Http must be 80: the client switches to TLS on any other port.");
+        }
+
         // An unknown type silently inherits the previous entry's type in the client's parser.
         foreach (var url in options.Urls)
         {

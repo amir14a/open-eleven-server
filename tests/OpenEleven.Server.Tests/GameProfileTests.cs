@@ -101,7 +101,7 @@ public class GameProfileTests
         [InlineData(GameProfile.Pes2013Pc)]
         public void Accepts_each_single_title(GameProfile profile)
             => Assert.False(_validator
-                .Validate(null, new ServerOptions { GameProfile = profile }).Failed);
+                .Validate(null, new ServerOptions { GameProfile = profile, AdvertiseIp = "oe.test" }).Failed);
 
         [Fact]
         public void Rejects_all()

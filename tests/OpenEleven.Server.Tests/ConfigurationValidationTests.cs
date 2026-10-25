@@ -14,7 +14,7 @@ public class ServerOptionsValidatorTests
 
     private static ServerOptions WithLobbies(int count)
     {
-        var options = new ServerOptions();
+        var options = new ServerOptions { AdvertiseIp = "oe.test" };
         for (var i = 0; i < count; i++)
             options.Lobbies.Add(new LobbyOptions { Name = $"Lobby {i}" });
         return options;
@@ -77,7 +77,7 @@ public class ServerOptionsValidatorTests
     [Fact]
     public void Rejects_two_services_sharing_a_port()
     {
-        var options = new ServerOptions();
+        var options = new ServerOptions { AdvertiseIp = "oe.test" };
         options.Services.Add(new ServiceEndpointOptions
         {
             Role = ServiceRole.Gate, Name = "Gate", Gid = 1, Port = 28010,
@@ -96,7 +96,7 @@ public class ServerOptionsValidatorTests
     [InlineData(ServerOptions.MaxLobbies * 100)]
     public void Rejects_player_search_limits_outside_the_supported_range(int limit)
     {
-        var options = new ServerOptions();
+        var options = new ServerOptions { AdvertiseIp = "oe.test" };
         options.Protocol.PlayerSearchLimit = limit;
 
         Assert.Contains("PlayerSearchLimit",
@@ -106,7 +106,7 @@ public class ServerOptionsValidatorTests
     [Fact]
     public void Rejects_invalid_blocked_terms()
     {
-        var options = new ServerOptions();
+        var options = new ServerOptions { AdvertiseIp = "oe.test" };
         options.Protocol.BlockedTerms.Add("bad\u0001word");
 
         Assert.Contains("BlockedTerms",
@@ -130,7 +130,7 @@ public class LobbyCapEnforcementTests
     {
         // Belt and braces: startup validation rejects an over-long list, but a hot reload
         // could introduce one, and serving eleven blocks is worse than serving ten.
-        var options = new ServerOptions();
+        var options = new ServerOptions { AdvertiseIp = "oe.test" };
         for (var i = 0; i < ServerOptions.MaxLobbies + 5; i++)
             options.Lobbies.Add(new LobbyOptions { Name = $"Lobby {i}" });
 
