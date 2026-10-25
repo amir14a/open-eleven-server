@@ -13,3 +13,4 @@ data/
 *.user
 docker/.env
 docker/certs/
+docker/logs/
