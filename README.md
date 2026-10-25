@@ -46,24 +46,29 @@ which is only right when the resolved NIC is the one the client can see.
 Set **OpenEleven.Server** as the startup project (right-click → Set as Startup Project) and
 press F5. Pick a profile from the dropdown next to the play button:
 
-| Profile | HTTP / HTTPS | `AdvertiseIp` | Notes |
+| Profile | HTTPS | `AdvertiseIp` | Notes |
 |---|---|---|---|
-| **Server (game ports, loopback)** | 80 / 443 | 127.0.0.1 | Default. Game and server on one machine. **Run VS as administrator.** |
-| Server (game ports) | 80 / 443 | auto | Game on another machine on the LAN. Needs administrator. |
-| Server (game ports + MySQL) | 80 / 443 | auto | Same, against a local MySQL instead of SQLite. |
-| Server (dev ports, no elevation) | 8080 / 8443 | 127.0.0.1 | Protocol work without an elevated VS. |
+| **Server (game ports, loopback)** | 443 | 127.0.0.1 | Default. Game and server on one machine. **Run VS as administrator.** |
+| Server (game ports) | 443 | auto | Game on another machine on the LAN. Needs administrator. |
+| Server (game ports + MySQL) | 443 | auto | Same, against a local MySQL instead of SQLite. |
+| Server (dev ports, no elevation) | 8443 | 127.0.0.1 | Protocol work without an elevated VS. |
 
-Game ports (28010–28015) never need elevation — only 80 and 443 do, and the real client
-insists on them. **The client will not get past discovery unless HTTP is reachable**: it
+**The HTTP surface is HTTPS.** `CMD_GET_URLLIST` advertises
+`https://<AdvertiseIp>[:<Listen.Https>]/...`, and the server will not start without
+`Https.CertificatePath` / `Https.KeyPath` (PEM, e.g. Let's Encrypt's fullchain.pem and
+privkey.pem). The client turns TLS on for every port except 80 (pes2011.exe
+`0x00c4965b`), so each title can take its own port. It validates the certificate through
+WinInet and cannot ignore errors, so `AdvertiseIp` must be a host name the certificate
+covers, never an IP.
+
+For local development set `Https.Enabled: false` (for example in a `server.local.yaml`
+next to the running title's `conf/server.yaml`). The server then serves plain HTTP
+on port 80, the only plain-HTTP port the client accepts, and `AdvertiseIp` may be an IP.
+Only one title can own port 80 at a time.
+
+**The client will not get past discovery unless these URLs load**: it
 closes the gate connection after `CMD_GET_URLLIST`, fetches the EULA and posts to
-`/gameid_auth`, and only then continues. If nothing answers on the advertised HTTP port
-the sequence stops there with no error on the wire.
-
-The dev-ports profile stays usable for protocol work because `CMD_GET_URLLIST` advertises
-whatever port is configured (`http://host:8080/...` when HTTP is not on 80; port 80 stays
-implicit, keeping the payload identical to the reference server). Whether the client
-accepts an explicit port in those URLs is unconfirmed — use a game-ports profile when
-driving the real game.
+`/gameid_auth`, and only then continues, with no error on the wire if that fails.
 
 Profiles are in `src/OpenEleven.Server/Properties/launchSettings.json`; they set only
 `OpenEleven_`-prefixed environment variables, so they layer over `conf/server.yaml` without
