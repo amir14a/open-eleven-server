@@ -29,9 +29,9 @@ __pycache__/
 # Reverse-engineering reference notes
 PES2010_SERVER_RE_HANDOFF.md
 
-# Container packaging
-docker/
-.dockerignore
+# Docker secrets: passwords and the TLS private key
+docker/.env
+docker/certs/
 
 # Local machine configuration (MCP server wiring)
 .mcp.json

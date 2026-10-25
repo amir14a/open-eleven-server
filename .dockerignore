@@ -1,0 +1,15 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.venv/
+**/__pycache__/
+logs/
+data/
+.git/
+.agents/
+.codex/
+.claude/
+*.db
+*.user
+docker/.env
+docker/certs/
