@@ -142,6 +142,20 @@ public class AdminPortalTests
     }
 
     [Fact]
+    public async Task A_password_reset_ends_the_accounts_cached_game_tickets()
+    {
+        await using var harness = await ServerHarness.CreateAsync();
+        var tickets = harness.Services.GetRequiredService<GameIdTicketStore>();
+        var (mine, minePassword) = tickets.Mint(7, "someone");
+        var (theirs, theirsPassword) = tickets.Mint(8, "other");
+
+        tickets.Revoke(7);
+
+        Assert.Null(tickets.Redeem(mine, minePassword));
+        Assert.Equal(8, tickets.Redeem(theirs, theirsPassword)?.AccountId);
+    }
+
+    [Fact]
     public void No_page_opts_out_of_antiforgery()
     {
         var pages = typeof(AdminAuth).Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(Microsoft.AspNetCore.Mvc.RazorPages.PageModel)));

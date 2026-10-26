@@ -84,6 +84,14 @@ public sealed class GameIdTicketStore
         return new GameIdTicket(ticket.AccountId, ticket.GameId);
     }
 
+    /// <summary>Drops every ticket of the account, so a cached pair cannot outlive a password reset.</summary>
+    public void Revoke(int accountId)
+    {
+        foreach (var (key, ticket) in _tickets)
+            if (ticket.AccountId == accountId)
+                _tickets.TryRemove(key, out _);
+    }
+
     private static string NewToken()
         => Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(TokenBytes));
 
