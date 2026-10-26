@@ -118,6 +118,13 @@ public class AdminPortalTests
     }
 
     [Fact]
+    public void No_page_opts_out_of_antiforgery()
+    {
+        var pages = typeof(AdminAuth).Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(Microsoft.AspNetCore.Mvc.RazorPages.PageModel)));
+        Assert.DoesNotContain(pages, t => t.IsDefined(typeof(Microsoft.AspNetCore.Mvc.IgnoreAntiforgeryTokenAttribute), true));
+    }
+
+    [Fact]
     public async Task Saved_settings_survive_a_restart_and_a_reset_removes_them()
     {
         await using var harness = await ServerHarness.CreateAsync();
