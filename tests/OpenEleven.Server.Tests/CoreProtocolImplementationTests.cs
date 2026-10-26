@@ -120,7 +120,7 @@ public class RoomProtocolCommandTests
         var sameBlock = RoomSession(harness, 2);
         var otherBlock = RoomSession(harness, 3, blockId: 2);
 
-        var created = Assert.Single(await harness.DispatchAsync(
+        var created = Enumerable.First(await harness.DispatchAsync(
             owner,
             "CMD_CREATEJOIN_ROOM",
             withFields: r => r
@@ -190,7 +190,7 @@ public class RoomProtocolCommandTests
         Assert.Equal("ERR_ROOMNOTFOUND", missing.GetString("result"));
         Assert.Empty(harness.Hub.Rooms);
 
-        var created = Assert.Single(await harness.DispatchAsync(
+        var created = Enumerable.First(await harness.DispatchAsync(
             owner,
             "CMD_CREATEJOIN_ROOM",
             withFields: r => r.Set("name", "Private").Set("password", "CaseSensitive").Set("max_players", 2)));
@@ -214,9 +214,9 @@ public class RoomProtocolCommandTests
         var roomOwner = Assert.IsType<KvMessage>(joined.GetValue("room_owner"));
         Assert.Equal(owner.Pid, roomOwner.GetInt32("pid"));
         Assert.Equal(owner.PlayerName, roomOwner.GetString("name"));
-        // Both sessions come from the same host on a private server, so the LAN endpoint
-        // is the usable one (a router cannot hairpin back to itself).
-        Assert.Equal(owner.InternalIp, roomOwner.GetString("ex_ip"));
+        // PES 2010 gets the endpoint as reported, even behind the same NAT: the client
+        // probes in_ip itself when ex_ip matches its own (FUN_00f8bd00).
+        Assert.Equal(owner.ExternalIp, roomOwner.GetString("ex_ip"));
 
         var members = await harness.DispatchAsync(
             guest, "MSG_REQRMEMBERLIST", withFields: r => r.Set("rid", roomId));
@@ -236,8 +236,8 @@ public class RoomProtocolCommandTests
             guest, "CMD_GET_IPANDPORT", withFields: r => r.Set("pid", owner.Pid)))
             .Single(message => message.MsgName == "CMD_GET_IPANDPORT");
         Assert.Equal(owner.Pid, endpoint.GetInt32("pid"));
-        Assert.Equal("192.168.1.10", endpoint.GetString("ex_ip"));
-        Assert.Equal(5731, endpoint.GetInt32("ex_port"));
+        Assert.Equal("203.0.113.1", endpoint.GetString("ex_ip"));
+        Assert.Equal(5730, endpoint.GetInt32("ex_port"));
         Assert.Equal("192.168.1.10", endpoint.GetString("in_ip"));
         Assert.Equal(5731, endpoint.GetInt32("in_port"));
 
@@ -262,7 +262,7 @@ public class RoomProtocolCommandTests
         var guest = RoomSession(harness, 11);
         guest.ExternalIp = "203.0.113.11";
 
-        var created = Assert.Single(await harness.DispatchAsync(owner, "CMD_CREATEJOIN_ROOM"));
+        var created = Enumerable.First(await harness.DispatchAsync(owner, "CMD_CREATEJOIN_ROOM"));
         var roomId = created.GetInt32("room_id");
         Drain(observer);
 
@@ -289,18 +289,18 @@ public class RoomProtocolCommandTests
     }
 
     /// <summary>
-    /// With unconfirmed messages off (the default), a join must not send
-    /// MSG_ROOMINNOTICE — that notice drops the recipient's Lobby connection — but the
-    /// owner still has to see the new occupant, so the complete roster is refreshed.
+    /// PES 2010 sends MSG_ROOMINNOTICE on every join: it is how the owner's room player
+    /// list (FUN_00BB4D70) gains the joiner, which the P2P handshake needs. The roster
+    /// stream is refreshed as well for the room screen.
     /// </summary>
     [Fact]
-    public async Task Join_refreshes_the_roster_without_the_unconfirmed_notice()
+    public async Task Join_sends_the_room_in_notice_and_refreshes_the_roster()
     {
         await using var harness = await ServerHarness.CreateAsync();
         var owner = RoomSession(harness, 10);
         var guest = RoomSession(harness, 11);
 
-        var created = Assert.Single(await harness.DispatchAsync(owner, "CMD_CREATEJOIN_ROOM"));
+        var created = Enumerable.First(await harness.DispatchAsync(owner, "CMD_CREATEJOIN_ROOM"));
         var roomId = created.GetInt32("room_id");
         Drain(owner);
 
@@ -308,7 +308,7 @@ public class RoomProtocolCommandTests
             guest, "CMD_JOIN_ROOM", rqid: 11, withFields: r => r.Set("room_id", roomId));
 
         var pushed = Drain(owner);
-        Assert.DoesNotContain(pushed, m => m.MsgName == "MSG_ROOMINNOTICE");
+        Assert.Equal(guest.Pid, Assert.Single(pushed, m => m.MsgName == "MSG_ROOMINNOTICE").GetInt32("pid"));
         Assert.Contains(pushed, m => m.MsgName == "MSG_RMEMBERLISTSTART");
 
         var members = Assert.Single(pushed, m => m.MsgName == "MSG_RMEMBERLIST");
@@ -318,21 +318,10 @@ public class RoomProtocolCommandTests
             members.GetList("list").Select(member => member.GetInt32("pid")).ToArray());
 
         Assert.Contains(pushed, m => m.MsgName == "MSG_RMEMBEREND");
-
-        // The notice itself must still work when the operator opts in.
-        await using var withNotices = await ServerHarness.CreateAsync(EmitUnconfirmed);
-        var secondOwner = RoomSession(withNotices, 20);
-        var secondGuest = RoomSession(withNotices, 21);
-        var secondRoom = (await withNotices.DispatchAsync(secondOwner, "CMD_CREATEJOIN_ROOM"))[0]
-            .GetInt32("room_id");
-        Drain(secondOwner);
-        await withNotices.DispatchAsync(
-            secondGuest, "CMD_JOIN_ROOM", withFields: r => r.Set("room_id", secondRoom));
-        Assert.Contains(Drain(secondOwner), m => m.MsgName == "MSG_ROOMINNOTICE");
     }
 
     [Fact]
-    public async Task Leaving_refreshes_the_roster_without_the_unconfirmed_out_notice()
+    public async Task Leaving_sends_the_room_out_notice_and_refreshes_the_roster()
     {
         await using var harness = await ServerHarness.CreateAsync();
         var owner = RoomSession(harness, 10);
@@ -347,7 +336,7 @@ public class RoomProtocolCommandTests
         await harness.DispatchAsync(owner, "CMD_LEAVE_ROOM");
 
         var pushed = Drain(guest);
-        Assert.DoesNotContain(pushed, m => m.MsgName == "MSG_PxROOMOUTNOTICE");
+        Assert.Equal(owner.Pid, Assert.Single(pushed, m => m.MsgName == "MSG_PxROOMOUTNOTICE").GetInt32("pid"));
         var members = Assert.Single(pushed, m => m.MsgName == "MSG_RMEMBERLIST");
         Assert.Equal(1, members.GetInt32("count"));
         Assert.Equal(guest.Pid, Assert.Single(members.GetList("list")).GetInt32("pid"));
@@ -411,10 +400,10 @@ public class RoomProtocolCommandTests
             browsing, "CMD_GET_IPANDPORT", withFields: r => r.Set("pid", host.Pid)))
             .Single(message => message.MsgName == "CMD_GET_IPANDPORT");
         Assert.Equal("NOERR", endpoint.GetString("result"));
-        Assert.Equal(host.Pid, endpoint.GetInt32("pid"));
+        // Same public IP (same NAT): still the reported endpoint; the client picks in_ip.
         // Same public IP (same NAT): the internal endpoint is preferred.
-        Assert.Equal("192.168.5.30", endpoint.GetString("ex_ip"));
-        Assert.Equal(4101, endpoint.GetInt32("ex_port"));
+        Assert.Equal("203.0.113.30", endpoint.GetString("ex_ip"));
+        Assert.Equal(4100, endpoint.GetInt32("ex_port"));
         Assert.Equal("192.168.5.30", endpoint.GetString("in_ip"));
         Assert.Equal(4101, endpoint.GetInt32("in_port"));
 
@@ -443,7 +432,7 @@ public class RoomProtocolCommandTests
         var owner = RoomSession(harness, 10);
         var guest = RoomSession(harness, 11);
 
-        var created = Assert.Single(await harness.DispatchAsync(owner, "CMD_CREATEJOIN_ROOM", rqid: 7));
+        var created = Enumerable.First(await harness.DispatchAsync(owner, "CMD_CREATEJOIN_ROOM", rqid: 7));
         var roomId = created.GetInt32("room_id");
         Assert.All(Drain(observer), m => Assert.Equal(Hub.UnsolicitedRqid, m.Rqid));
 

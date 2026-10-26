@@ -5,6 +5,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using OpenEleven.Data;
+using OpenEleven.Server.Configuration;
 
 namespace OpenEleven.Server.State;
 
@@ -19,9 +20,10 @@ namespace OpenEleven.Server.State;
 /// <item>type 9..15, no weekid: the running week (live counters), same layout as all-time.</item>
 /// <item>weekid present (sent to the RANK_WEEK url): an archived week, weekly layout.</item>
 /// </list>
-/// division 0..4 = D5..D1, anything else = every division; flag=1 = return the page holding pid.
+/// division 0..4 = D5..D1 (PES 2010: D3C..D1), anything else = every division; flag=1 = return
+/// the page holding pid.
 /// </summary>
-public sealed class RankingQuery(GameDbContext db)
+public sealed class RankingQuery(GameDbContext db, GameProfile profile = GameProfile.Pes2011Pc)
 {
     public async Task<string> RenderAsync(string data, DateTime now, CancellationToken ct = default)
     {
@@ -35,7 +37,7 @@ public sealed class RankingQuery(GameDbContext db)
         var from = Math.Max(0, Arg("from", 0));
         var records = Math.Clamp(Arg("records", 100), 1, 100);
         var me = Arg("pid", 0);
-        string? divisionName = division is >= 0 and <= 4 ? RankSystem.Divisions[division] : null;
+        string? divisionName = division is >= 0 and <= 4 ? RankSystem.RankingDivisions(profile)[division] : null;
 
         List<RankSystem.Line> ordered;
         (DateTime, DateTime)? week = null;
@@ -46,11 +48,9 @@ public sealed class RankingQuery(GameDbContext db)
             var start = weeks.Contains(weekId) ? weekId
                 : weekId >= 0 && weekId < weeks.Count ? weeks[weekId]
                 : weeks.FirstOrDefault();
-            var rows = await db.WeeklyRankings.Where(r => r.WeekStart == start)
-                .Where(r => divisionName == null || r.Division == divisionName)
-                .ToListAsync(ct);
-            ordered = Order(rows.Select(r => new RankSystem.Line(r.Pid, r.Name, r.Matches, r.Wins, r.Draws, r.Losses,
-                r.Points, r.Division, r.Rating, Streak: r.Streak)), type);
+            var rows = await db.WeeklyRankings.Where(r => r.WeekStart == start).ToListAsync(ct);
+            ordered = Order(InDivision(rows.Select(r => new RankSystem.Line(r.Pid, r.Name, r.Matches, r.Wins, r.Draws,
+                r.Losses, r.Points, r.Division, r.Rating, Streak: r.Streak)), divisionName), type);
             var weekStart = DateTimeOffset.FromUnixTimeSeconds(start).UtcDateTime;
             week = (weekStart, weekStart.AddDays(7).AddSeconds(-1));
         }
@@ -64,7 +64,7 @@ public sealed class RankingQuery(GameDbContext db)
             from = mine / 100 * 100;
 
         var registered = await db.Players.CountAsync(ct);
-        return RankSystem.Format(ordered, type, from, records, now, week, registered);
+        return RankSystem.Format(ordered, type, from, records, now, week, registered, profile);
     }
 
     /// <summary>
@@ -75,21 +75,22 @@ public sealed class RankingQuery(GameDbContext db)
     {
         if (type > 8)
         {
-            var weekly = await db.Players.Where(p => p.WeeklyMatches > 0)
-                .Where(p => divisionName == null || p.Division == divisionName)
-                .ToListAsync(ct);
-            return Order(weekly.Select(p => new RankSystem.Line(p.Pid, p.Name, p.WeeklyMatches, p.WeeklyWins,
-                p.WeeklyDraws, p.WeeklyLosses, p.WeeklyPoints, p.Division, p.Rating, Streak: p.WeeklyBestStreak)), type);
+            var weekly = await db.Players.Where(p => p.WeeklyMatches > 0).ToListAsync(ct);
+            return Order(InDivision(weekly.Select(p => new RankSystem.Line(p.Pid, p.Name, p.WeeklyMatches, p.WeeklyWins,
+                p.WeeklyDraws, p.WeeklyLosses, p.WeeklyPoints, p.Division, p.Rating, Streak: p.WeeklyBestStreak)),
+                divisionName), type);
         }
 
-        var players = await db.Players.Include(p => p.Stats)
-            .Where(p => p.Stats.MatchCount > 0)
-            .Where(p => divisionName == null || p.Division == divisionName)
-            .ToListAsync(ct);
-        return Order(players.Select(p => new RankSystem.Line(p.Pid, p.Name, p.Stats.MatchCount, p.Stats.WinCount,
-            p.Stats.DrawCount, p.Stats.LoseCount, p.Point, p.Division, p.Rating, p.Stats.Goals,
-            p.Stats.MaxContinuousWins)), type);
+        var players = await db.Players.Include(p => p.Stats).Where(p => p.Stats.MatchCount > 0).ToListAsync(ct);
+        return Order(InDivision(players.Select(p => new RankSystem.Line(p.Pid, p.Name, p.Stats.MatchCount,
+            p.Stats.WinCount, p.Stats.DrawCount, p.Stats.LoseCount, p.Point, p.Division, p.Rating, p.Stats.Goals,
+            p.Stats.MaxContinuousWins)), divisionName), type);
     }
+
+    // Matched on the name the client sees: PES 2010 rows may still hold D5 (shown as D3C).
+    // ponytail: filters in memory, move it into the query if the player table gets large.
+    private IEnumerable<RankSystem.Line> InDivision(IEnumerable<RankSystem.Line> lines, string? divisionName)
+        => divisionName == null ? lines : lines.Where(l => RankSystem.Label(l.Division, profile) == divisionName);
 
     private static List<RankSystem.Line> Order(IEnumerable<RankSystem.Line> lines, int type)
         => lines.OrderByDescending(l => RankSystem.Metric(type, l))

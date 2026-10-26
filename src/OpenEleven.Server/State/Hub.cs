@@ -51,19 +51,23 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
     private bool EmitUnconfirmed => options.CurrentValue.Protocol.EmitUnconfirmedMessages;
 
     /// <summary>
-    /// True when the advertised address is not publicly routable. In that deployment every
-    /// client is on the same LAN, so a peer's reported internal endpoint is the one that
-    /// actually works; its NAT endpoint would need hairpinning through the router.
-    /// </summary>
-    /// <summary>
     /// The endpoint <paramref name="viewer"/> should use to reach <paramref name="member"/>:
     /// the public (STUN) one, unless both sit behind the same NAT (same public IP). A router
     /// will not hairpin a packet back through its own public address, so peers on one LAN get
     /// each other's internal endpoint instead. Decided per pair, so a LAN pair and an internet
     /// pair can share one room.
     /// </summary>
+    /// <remarks>
+    /// PES 2010 gets the endpoints exactly as the member reported them. Its P2P handshake
+    /// (FUN_00f8bd00) already probes in_ip when the peer's ex_ip equals its own, and the
+    /// handshake id (FUN_00f8bc00) hashes the peer's ex_ip/ex_port against the peer's own
+    /// view of them, so a rewritten endpoint makes every probe go unanswered.
+    /// </remarks>
     public PeerEndpoints EndpointsFor(Session viewer, Session member)
     {
+        if (!Is2011)
+            return new(member.ExternalIp, member.ExternalPort, member.InternalIp, member.InternalPort);
+
         var internalUsable = member.InternalPort is > 0 and <= 65535
                              && !string.IsNullOrWhiteSpace(member.InternalIp);
         var externalUsable = member.ExternalPort is > 0 and <= 65535
@@ -276,6 +280,38 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
         return room;
     }
 
+    /// <summary>
+    /// Quick match never opens the lobby room screen, so the server must send the room-entry
+    /// publications a CMD_JOIN_ROOM tail would carry. Without them PES2010 clients sit in the
+    /// room after MSG_QUICK_ACCEPT_MATCH_OFFER_RES and one eventually leaves.
+    /// </summary>
+    public void PublishQuickMatchRoom(Room room)
+    {
+        if (!Is2010)
+            return;
+
+        // No entry screen to wait for: the server is the host for a quick match.
+        room.TrySetStatus("SETENV");
+        var members = room.Snapshot();
+        for (var i = 0; i < members.Count; i++)
+        {
+            var member = members[i];
+            member.GameEntryNo = i;
+            member.GameSide = i % 2;
+            // First player of each side leads it, as the entry screen would set.
+            member.GameSideLeader = i < 2;
+        }
+        room.MatchStarting = true;
+
+        PublishRoomStateChanged(room);
+        PublishRoomRoster(room);
+        PublishPeerEndpoints(room);
+        PublishGameEntryChanged(room);
+        PublishDecideGameEnv(room);
+        PublishDecideGamePlayer(room);
+        PublishDecideGamePlayerEnv(room);
+    }
+
     public Room CreateRoom(Session owner, string name, int maxMembers)
     {
         if (owner.BlockId is not { } blockId)
@@ -336,7 +372,7 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
         // Leaving a match in progress (connection dropped or CMD_LEAVE_ROOM), or being the
         // player the other one just forfeited over, is a disconnect. Read before removal.
         var lineup = MatchResults.Lineup(room);
-        var walkedOut = Is2011 && (room.Status == "GAME"
+        var walkedOut = HasMatchFlow && (room.Status == "GAME"
                                    || room.ForfeitStayerPid is { } stayer && stayer != session.Pid);
 
         var removal = room.Remove(session);
@@ -357,14 +393,16 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
         {
             _rooms.TryRemove(roomId, out _);
             log.LogInformation("Room {RoomId} disposed (empty)", roomId);
-            PublishRoomDeleted(room, session.Id);
+            // The leaver is back in the block and its room list still holds the room, so it
+            // is told as well (as is a kicked player, which leaves through here too).
+            PublishRoomDeleted(room, null);
             return new RoomLeaveResult(RoomLeaveStatus.Left, roomId, true, removal.OwnerChanged);
         }
 
-        // MSG_PxROOMOUTNOTICE is one of the inferred notices. Until it is proven safe it
-        // stays behind EmitUnconfirmedMessages; the roster refresh below is what actually
-        // removes the player from everyone else's room screen.
-        if (EmitUnconfirmed)
+        // PES 2010 drops the player from its room player list through FUN_00BB4D70; the
+        // MSG_REQRMEMBERLIST task there takes only one roster stream, so the refresh below
+        // does not reach it. Other titles keep the notice behind EmitUnconfirmedMessages.
+        if (EmitUnconfirmed || Is2010)
         {
             var notice = KvMessage.Ok("MSG_PxROOMOUTNOTICE", UnsolicitedRqid).Set("pid", session.Pid);
             foreach (var remaining in removal.RemainingMembers)
@@ -383,12 +421,13 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
         if (removal.OwnerChanged)
             PublishRoomStateChanged(room, "OwnerChanged");
 
-        // A match cannot go on alone: WAITING is what makes the remaining PES 2011 client
-        // leave its in-match screen (FUN_005fa030) instead of waiting forever.
-        if (Is2011 && room.Count < 2)
+        // A match cannot go on alone: WAITING is what makes the remaining client leave its
+        // in-match screen (PES 2011 FUN_005fa030, PES 2010 FUN_007c1f80) instead of waiting forever.
+        if (HasMatchFlow && room.Count < 2)
             SetRoomStatus(room, "WAITING");
 
-        PublishRoomUpdated(room, session.Id);
+        // Everyone in the block, the leaver included: its room list still counts it in the room.
+        PublishRoomUpdated(room);
         return new RoomLeaveResult(RoomLeaveStatus.Left, roomId, false, removal.OwnerChanged);
     }
 
@@ -397,9 +436,11 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
         if (join is not { Status: RoomJoinStatus.Joined, Room: { } room })
             return;
 
-        // FUN_00BB4D70 consumes these exact fields for MSG_ROOMINNOTICE, but the message
-        // still closes the recipient's Lobby connection in practice, so it is opt-in.
-        if (EmitUnconfirmed)
+        // FUN_00BB4D70 consumes these exact fields for MSG_ROOMINNOTICE. In PES 2010 it is
+        // the only way an occupant learns of the newcomer (its room player list comes from a
+        // one-shot MSG_REQRMEMBERLIST task, FUN_00BB5190); without it the host never adds
+        // the joiner as a P2P peer and drops its probes. Opt-in for the other titles.
+        if (EmitUnconfirmed || Is2010)
         {
             foreach (var existing in join.ExistingMembers)
             {
@@ -429,7 +470,10 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
         // WAITING is the one-player room-browser state. Once another player joins,
         // the configured room enters the pre-match SETENV state. Do not advance an
         // unconfigured room or regress a room already beyond pre-match.
-        if (room.Count > 1 && room.GameEnvironment is not null && room.Status == "WAITING")
+        // Not for PES 2010: its CMD_ENTRY_GAME task (FUN_007b7bc0) only sends while the
+        // room is WAITING, and without those entries "Start Match" stays disabled. That
+        // client moves the room to SETENV itself with CMD_UPDATE_ROOMSTATE.
+        if (!Is2010 && room.Count > 1 && room.GameEnvironment is not null && room.Status == "WAITING")
             room.TrySetStatus("SETENV");
 
         PublishRoomStateChanged(room, "StateChanged", member.Id);
@@ -488,6 +532,8 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
             return 0;
 
         var sequence = RoomPresenter.MemberListStream(room, rqid);
+        if (!Is2011)
+            sequence = [.. sequence, RoomPresenter.RoomPlayerWatch(room, UnsolicitedRqid)];
 
         var sent = 0;
         foreach (var member in members)
@@ -534,6 +580,11 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
 
     private bool Is2011 => options.CurrentValue.GameProfile == GameProfile.Pes2011Pc;
 
+    private bool Is2010 => options.CurrentValue.GameProfile == GameProfile.Pes2010Pc;
+
+    // The titles served by the in-match handlers in Pes2011Handlers (see MatchProfiles there).
+    private bool HasMatchFlow => options.CurrentValue.GameProfile is GameProfile.Pes2010Pc or GameProfile.Pes2011Pc;
+
     /// <summary>
     /// PES 2011 list watches (CMD_REQWATCHL_*): an ADD/UPDATE/DEL delta pushed under the
     /// msg and rqid the client registered with, to everyone in the same block, including
@@ -574,12 +625,14 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
             return;
         }
 
-        // FUN_00BB9B10 feeds updates through FUN_00BB9200, so updates need the same
-        // complete entry as the initial list rather than an ID-only placeholder.
-        var update = KvMessage.Ok("MSG_ROOMLISTUPDATE", UnsolicitedRqid)
-            .SetList("count", "roomList", [RoomPresenter.ListEntry(room)]);
-        BroadcastRoomListToBlock(room, update, except);
+        BroadcastRoomListToBlock(room, RoomListUpdate(room), except);
     }
+
+    // FUN_00BB9B10 feeds updates through FUN_00BB9200, so updates need the same
+    // complete entry as the initial list rather than an ID-only placeholder.
+    public KvMessage RoomListUpdate(Room room)
+        => KvMessage.Ok("MSG_ROOMLISTUPDATE", UnsolicitedRqid)
+            .SetList("count", "roomList", [RoomPresenter.ListEntry(room)]);
 
     public int PublishGameEntryChanged(Room room)
     {
@@ -612,9 +665,7 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
         foreach (var member in members)
         {
             // PES2010 arms this watch locally (FUN_007bacc0) and does not send a
-            // matching wire request.  A parked rqid is still supported for other
-            // protocol variants, but the normal client needs unsolicited rqid=0
-            // snapshots until it has populated every game slot.
+            // matching wire request, so it gets rqid 0; a parked rqid is still used if sent.
             var rqid = member.GameEntryWatchRqid ?? UnsolicitedRqid;
 
             var update = KvMessage.Ok("CMD_WATCH_ENTRY_GAME", rqid)
@@ -649,21 +700,22 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
     }
 
     /// <summary>
-    /// The room roster as fixed slots. FUN_0072ED20 reads status and player_count, then
-    /// walks pid and video as plain scalar lists of one entry per slot — the same bracketed
-    /// form as desiredPosition, not brace-wrapped records.
+    /// The selected match roster as eight fixed slots, distinct from the room occupants.
     /// </summary>
     public int PublishDecideGamePlayer(Room room)
     {
         var members = room.Snapshot();
 
-        // FUN_0072ED20 walks a fixed eight slots, whatever the room size is: it reads the
-        // scalar key "pid" eight times and "video" eight times, not a bracketed list. A
-        // bracketed value makes its integer parser fall back to 0x7b, so send eight
-        // scalars and fill unused slots with -1.
+        var is2010 = Is2010;
+        var players = is2010 ? members.Where(m => m.GameEntryNo >= 0).ToArray() : members.ToArray();
+        // Preserve the scalar wire shape. This build's FUN_0072ED20 repeatedly queries
+        // the first unindexed pid; neither repeated scalars nor arrays repair that loop.
+        // Its unsigned reader rejects textual -1, so encode the all-ones sentinel as uint.
         const int rosterSlots = 8;
         var pids = Enumerable.Range(0, rosterSlots)
-            .Select(slot => (object?)(members.FirstOrDefault(m => m.RoomEntryNo == slot)?.Pid ?? -1))
+            .Select(slot => is2010
+                ? (object)(uint)(players.FirstOrDefault(m => m.RoomEntryNo == slot)?.Pid ?? -1)
+                : (object)(players.FirstOrDefault(m => m.RoomEntryNo == slot)?.Pid ?? -1))
             .ToArray();
 
         var sent = 0;
@@ -672,7 +724,7 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
             var rqid = member.DecideGamePlayerWatchRqid ?? UnsolicitedRqid;
             var update = KvMessage.Ok("CMD_WATCH_DECIDE_GAMEPLAYER", rqid)
                 .Set("status", room.Status)
-                .Set("player_count", members.Count);
+                .Set("player_count", players.Length);
 
             foreach (var pid in pids)
                 update.Set("pid", pid);
@@ -729,12 +781,12 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
     }
 
     /// <summary>
-    /// One record per member that has taken a side. The room owner leads HOME; the lowest
-    /// entry number on AWAY leads that side.
+    /// One record per selected member. Preserve the host's final captain choice;
+    /// before that, use entry-screen defaults.
     /// </summary>
     private static KvMessage[] BuildSideInfoEntries(Room room)
     {
-        var sided = room.Snapshot().Where(member => member.GameSide is 0 or 1).ToArray();
+        var sided = room.Snapshot().Where(member => member.GameEntryNo >= 0 && member.GameSide is 0 or 1).ToArray();
         var awayLeaderId = sided
             .Where(member => member.GameSide == 1)
             .OrderBy(member => member.RoomEntryNo)
@@ -745,7 +797,8 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
                 // Enum type 0x19 accepts only HOME/AWAY, type 0x36 only NO/YES.
                 .Set("side", member.GameSide == 0 ? "HOME" : "AWAY")
                 .Set("sideLeader",
-                    (member.GameSide == 0 && member.Pid == room.OwnerPid) || member.Id == awayLeaderId
+                    (member.GameSideLeader ??
+                        ((member.GameSide == 0 && member.Pid == room.OwnerPid) || member.Id == awayLeaderId))
                         ? "YES"
                         : "NO"))
             .ToArray();
@@ -805,31 +858,6 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
             .Set("event", eventName)
             .Set("owner_pid", room.OwnerPid)
             .Set("state", room.Status);
-
-    public int PublishStartableGameEntrySnapshots()
-    {
-        // Entry changes are pushed when they happen; PES 2011 needs no periodic repeat.
-        if (Is2011)
-            return 0;
-
-        var sent = 0;
-        foreach (var room in Rooms.Where(room => room.IsStartable))
-            sent += PublishGameEntryChanged(room);
-        return sent;
-    }
-
-    public int PublishRoomStateSnapshots()
-    {
-        // PES 2011 counts every push as a new state (FUN_0051c110); a repeated RESULT would
-        // restart CMD_GET_GAMEADDPOINT each time. It gets pushes on change only.
-        if (Is2011)
-            return 0;
-
-        var sent = 0;
-        foreach (var room in Rooms.Where(room => !room.IsEmpty))
-            sent += PublishRoomStateChanged(room);
-        return sent;
-    }
 
     private void PublishRoomDeleted(Room room, Guid? except)
     {
@@ -896,10 +924,11 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
         var sent = 0;
         // Room-list changes are block-scoped. The Lobby client keeps the browser cache
         // for the whole block and may not issue MSG_REQROOMLIST again after connecting,
-        // so delivery cannot depend on a per-request subscription flag. InRoom sessions
-        // are excluded because their connection has left the room-browser parser.
+        // so delivery cannot depend on a per-request subscription flag. PES 2010 keeps its
+        // room-list watch running inside a room (FUN_007c0bd0) and draws the room screen from
+        // that cache, so its InRoom sessions stay subscribed; other titles exclude them.
         foreach (var subscriber in _sessions.Values.Where(session =>
-                     session.State == SessionState.InBlock
+                     (session.State == SessionState.InBlock || Is2010 && session.State == SessionState.InRoom)
                      && session.Role == room.ServiceRole
                      && session.BlockId == room.BlockId))
         {

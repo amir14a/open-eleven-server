@@ -163,7 +163,7 @@ public sealed class AccountHandlers(
             // FUN_00732D20. The parser reads player_data[0] and treats count=0 as
             // the path to profile creation.
             var owned = await LoadAccountPlayersAsync(ctx);
-            var entries = owned.Select(PlayerPresenter.ListEntry).ToArray();
+            var entries = owned.Select(p => PlayerPresenter.ListEntry(p, ctx.Profile)).ToArray();
 
             return [ctx.Ok().SetList("player_count", "player_data", entries)];
         }
@@ -193,13 +193,16 @@ public sealed class AccountHandlers(
             // pes2011.exe maps div through D5|D4|D3|D2|D1|NONE (table 0x16) and stores -1 for
             // the PES 2010 value "D3C", which the player-info screen then trips over.
             var is2011 = options.CurrentValue.GameProfile == GameProfile.Pes2011Pc;
-            var division = RankSystem.Applies(options.CurrentValue.GameProfile)
-                           && player.Division is not ("D5" or "D4" or "D3" or "D2" or "D1" or "NONE")
-                ? "D5"
-                : null;
+            var division = options.CurrentValue.GameProfile == GameProfile.Pes2010Pc
+                ? RankSystem.Pes2010DivisionName(player.Division)
+                : RankSystem.Applies(options.CurrentValue.GameProfile)
+                   && player.Division is not ("D5" or "D4" or "D3" or "D2" or "D1" or "NONE")
+                    ? "D5"
+                    : null;
 
             var teams = await players.GetRecentTeamsAsync(player.Pid, 5, ctx.CancellationToken);
-            var reply = PlayerPresenter.FillPlayerInfo(ctx.Ok(), player, division, listSyntax: is2011, teams);
+            var reply = PlayerPresenter.FillPlayerInfo(ctx.Ok(), player, division,
+                listSyntax: options.CurrentValue.GameProfile is GameProfile.Pes2010Pc or GameProfile.Pes2011Pc, teams);
             if (is2011)
             {
                 // Profile page 2 "Weekly Ranking TOP 10 / TOP 100": weeks finished in that range.
@@ -336,7 +339,7 @@ public sealed class AccountHandlers(
         // A fresh profile starts at the rank system's start rating, in D5.
         if (RankSystem.Applies(options.CurrentValue.GameProfile))
         {
-            RankSystem.Normalize(player, options.CurrentValue.Rank);
+            RankSystem.Normalize(player, options.CurrentValue.Rank, options.CurrentValue.GameProfile);
             await players.SaveAsync(ctx.CancellationToken);
         }
 

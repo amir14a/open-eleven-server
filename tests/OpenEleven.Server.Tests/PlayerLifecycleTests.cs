@@ -77,8 +77,8 @@ public sealed class PlayerLifecycleTests
         var unplayed = new Player { Rating = 500, Division = "D5", Stats = new PlayerStats() };
         var played = new Player { Rating = 742, Division = "D5", Stats = new PlayerStats { MatchCount = 3 } };
 
-        RankSystem.Normalize(unplayed, rank);
-        RankSystem.Normalize(played, rank);
+        RankSystem.Normalize(unplayed, rank, GameProfile.Pes2011Pc);
+        RankSystem.Normalize(played, rank, GameProfile.Pes2011Pc);
 
         Assert.Equal((1000, 742), (unplayed.Rating, played.Rating));
     }

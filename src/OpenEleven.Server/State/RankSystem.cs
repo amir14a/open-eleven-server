@@ -32,18 +32,53 @@ public static class RankSystem
     public static string DivisionName(string? value)
         => value == "NONE" || Divisions.Contains(value) ? value! : "D5";
 
+    /// <summary>
+    /// PES 2010's own ladder: D1, D2, D3A, D3B, D3C (it starts in D3C). The internal
+    /// PES 2011 tiers must not leak into its search rows or profile screens.
+    /// </summary>
+    public static string Pes2010DivisionName(string? value) => value switch
+    {
+        "D1" or "D2" or "D3A" or "D3B" or "D3C" => value!,
+        "D3" => "D3A",
+        "D4" => "D3B",
+        _ => "D3C",
+    };
+
+    /// <summary>The division string a title's clients understand.</summary>
+    public static string Label(string? value, GameProfile profile)
+        => profile == GameProfile.Pes2010Pc ? Pes2010DivisionName(value) : DivisionName(value);
+
     public const string WeekKey = "rank.week", SeasonKey = "rank.season", InitializedKey = "rank.initialized";
 
     /// <summary>A never-played profile sits at the start rating, and every profile in a 2011 division.</summary>
-    public static void Normalize(Player p, RankOptions rank)
+    public static void Normalize(Player p, RankOptions rank, GameProfile profile)
     {
         if (p.Stats.MatchCount == 0)
             p.Rating = rank.StartRating;
-        if (!Divisions.Contains(p.Division))
+        // PES 2010 stores D1..D3C; rewriting them to D5 loses the title's own ladder.
+        if (Applies(profile) && !Divisions.Contains(p.Division))
             p.Division = "D5";
     }
 
+    /// <summary>PES 2010 rows damaged by the old unconditional D5 normalization.</summary>
+    private static void RepairPes2010Divisions(GameDbContext db)
+    {
+        foreach (var p in db.Players.Where(p => p.Division == "D5" || p.Division == "D4"
+                                                || p.Division == "D3" || p.Division == "D2" || p.Division == "D1"))
+            p.Division = Pes2010DivisionName(p.Division);
+    }
+
     public static int DivisionIndex(string division) => Math.Max(0, Array.IndexOf(Divisions, division));
+
+    private static readonly string[] Pes2010RankingDivisions = ["D3C", "D3B", "D3A", "D2", "D1"];
+
+    /// <summary>
+    /// The divisions by the index the ranking screen sends and reads back in each row.
+    /// pes2010.exe (FUN_00729290) stores 4 - index as its D1..D3C enum, so its ladder takes
+    /// the same five positions, lowest first.
+    /// </summary>
+    public static string[] RankingDivisions(GameProfile profile)
+        => profile == GameProfile.Pes2010Pc ? Pes2010RankingDivisions : Divisions;
 
     /// <summary>Monday 00:00 UTC of the week <paramref name="utc"/> falls in.</summary>
     public static DateTime WeekStart(DateTime utc)
@@ -73,15 +108,23 @@ public static class RankSystem
     /// Runs once per database: lifts existing ratings onto the start-rating scale (they used
     /// to start at 0) and moves PES 2010 divisions into D1..D5.
     /// </summary>
-    public static async Task InitializeAsync(GameDbContext db, RankOptions rank, DateTime now)
+    public static async Task InitializeAsync(GameDbContext db, RankOptions rank, DateTime now, GameProfile profile)
     {
+        // Repair runs independently of the one-time rank initialization so databases created
+        // by the old code get their PES 2010 ladder back.
+        if (profile == GameProfile.Pes2010Pc)
+        {
+            RepairPes2010Divisions(db);
+            await db.SaveChangesAsync();
+        }
+
         if (await db.Settings.FindAsync(InitializedKey) is not null)
             return;
 
         foreach (var p in await db.Players.Include(p => p.Stats).ToListAsync())
         {
             p.Rating += rank.StartRating;
-            if (!Divisions.Contains(p.Division))
+            if (Applies(profile) && !Divisions.Contains(p.Division))
                 p.Division = "D5";
         }
 
@@ -93,7 +136,7 @@ public static class RankSystem
     }
 
     /// <summary>Archives the finished week and closes the finished season. Idempotent.</summary>
-    public static async Task RolloverAsync(GameDbContext db, RankOptions rank, DateTime now)
+    public static async Task RolloverAsync(GameDbContext db, RankOptions rank, DateTime now, GameProfile profile)
     {
         var week = Unix(WeekStart(now)).ToString(CultureInfo.InvariantCulture);
         var storedWeek = (await db.Settings.FindAsync(WeekKey))?.Value;
@@ -105,7 +148,7 @@ public static class RankSystem
         var season = SeasonOf(now);
         var storedSeason = (await db.Settings.FindAsync(SeasonKey))?.Value;
         if (storedSeason is not null && storedSeason != season)
-            await CloseSeasonAsync(db, rank, storedSeason, now);
+            await CloseSeasonAsync(db, rank, storedSeason, now, profile);
         if (storedSeason != season)
             Set(db, SeasonKey, season);
 
@@ -137,8 +180,13 @@ public static class RankSystem
     /// season points; the top share goes up, the bottom share goes down. Ratings drift back
     /// toward the start rating so the new season is open.
     /// </summary>
-    private static async Task CloseSeasonAsync(GameDbContext db, RankOptions rank, string season, DateTime now)
+    private static async Task CloseSeasonAsync(GameDbContext db, RankOptions rank, string season, DateTime now,
+        GameProfile profile)
     {
+        // PES 2010 has no season promotion/relegation in this server; its ladder must survive.
+        if (!Applies(profile))
+            return;
+
         var players = await db.Players.Include(p => p.Stats).ToListAsync();
         var oldRank = players.ToDictionary(p => p.Pid, p => p.Rank);
         var moves = new Dictionary<int, (string Old, string New)>();
@@ -157,7 +205,7 @@ public static class RankSystem
 
         foreach (var p in players)
         {
-            Normalize(p, rank);
+            Normalize(p, rank, profile);
             p.Rating = (int)Math.Round(rank.StartRating + (p.Rating - rank.StartRating) * rank.SeasonRatingCarry);
             p.SeasonPoints = p.SeasonMatches = 0;
             if (moves.TryGetValue(p.Pid, out var move))
@@ -220,21 +268,30 @@ public static class RankSystem
     /// so it is written "registered/listed"; the client pages and shows it.
     /// All-time header: (unused), count line, "yyyy/MM/dd HH:mm:ss", 8 unused lines.
     /// Weekly header: week start, week end (same date format), (unused), count line.
+    /// PES 2010 (FUN_007297a0 all-time, FUN_00729a70 weekly) has the same layout, but splits the
+    /// lines with strtok, which skips empty ones, and its dates use dashes (yyyy-MM-dd). Its row
+    /// parse (FUN_00729290) reads the fourth field as %d. The last unused line (all-time) or
+    /// the one before the count (weekly) is the player's own row there.
     /// </summary>
     public static string Format(IReadOnlyList<Line> ordered, int type, int from, int records,
-        DateTime updated, (DateTime Start, DateTime End)? week, int registered = 0)
+        DateTime updated, (DateTime Start, DateTime End)? week, int registered = 0,
+        GameProfile profile = GameProfile.Pes2011Pc)
     {
+        var pes2010 = profile == GameProfile.Pes2010Pc;
+        // PES 2010 needs a non-empty unused line; "-" is not a row, so no own row is shown.
+        var unused = pes2010 ? "-\n" : "\n";
         var sb = new StringBuilder();
         var count = $"{Math.Max(registered, ordered.Count)}/{ordered.Count}";
         if (week is { } w)
         {
-            sb.Append(Date(w.Start)).Append('\n').Append(Date(w.End)).Append("\n\n").Append(count).Append('\n');
+            sb.Append(Date(w.Start)).Append('\n').Append(Date(w.End)).Append('\n').Append(unused)
+                .Append(count).Append('\n');
         }
         else
         {
             sb.Append("1\n").Append(count).Append('\n').Append(Date(updated)).Append('\n');
             for (var i = 0; i < 8; i++)
-                sb.Append('\n');
+                sb.Append(unused);
         }
 
         for (var i = from; i < ordered.Count && i < from + Math.Min(records, 100); i++)
@@ -242,14 +299,15 @@ public static class RankSystem
             var l = ordered[i];
             // The client wraps this text in ranking_data="...": no commas or quotes inside a name.
             sb.Append(i + 1).Append(',').Append(l.Pid).Append(',').Append(l.Name.Replace(",", " ").Replace("\"", "'"))
-                .Append(",,").Append(l.Matches).Append(',').Append(l.Wins).Append(',').Append(l.Draws)
-                .Append(',').Append(l.Losses).Append(',').Append(l.Streak).Append(',')
-                .Append(DivisionIndex(l.Division)).Append(',').Append(l.Rating)
-                .Append(",0,0,0,0,0,0,0\n");
+                .Append(',').Append(pes2010 ? "0" : "").Append(',').Append(l.Matches).Append(',').Append(l.Wins)
+                .Append(',').Append(l.Draws).Append(',').Append(l.Losses).Append(',').Append(l.Streak).Append(',')
+                .Append(Math.Max(0, Array.IndexOf(RankingDivisions(profile), Label(l.Division, profile))))
+                .Append(',').Append(l.Rating).Append(",0,0,0,0,0,0,0\n");
         }
 
         return sb.ToString();
 
-        static string Date(DateTime d) => d.ToString("yyyy/MM/dd HH:mm:ss", CultureInfo.InvariantCulture);
+        string Date(DateTime d) => d.ToString(pes2010 ? "yyyy-MM-dd HH:mm:ss" : "yyyy/MM/dd HH:mm:ss",
+            CultureInfo.InvariantCulture);
     }
 }

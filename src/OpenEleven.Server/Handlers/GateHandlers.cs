@@ -105,9 +105,18 @@ public sealed class GateHandlers(
                 });
             }
 
-            // pes2011.exe FUN_00513de0 never records the type, version or size of ulist[0] (its
-            // guard is `index - 1 < 0x17`), only the url, and the table is zeroed first, so slot 0
-            // always reads as type 0 = RANK. Anything else put there disappears (a PC_SPEC there
+        }
+        else if (options.CurrentValue.GameProfile == GameProfile.Pes2010Pc)
+        {
+            entries.Add(UrlEntry("RANK_WEEK", $"{host}/ranking", 0));
+        }
+
+        if (options.CurrentValue.GameProfile is GameProfile.Pes2010Pc or GameProfile.Pes2011Pc)
+        {
+            // pes2011.exe FUN_00513de0 and pes2010.exe FUN_0072c6e0 never record the type,
+            // version or size of ulist[0] (their guard is `index - 1 < 0x17`), only the url, so
+            // slot 0 always reads as type 0 = RANK. Anything else put there becomes the ranking
+            // url (PES 2010 posted its ranking query to /pcspec.bin; in PES 2011 a PC_SPEC there
             // made FUN_005a5d30 strlen(NULL) at 0x005A5D70), so slot 0 carries the RANK url.
             var rank = entries.FindIndex(e => e.GetString("type") == "RANK");
             var first = rank >= 0 ? entries[rank] : UrlEntry("RANK", $"{host}/ranking", 0);

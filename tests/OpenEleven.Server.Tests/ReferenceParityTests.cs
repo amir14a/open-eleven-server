@@ -48,15 +48,21 @@ public class ReferenceParityTests
     private const string KonamiIdReferenceUrl = "https://id.konami.net/";
 
     [Fact]
-    public async Task Url_list_matches_the_reference_except_for_the_self_hosted_konami_id()
+    public async Task Url_list_matches_the_reference_except_for_the_self_hosted_konami_id_and_rank()
     {
         await using var harness = await ServerHarness.CreateAsync();
         var session = harness.NewSession();
 
         var actual = await harness.RenderFirstAsync(session, "CMD_GET_URLLIST");
 
+        // pes2010.exe (FUN_0072c6e0) reads ulist[0] as type RANK whatever it says, so the
+        // reference's PC_SPEC first made the ranking screen post to /pcspec.bin.
+        const string rank = "{type=\"RANK\",url=\"http://127.0.0.1/ranking\",version=1,file_size=0,md5=0}";
+        const string rankWeek = "{type=\"RANK_WEEK\",url=\"http://127.0.0.1/ranking\",version=1,file_size=0,md5=0}";
         var expected = Reference["CMD_GET_URLLIST"]
-            .Replace(KonamiIdReferenceUrl, "http://127.0.0.1/register");
+            .Replace(KonamiIdReferenceUrl, "http://127.0.0.1/register")
+            .Replace("url_num=4,ulist=[", $"url_num=6,ulist=[{rank},")
+            .Replace("md5=0}]", "md5=0}," + rankWeek + "]");
 
         Assert.Equal(expected, actual);
     }
@@ -151,7 +157,7 @@ public class ReferenceParityTests
     }
 
     [Fact]
-    public async Task Current_player_result_matches_the_reference_byte_for_byte()
+    public async Task Current_player_result_matches_the_reference_except_for_the_team_list()
     {
         await using var harness = await ServerHarness.CreateAsync();
         var session = harness.NewSession(ServiceRole.Account, SessionState.Authenticated);
@@ -159,7 +165,14 @@ public class ReferenceParityTests
 
         var actual = await harness.RenderFirstAsync(session, "CMD_SET_CURRENTPLAYER");
 
-        Assert.Equal(Reference["CMD_SET_CURRENTPLAYER"], actual);
+        // The reference sent no teams, which leaves PES 2010 without a default team: the match
+        // is abandoned right after Start Match (see TitleProfiles.UseableTeams).
+        var teams = TitleProfiles.UseableTeams(GameProfile.Pes2010Pc);
+        var expected = Reference["CMD_SET_CURRENTPLAYER"].Replace(
+            "useable_team_size=0",
+            $"useable_team_size={teams.Length},useable_team_id=[{string.Join(',', teams)}]");
+
+        Assert.Equal(expected, actual);
     }
 
     [Fact]
@@ -174,14 +187,20 @@ public class ReferenceParityTests
     }
 
     [Fact]
-    public async Task Player_info_matches_the_reference_byte_for_byte()
+    public async Task Player_info_matches_the_reference_except_for_the_list_syntax()
     {
         await using var harness = await ServerHarness.CreateAsync();
         var session = harness.NewSession(ServiceRole.Account, SessionState.Authenticated);
 
         var actual = await harness.RenderFirstAsync(session, "CMD_GET_PLAYERINFO");
 
-        Assert.Equal(Reference["CMD_GET_PLAYERINFO"], actual);
+        // pes2010.exe (FUN_00b6e0f0) looks "teamLog[0]" up as element 0 of teamLog=[...], so the
+        // reference's flat teamLog[0]=v pairs left the profile's team history empty.
+        var expected = System.Text.RegularExpressions.Regex.Replace(Reference["CMD_GET_PLAYERINFO"],
+            @"(teamLog|desired_position)\[0\]=[^,]*(?:,\1\[\d+\]=[^,]*)*",
+            m => m.Groups[1].Value + "=[" + string.Join(',', m.Value.Split(',').Select(p => p[(p.IndexOf('=') + 1)..])) + "]");
+
+        Assert.Equal(expected, actual);
     }
 
     [Fact]

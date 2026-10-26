@@ -20,7 +20,8 @@ namespace OpenEleven.Server.Handlers;
 /// </summary>
 public sealed class MailHandlers(GameDbContext db)
 {
-    private const ServiceRole Roles = ServiceRole.Menu;
+    // PES2010 sends the mail commands on the Lobby socket; PES2011 uses Menu.
+    private const ServiceRole Roles = ServiceRole.Menu | ServiceRole.Lobby;
 
     /// <summary>Mails kept per inbox; the oldest go first.</summary>
     public const int MaxInbox = 50;

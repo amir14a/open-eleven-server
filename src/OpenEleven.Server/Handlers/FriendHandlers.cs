@@ -20,7 +20,8 @@ namespace OpenEleven.Server.Handlers;
 /// </summary>
 public sealed class FriendHandlers(GameDbContext db, LobbyCatalog lobbies)
 {
-    private const ServiceRole Roles = ServiceRole.Menu | ServiceRole.Account;
+    // PES2010 runs the social screens on the Lobby socket; PES2011 uses Menu/Account.
+    private const ServiceRole Roles = ServiceRole.Menu | ServiceRole.Account | ServiceRole.Lobby;
 
     /// <summary>Friends plus pending requests one player can have, and blacklist size.</summary>
     public const int MaxFriends = 50, MaxBlacklist = 50;
@@ -34,6 +35,11 @@ public sealed class FriendHandlers(GameDbContext db, LobbyCatalog lobbies)
     public async ValueTask<KvMessage[]> GetFriendList(CommandContext ctx)
     {
         var pid = ctx.Request.GetInt32("target_pid", ctx.Session.Pid);
+        return [ctx.Ok().SetList("friend_num", "flist", await FriendEntriesAsync(ctx, pid))];
+    }
+
+    private async Task<KvMessage[]> FriendEntriesAsync(CommandContext ctx, int pid)
+    {
         var rows = await db.Friendships.Where(f => f.Pid == pid).OrderBy(f => f.CreatedAt).ToListAsync(ctx.CancellationToken);
         var others = await Players(rows.Select(f => f.OtherPid), ctx.CancellationToken);
 
@@ -46,23 +52,31 @@ public sealed class FriendHandlers(GameDbContext db, LobbyCatalog lobbies)
             var online = ctx.Hub.SessionsForPid(p.Pid).Where(s => s.State >= SessionState.PlayerSelected).ToList();
             var where = online.FirstOrDefault(s => s.RoomId is not null) ?? online.FirstOrDefault(s => s.BlockId is not null);
             var room = where?.RoomId is { } roomId ? ctx.Hub.FindRoom(roomId) : null;
+            var block = where?.BlockId;
             entries.Add(new KvMessage()
                 .Set("name", p.Name)
                 .Set("pid", p.Pid)
                 .Set("state", row.State.ToString())
                 .Set("rating", p.Rating)
-                .Set("division", RankSystem.DivisionName(p.Division))
+                .Set("division", RankSystem.Label(p.Division, ctx.Profile))
                 .Set("manner", p.Manner)
                 .Set("is_login", online.Count > 0 ? "YES" : "NO")
                 .Set("is_ingame", room?.Status == "GAME" ? "YES" : "NO")
+                // FUN_00735DE0 reads the friend's online mode (enum 0x25). Leaving it out
+                // leaves the entry at NONE, which the mail screen treats as unavailable.
+                .Set("mode", online.Count > 0 ? "NETWORK" : "NONE")
                 .Set("server", "MENU")
+                .Set("lobby_id", block ?? 0)
                 .Set("lobby_name", where is null ? "" : "OpenEleven")
-                .Set("block_name", where?.BlockId is { } block ? lobbies.ById(block)?.Name ?? "" : "")
+                .Set("block_id", block ?? 0)
+                .Set("block_name", block is { } b ? lobbies.ById(b)?.Name ?? "" : "")
                 .Set("room_name", room?.Name ?? "")
-                .Set("room_id", room?.Id ?? 0));
+                .Set("room_id", room?.Id ?? 0)
+                .Set("req_date", RankSystem.Unix(row.CreatedAt))
+                .Set("req_read", row.State == FriendState.RecievedReq ? "NO" : "YES"));
         }
 
-        return [ctx.Ok().SetList("friend_num", "flist", entries)];
+        return entries.ToArray();
     }
 
     /// <summary>A friend request (FUN_005fe850): to_pid and an optional message (mes_body).</summary>
@@ -95,7 +109,9 @@ public sealed class FriendHandlers(GameDbContext db, LobbyCatalog lobbies)
             Body = message.Length > 0 ? message : ServerText.Get("friendreq.body", target.Lang, ctx.Session.PlayerName),
         });
         await db.SaveChangesAsync(ctx.CancellationToken);
-        return [ctx.Ok()];
+        ctx.Session.Push(ctx.Ok());
+        await PublishFriendListAsync(ctx, me, to);
+        return [];
     }
 
     /// <summary>Answer to a received request (FUN_005f67f0): from_pid, answer YES|NO.</summary>
@@ -127,7 +143,9 @@ public sealed class FriendHandlers(GameDbContext db, LobbyCatalog lobbies)
         }
 
         await db.SaveChangesAsync(ctx.CancellationToken);
-        return [ctx.Ok()];
+        ctx.Session.Push(ctx.Ok());
+        await PublishFriendListAsync(ctx, me, from);
+        return [];
     }
 
     /// <summary>Withdraw a request I sent (FUN_005f6580): to_pid.</summary>
@@ -175,7 +193,9 @@ public sealed class FriendHandlers(GameDbContext db, LobbyCatalog lobbies)
         Remove(await Pair(me, target, ctx.CancellationToken));
         db.Blacklist.Add(new BlacklistEntry { Pid = me, TargetPid = target });
         await db.SaveChangesAsync(ctx.CancellationToken);
-        return [ctx.Ok()];
+        ctx.Session.Push(ctx.Ok());
+        await PublishFriendListAsync(ctx, me, target);
+        return [];
     }
 
     [Command("CMD_DEL_BLACKLIST", Roles = Roles, RequiredState = SessionState.PlayerSelected)]
@@ -183,22 +203,65 @@ public sealed class FriendHandlers(GameDbContext db, LobbyCatalog lobbies)
     {
         var target = ctx.Request.GetInt32("target_pid", 0);
         await db.Blacklist.Where(b => b.Pid == ctx.Session.Pid && b.TargetPid == target).ExecuteDeleteAsync(ctx.CancellationToken);
-        return [ctx.Ok()];
+        ctx.Session.Push(ctx.Ok());
+        await PublishFriendListAsync(ctx, ctx.Session.Pid);
+        return [];
     }
 
     /// <summary>
-    /// Long-lived friend list / request subscriptions (FUN_00541810). Parked without a reply:
-    /// a bare reply would be taken as a delivery. The friend screen re-reads CMD_GET_FRIENDLIST.
+    /// Long-lived friend list / request subscriptions (FUN_0077dc90 state 3 arms both, then
+    /// FUN_0077db80 re-reads CMD_GET_FRIENDLIST once they answer). PES2010 needs the ACK;
+    /// the other titles keep the parked behaviour their parser was written for.
     /// </summary>
     [Command("CMD_WATCH_FRIENDLIST", Roles = Roles)]
+    public ValueTask<KvMessage[]> WatchFriendList(CommandContext ctx)
+    {
+        ctx.Session.FriendListWatchRqid = ctx.Rqid;
+        return ctx.Profile == GameProfile.Pes2010Pc ? Reply.Of(ctx.Ok()) : Reply.None();
+    }
+
     [Command("CMD_WATCH_FRIENDREQ", Roles = Roles)]
-    public ValueTask<KvMessage[]> Watch(CommandContext ctx) => Reply.None();
+    public ValueTask<KvMessage[]> WatchFriendRequest(CommandContext ctx)
+    {
+        ctx.Session.FriendRequestWatchRqid = ctx.Rqid;
+        return ctx.Profile == GameProfile.Pes2010Pc ? Reply.Of(ctx.Ok()) : Reply.None();
+    }
 
     private async ValueTask<KvMessage[]> RemovePair(CommandContext ctx, int other)
     {
         Remove(await Pair(ctx.Session.Pid, other, ctx.CancellationToken));
         await db.SaveChangesAsync(ctx.CancellationToken);
-        return [ctx.Ok()];
+        ctx.Session.Push(ctx.Ok());
+        await PublishFriendListAsync(ctx, ctx.Session.Pid, other);
+        return [];
+    }
+
+    /// <summary>
+    /// PES2010 keeps the friend and request lists in screen memory. Without this, a reply
+    /// opened right after the other player accepts still uses the pre-accept state until
+    /// the friend screen is reopened. Unsolicited pushes use rqid 0 so they cannot consume
+    /// a parked request's reply.
+    /// </summary>
+    private async Task PublishFriendListAsync(CommandContext ctx, params int[] pids)
+    {
+        if (ctx.Profile != GameProfile.Pes2010Pc)
+            return;
+
+        foreach (var pid in pids.Distinct())
+        {
+            var sessions = ctx.Hub.SessionsForPid(pid).Where(s => s.FriendListWatchRqid is not null).ToArray();
+            if (sessions.Length == 0)
+                continue;
+
+            var entries = await FriendEntriesAsync(ctx, pid);
+            foreach (var session in sessions)
+            {
+                session.Push(KvMessage.Ok("CMD_WATCH_FRIENDLIST", 0)
+                    .SetList("friend_num", "flist", entries));
+                if (session.FriendRequestWatchRqid is not null)
+                    session.Push(KvMessage.Ok("CMD_WATCH_FRIENDREQ", 0));
+            }
+        }
     }
 
     private async Task<(Friendship? Mine, Friendship? Theirs)> Pair(int me, int other, CancellationToken ct)

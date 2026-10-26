@@ -80,7 +80,7 @@ public sealed class LobbyHandlers(
             : null;
         if (player is not null)
         {
-            var entry = PlayerPresenter.BlockListEntry(player, session.RoomId ?? 0);
+            var entry = PlayerPresenter.BlockListEntry(player, session.RoomId ?? 0, ctx.Profile);
             ctx.Hub.PublishBlockPlayerAdded(session, entry);
         }
 
@@ -104,7 +104,7 @@ public sealed class LobbyHandlers(
         {
             var player = await players.GetAsync(presence.Pid, ctx.CancellationToken);
             if (player is not null)
-                entries.Add(PlayerPresenter.BlockListEntry(player, presence.RoomId ?? 0));
+                entries.Add(PlayerPresenter.BlockListEntry(player, presence.RoomId ?? 0, ctx.Profile));
         }
 
         // Request ack followed by START / DATA / END. All four are one logical response,

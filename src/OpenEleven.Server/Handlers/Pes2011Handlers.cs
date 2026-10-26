@@ -20,6 +20,9 @@ namespace OpenEleven.Server.Handlers;
 /// Everything here is gated to <see cref="GameProfile.Pes2011Pc"/>; the shared handlers keep
 /// serving the other titles, and the two implementations are selected by
 /// <see cref="CommandAttribute.Profiles"/> rather than by a runtime branch.
+/// The exception is the in-match flow (<see cref="MatchProfiles"/>): pes2010.exe sends the
+/// same commands with the same fields (FUN_007c1f80, FUN_007c1e00, FUN_0090b2b0) and parses
+/// the same replies (FUN_00767df0, FUN_007379a0), so PES 2010 is served by them too.
 /// Function addresses refer to <c>pes2011.exe</c> (PE32, image base 0x00400000, Ghidra
 /// language <c>x86:LE:32:default</c>) and are recorded with their evidence in
 /// <c>docs/reverse-engineering/pes2011-session-protocol.md</c>.
@@ -40,6 +43,10 @@ public sealed class Pes2011Handlers(
 {
     /// <summary>The services the login handshake is known to run on.</summary>
     private const ServiceRole LoginRoles = ServiceRole.Gate | ServiceRole.Account | ServiceRole.Menu;
+
+    /// <summary>The titles that share the in-match commands; PES 2010 runs its rooms on the Lobby service.</summary>
+    private const GameProfile MatchProfiles = GameProfile.Pes2010Pc | GameProfile.Pes2011Pc;
+    private const ServiceRole MatchRoles = ServiceRole.Menu | ServiceRole.Lobby | ServiceRole.FdLobby;
 
     /// <summary>
     /// The first command on every new game socket, sent right after <c>connect()</c> and before
@@ -110,7 +117,7 @@ public sealed class Pes2011Handlers(
             var player = await players.GetAsync(pid, ctx.CancellationToken);
             var inRoom = ctx.Hub.SessionsForPid(pid).Select(s => s.RoomId).FirstOrDefault(r => r is not null) ?? 0;
             if (player is not null)
-                entries.Add(Pes2011Lists.BlockPlayerEntry(PlayerPresenter.BlockListEntry(player, inRoom)));
+                entries.Add(Pes2011Lists.BlockPlayerEntry(PlayerPresenter.BlockListEntry(player, inRoom, ctx.Profile)));
         }
 
         return [WatchReply(ctx, ctx.Session.BlockPlayerWatch, entries)];
@@ -152,14 +159,33 @@ public sealed class Pes2011Handlers(
 
     /// <summary>
     /// The host fixes who plays which side (pes2011.exe FUN_0065a7d0 state 3, request
-    /// <c>envlist[]{pid,side,sideLeader}</c>). The match is now starting: the room moves to GAME.
+    /// <c>envlist[]{pid,side,sideLeader}</c>). The match is starting; the room moves to GAME
+    /// only when the host later reports phase 1ST.
     /// </summary>
-    [Command("CMD_SET_GAMEMEMBERENV", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.InRoom)]
+    [Command("CMD_SET_GAMEMEMBERENV", Roles = MatchRoles, Profiles = MatchProfiles, RequiredState = SessionState.InRoom)]
     public ValueTask<KvMessage[]> SetGameMemberEnv(CommandContext ctx)
     {
         var room = ctx.Session.RoomId is { } id ? ctx.Hub.FindRoom(id) : null;
         if (room is null)
             return Reply.Of(ctx.Fail("ERR_NOTINROOM"));
+
+        if (ctx.Profile == GameProfile.Pes2010Pc)
+        {
+            if (ctx.Session.Pid != room.OwnerPid)
+                return Reply.Of(ctx.Fail("ERR_NOTROOMOWNER"));
+
+            var entries = ctx.Request.GetList("envlist");
+            if ((ctx.Request.Has("list_num") && ctx.Request.GetInt32("list_num", -1) != entries.Count)
+                || !room.TrySetGameMemberEnvironment(ctx.Session, entries))
+                return Reply.Of(ctx.Fail("ERR_INVALIDROOMINFO"));
+
+            // PES2010 does not subscribe to the PES2011 roomplayer list. Deliver the
+            // accepted host decision through its own watch, after completing the request.
+            ctx.Session.Push(ctx.Ok());
+            ctx.Hub.PublishDecideGamePlayerEnv(room);
+            ctx.Hub.PublishRoomUpdated(room);
+            return Reply.None();
+        }
 
         foreach (var entry in ctx.Request.GetList("envlist"))
         {
@@ -180,7 +206,7 @@ public sealed class Pes2011Handlers(
     /// status (enum 0x44) has to follow: in-match FSM FUN_005fa030 ends the match only when a
     /// CMD_WATCH_ROOMSTATE says WAITING, and FUN_005f9ec0 asks for CMD_GET_GAMEADDPOINT on RESULT.
     /// </summary>
-    [Command("CMD_CHANGE_GAMEPHASE", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.InRoom)]
+    [Command("CMD_CHANGE_GAMEPHASE", Roles = MatchRoles, Profiles = MatchProfiles, RequiredState = SessionState.InRoom)]
     public async ValueTask<KvMessage[]> ChangeGamePhase(CommandContext ctx)
     {
         var room = ctx.Session.RoomId is { } id ? ctx.Hub.FindRoom(id) : null;
@@ -221,7 +247,7 @@ public sealed class Pes2011Handlers(
     }
 
     /// <summary>The match host's team pick (FUN_005fa030 event 5), kept for the match history.</summary>
-    [Command("CMD_SET_GAMETEAM", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.InRoom)]
+    [Command("CMD_SET_GAMETEAM", Roles = MatchRoles, Profiles = MatchProfiles, RequiredState = SessionState.InRoom)]
     public ValueTask<KvMessage[]> SetGameTeam(CommandContext ctx)
     {
         var room = ctx.Session.RoomId is { } id ? ctx.Hub.FindRoom(id) : null;
@@ -237,7 +263,7 @@ public sealed class Pes2011Handlers(
     /// The match host reports each goal (FUN_005fa030 event 3): goal_side HOME|AWAY, the scorer's
     /// goal_gameplayer_id / goal_player_pid and the assist. Kept for the match result.
     /// </summary>
-    [Command("CMD_ADD_SCORE", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.InRoom)]
+    [Command("CMD_ADD_SCORE", Roles = MatchRoles, Profiles = MatchProfiles, RequiredState = SessionState.InRoom)]
     public ValueTask<KvMessage[]> AddScore(CommandContext ctx)
     {
         var room = ctx.Session.RoomId is { } id ? ctx.Hub.FindRoom(id) : null;
@@ -270,7 +296,7 @@ public sealed class Pes2011Handlers(
     /// A card or an injury (FUN_005fa030): card_pid/card_side/card_gameplayer_id/card_kind
     /// (YELLOW|RED|NONE) and injury_side/injury_gameplayer_id. Kept with the match record.
     /// </summary>
-    [Command("CMD_ADD_FOUL", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.InRoom)]
+    [Command("CMD_ADD_FOUL", Roles = MatchRoles, Profiles = MatchProfiles, RequiredState = SessionState.InRoom)]
     public ValueTask<KvMessage[]> AddFoul(CommandContext ctx)
     {
         if (ctx.Session.RoomId is { } id && ctx.Hub.FindRoom(id) is { } room && IsMatchHost(ctx, room))
@@ -290,7 +316,7 @@ public sealed class Pes2011Handlers(
     private static string Side(string? value) => value is "HOME" or "AWAY" ? value : "";
 
     /// <summary>The host's combination play for the match (total_comb, max_comb); credited to the host.</summary>
-    [Command("CMD_UPDATE_COMBINATION", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.InRoom)]
+    [Command("CMD_UPDATE_COMBINATION", Roles = MatchRoles, Profiles = MatchProfiles, RequiredState = SessionState.InRoom)]
     public ValueTask<KvMessage[]> UpdateCombination(CommandContext ctx)
     {
         if (ctx.Session.RoomId is { } id && ctx.Hub.FindRoom(id) is { } room && IsMatchHost(ctx, room))
@@ -325,7 +351,7 @@ public sealed class Pes2011Handlers(
     /// else will end the match for it: the room goes back to WAITING, which FUN_005fa030 treats
     /// as "match over" and leaves the in-match screen.
     /// </summary>
-    [Command("CMD_SET_FORFEITEDGAMEEND", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.InRoom)]
+    [Command("CMD_SET_FORFEITEDGAMEEND", Roles = MatchRoles, Profiles = MatchProfiles, RequiredState = SessionState.InRoom)]
     public async ValueTask<KvMessage[]> SetForfeitedGameEnd(CommandContext ctx)
     {
         var room = ctx.Session.RoomId is { } id ? ctx.Hub.FindRoom(id) : null;
@@ -347,7 +373,7 @@ public sealed class Pes2011Handlers(
     /// <c>side</c> = the side that lost). Same outcome as phase END: the room shows the result.
     /// Only while a match is being played, so nobody can settle one before it started.
     /// </summary>
-    [Command("CMD_SET_INJURYGAMEEND", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.InRoom)]
+    [Command("CMD_SET_INJURYGAMEEND", Roles = MatchRoles, Profiles = MatchProfiles, RequiredState = SessionState.InRoom)]
     public async ValueTask<KvMessage[]> SetInjuryGameEnd(CommandContext ctx)
     {
         var room = ctx.Session.RoomId is { } id ? ctx.Hub.FindRoom(id) : null;
@@ -364,7 +390,7 @@ public sealed class Pes2011Handlers(
     /// The match broke down (FUN_005fa030 events 8/10, <c>is_sync_failed</c> YES|NO). Nothing to
     /// score: the room goes back to WAITING, which takes every client out of the match.
     /// </summary>
-    [Command("CMD_SEND_ABNORMALEND", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.InRoom)]
+    [Command("CMD_SEND_ABNORMALEND", Roles = MatchRoles, Profiles = MatchProfiles, RequiredState = SessionState.InRoom)]
     public async ValueTask<KvMessage[]> SendAbnormalEnd(CommandContext ctx)
     {
         var room = ctx.Session.RoomId is { } id ? ctx.Hub.FindRoom(id) : null;
@@ -383,7 +409,7 @@ public sealed class Pes2011Handlers(
     /// Asked by every player once the room reaches RESULT (FUN_005f9ec0); FUN_005405c0 reads
     /// <c>player_list[i].pid|addpoint|point|rating|oldrating|vs_count</c>, all optional.
     /// </summary>
-    [Command("CMD_GET_GAMEADDPOINT", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.InRoom)]
+    [Command("CMD_GET_GAMEADDPOINT", Roles = MatchRoles, Profiles = MatchProfiles, RequiredState = SessionState.InRoom)]
     public async ValueTask<KvMessage[]> GetGameAddPoint(CommandContext ctx)
     {
         var room = ctx.Session.RoomId is { } id ? ctx.Hub.FindRoom(id) : null;
@@ -420,7 +446,7 @@ public sealed class Pes2011Handlers(
     /// and <c>team[s]</c> for s = HOME, AWAY, then <c>player[k].name|manner|pid|has_guestplayer|
     /// division|rating|side</c> until a name is missing.
     /// </summary>
-    [Command("CMD_GET_GAMERESULTS", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc)]
+    [Command("CMD_GET_GAMERESULTS", Roles = MatchRoles, Profiles = MatchProfiles)]
     public async ValueTask<KvMessage[]> GetGameResults(CommandContext ctx)
     {
         var pid = ctx.Request.GetInt32("pid", ctx.Session.Pid);
@@ -437,7 +463,7 @@ public sealed class Pes2011Handlers(
                         .Set("manner", p.Manner)
                         .Set("pid", p.Pid)
                         .Set("has_guestplayer", "NO")
-                        .Set("division", RankSystem.DivisionName(p.Division))
+                        .Set("division", RankSystem.Label(p.Division, ctx.Profile))
                         .Set("rating", p.Rating)
                         .Set("side", side));
             }
@@ -506,22 +532,41 @@ public sealed class Pes2011Handlers(
 
     /// <summary>
     /// In-match reports the client only needs acknowledged (FUN_005fa030 and the match-room FSMs):
-    /// fouls and injuries, combination stats, match info, the reply to a forfeit notice, the game
-    /// member list (FUN_0065a7d0 only checks NOERR; the member payload FUN_005eb880 reads belongs
-    /// to quick match) and P2P status.
+    /// match info, the reply to a forfeit notice and P2P status.
     /// </summary>
-    [Command("CMD_SET_COMMU_MATCHINFO", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc)]
+    [Command("CMD_SET_COMMU_MATCHINFO", Roles = MatchRoles, Profiles = MatchProfiles)]
     [Command("CMD_SEND_ML_GAMEPLAYERS", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc)]
-    [Command("CMD_REQ_FORFEITEDGAME_REPLY", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc)]
-    [Command("CMD_SET_GAMEMEMBER", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc)]
+    [Command("CMD_REQ_FORFEITEDGAME_REPLY", Roles = MatchRoles, Profiles = MatchProfiles)]
     [Command("CMD_SEND_P2PSTATUS", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc)]
     public ValueTask<KvMessage[]> MatchAck(CommandContext ctx) => Reply.Of(ctx.Ok());
+
+    [Command("CMD_SET_GAMEMEMBER", Roles = MatchRoles, Profiles = GameProfile.Pes2010Pc, RequiredState = SessionState.InRoom)]
+    [Command("CMD_SET_GAMEMEMBER", Roles = MatchRoles, Profiles = GameProfile.Pes2011Pc)]
+    public ValueTask<KvMessage[]> SetGameMember(CommandContext ctx)
+    {
+        if (ctx.Profile != GameProfile.Pes2010Pc)
+            return Reply.Of(ctx.Ok());
+
+        var room = ctx.Session.RoomId is { } id ? ctx.Hub.FindRoom(id) : null;
+        if (room is null)
+            return Reply.Of(ctx.Fail("ERR_NOTINROOM"));
+        if (ctx.Session.Pid != room.OwnerPid)
+            return Reply.Of(ctx.Fail("ERR_NOTROOMOWNER"));
+        if (!room.MatchStarting)
+            return Reply.Of(ctx.Fail("ERR_INVALIDROOMINFO"));
+
+        ctx.Session.Push(ctx.Ok());
+        ctx.Hub.PublishDecideGamePlayer(room);
+        return Reply.None();
+    }
 
     /// <summary>The reply goes first: the sender's state machine is waiting on it, not on the push.</summary>
     private static ValueTask<KvMessage[]> AckThenSetStatus(CommandContext ctx, Room room, string status)
     {
         ctx.Session.Push(ctx.Ok());
-        if (room.Status != status && ctx.Hub.SetRoomStatus(room, status))
+        var changed = room.Status != status && ctx.Hub.SetRoomStatus(room, status);
+        // A new phase can retain GAME status (e.g. 1ST -> BREAK1 -> 2ND).
+        if (changed || (ctx.Profile == GameProfile.Pes2010Pc && ctx.Msg == "CMD_CHANGE_GAMEPHASE"))
             ctx.Hub.PublishRoomUpdated(room);
 
         return Reply.None();

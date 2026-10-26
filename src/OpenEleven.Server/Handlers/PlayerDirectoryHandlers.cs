@@ -58,7 +58,7 @@ public sealed class PlayerDirectoryHandlers(
             options.CurrentValue.Protocol.PlayerSearchLimit,
             ctx.CancellationToken);
 
-        var entries = found.Select(player => PresentSearchResult(ctx.Hub, player)).ToArray();
+        var entries = found.Select(player => PresentSearchResult(ctx.Hub, player, ctx.Profile)).ToArray();
         return [ctx.Ok().SetList("count", "list", entries)];
     }
 
@@ -72,12 +72,12 @@ public sealed class PlayerDirectoryHandlers(
             : Reply.Of(ctx.Fail("ERR_INVALIDLETTER"));
     }
 
-    private KvMessage PresentSearchResult(Hub hub, Player player)
+    private KvMessage PresentSearchResult(Hub hub, Player player, GameProfile profile)
     {
         var entry = new KvMessage()
             .Set("pid", player.Pid)
             .Set("name", player.Name)
-            .Set("division", player.Division)
+            .Set("division", RankSystem.Label(player.Division, profile))
             .Set("rating", player.Rating)
             .Set("manner", player.Manner);
 

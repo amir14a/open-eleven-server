@@ -136,7 +136,7 @@ public sealed class MatchResults(
             players.TryGetValue(lineup.Home, out var home);
             players.TryGetValue(lineup.Away, out var away);
             foreach (var p in players.Values)
-                RankSystem.Normalize(p, rank);
+                RankSystem.Normalize(p, rank, options?.CurrentValue.GameProfile ?? GameProfile.Pes2011Pc);
 
             var (homePk, awayPk) = (sheet.Home[4], sheet.Away[4]);
 
