@@ -16,7 +16,7 @@ namespace OpenEleven.Server.Pages.Admin;
 
 /// <summary>One account: its players, and ban, kick and password reset.</summary>
 [SensitiveBody]
-public sealed class AccountModel(GameDbContext db, Hub hub, ILogger<AccountModel> log) : PageModel
+public sealed class AccountModel(GameDbContext db, Hub hub, PendingLoginStore logins, ILogger<AccountModel> log) : PageModel
 {
     public const int MaxReasonLength = 255;
 
@@ -78,8 +78,11 @@ public sealed class AccountModel(GameDbContext db, Hub hub, ILogger<AccountModel
 
         Account.PasswordHash = AuthProof.HashPassword(password!);
         await db.SaveChangesAsync(ct);
+        // A login made with the old password must not outlive it.
+        logins.Revoke(id);
+        var closed = hub.Disconnect(id);
         log.LogWarning("Admin {Admin} set a new password for {GameId}", User.Identity?.Name, Account.GameId);
-        return Done($"New password set for {Account.GameId}.");
+        return Done($"New password set for {Account.GameId}{(closed > 0 ? "; they were disconnected" : "")}.");
     }
 
     private async Task<bool> LoadAsync(int id, CancellationToken ct)

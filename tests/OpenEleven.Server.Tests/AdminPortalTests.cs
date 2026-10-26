@@ -103,6 +103,21 @@ public class AdminPortalTests
     }
 
     [Fact]
+    public async Task A_password_reset_ends_the_accounts_web_logins()
+    {
+        await using var harness = await ServerHarness.CreateAsync();
+        var logins = harness.Services.GetRequiredService<PendingLoginStore>();
+        var account = new OpenEleven.Data.Entities.Account { Id = 7, GameId = "someone" };
+        logins.Add(account, "hash", System.Net.IPAddress.Loopback);
+        logins.Add(new OpenEleven.Data.Entities.Account { Id = 8, GameId = "other" }, "hash2", System.Net.IPAddress.Loopback);
+
+        logins.Revoke(7);
+
+        Assert.Empty(logins.FindByGameId(System.Net.IPAddress.Loopback, "someone"));
+        Assert.Single(logins.FindByGameId(System.Net.IPAddress.Loopback, "other"));
+    }
+
+    [Fact]
     public async Task Saved_settings_survive_a_restart_and_a_reset_removes_them()
     {
         await using var harness = await ServerHarness.CreateAsync();

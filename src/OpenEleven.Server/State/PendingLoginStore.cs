@@ -102,6 +102,13 @@ public sealed class PendingLoginStore(
         return refreshed;
     }
 
+    /// <summary>Ends every login of the account, so the game has to sign in over HTTP again.</summary>
+    public void Revoke(int accountId)
+    {
+        foreach (var entry in _entries.Values.Where(entry => entry.AccountId == accountId))
+            _entries.TryRemove(entry.Id, out _);
+    }
+
     private void RemoveExpired()
     {
         var now = timeProvider.GetUtcNow();
