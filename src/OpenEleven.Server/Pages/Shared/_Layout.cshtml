@@ -13,7 +13,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@(ViewData["Title"] is string page ? $"{page} · Open Eleven {title}" : $"Open Eleven · {title} online")</title>
-    <link rel="stylesheet" href="/css/site.css">
+    @* The version hash changes the URL whenever the file does, so no browser keeps an old copy. *@
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true">
 </head>
 <body>
 <header class="topbar">
