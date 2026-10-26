@@ -33,8 +33,8 @@ public sealed record LiveSetting(string Group, string Key, string Label, LiveSet
 
 /// <summary>
 /// The settings that apply while the server runs. Anything read once at startup (addresses,
-/// ports, HTTPS, the database, the service list) is left to server.yaml. Lists are only edited
-/// entry by entry: a configuration layer can change lobby N but cannot add or remove one.
+/// ports, HTTPS, the database, the service list) is left to server.yaml. The lobby list has its
+/// own page and applies at the next start (see <see cref="LiveSettings.Lobbies"/>).
 /// </summary>
 public static class LiveSettingCatalog
 {
@@ -45,16 +45,6 @@ public static class LiveSettingCatalog
             new("Website", "Server:Site:Announcement", "Home page announcement", LiveSettingKind.LongText, o => o.Site.Announcement,
                 "Shown at the top of the home page. Empty shows nothing."),
         };
-
-        for (var i = 0; i < options.Lobbies.Count; i++)
-        {
-            var at = i;
-            var group = $"Lobby {i + 1}";
-            list.Add(new(group, $"Server:Lobbies:{i}:Name", "Name", LiveSettingKind.Text, o => o.Lobbies[at].Name, MaxLength: 32));
-            // Not Enabled: lobby ids follow the enabled entries' positions, so hiding one live
-            // would renumber the lobbies players are standing in.
-            list.Add(new(group, $"Server:Lobbies:{i}:MaxPlayers", "Max players", LiveSettingKind.Number, o => o.Lobbies[at].MaxPlayers));
-        }
 
         if (RankSystem.Applies(game))
         {

@@ -1,0 +1,72 @@
+@page "/admin/lobbies"
+@model OpenEleven.Server.Pages.Admin.LobbiesModel
+@using OpenEleven.Server.Pages.Admin
+@{
+    ViewData["Title"] = "Lobbies";
+    ViewData["Nav"] = "admin-lobbies";
+}
+<h1 class="title">Lobbies</h1>
+<p class="subtitle">Lobby ids follow the order of the list, so changes apply when the server restarts.</p>
+@if (Model.Message is { Length: > 0 })
+{
+    <p class="msg ok" role="status">@Model.Message</p>
+}
+@foreach (var error in Model.Errors)
+{
+    <p class="msg error" role="alert">@error</p>
+}
+@if (Model.RestartPending)
+{
+    <p class="msg warn" role="status">Saved changes are waiting for a server restart.</p>
+}
+
+<div class="grid two">
+    <section class="panel">
+        <h2>Edit the list</h2>
+        <div class="body">
+            <form method="post" asp-page-handler="Save">
+                <table class="list">
+                    <thead><tr><th class="num">#</th><th>Name</th><th class="num">Max players</th></tr></thead>
+                    <tbody>
+                    @for (var i = 0; i < Model.Slots.Count; i++)
+                    {
+                        var slot = Model.Slots[i];
+                        <tr>
+                            <td class="num muted">@(i + 1)</td>
+                            <td><input name="name" value="@slot.Name" maxlength="@LobbiesModel.MaxName" aria-label="Lobby @(i + 1) name" style="margin: 0"></td>
+                            <td class="num"><input name="max" type="number" min="1" max="@LobbiesModel.MaxPlayersLimit" value="@slot.MaxPlayers" aria-label="Lobby @(i + 1) max players" style="margin: 0; width: 90px"></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+                <p class="hint">Players pick a lobby by its position. Leave a name empty to remove that lobby; up to 10.</p>
+                <button type="submit">Save lobby list</button>
+            </form>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Running now</h2>
+        <table class="list">
+            <tbody>
+            @foreach (var lobby in Model.Running)
+            {
+                <tr>
+                    <td class="num muted">@(lobby.Index + 1)</td>
+                    <td>@lobby.Name</td>
+                    <td class="num">@Model.Players(lobby) / @lobby.MaxPlayers</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        <div class="body">
+            <p class="muted" style="margin-top: 0">From @(Model.FromPortal ? "the list saved here" : "server.yaml").</p>
+            @if (Model.FromPortal || Model.RestartPending)
+            {
+                <form method="post" asp-page-handler="Reset">
+                    <button type="submit" class="small secondary">Use server.yaml's lobbies</button>
+                </form>
+            }
+        </div>
+    </section>
+</div>

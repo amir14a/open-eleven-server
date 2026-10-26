@@ -668,6 +668,7 @@ button.small, .button.small { padding: 5px 10px; font-size: 11px; }
 .msg { margin-bottom: 18px; padding: 10px 12px; border-radius: 6px; font-size: 13px; }
 .msg.error { border: 1px solid rgba(224, 20, 30, .55); background: rgba(224, 20, 30, .14); color: #ffb3b6; }
 .msg.ok { border: 1px solid rgba(142, 226, 63, .45); background: rgba(142, 226, 63, .1); color: #cdf5a6; }
+.msg.warn { border: 1px solid rgba(232, 197, 71, .5); background: rgba(232, 197, 71, .1); color: #f3e3a3; }
 
 @media (max-width: 640px) {
     .topbar .inner { gap: 12px; }

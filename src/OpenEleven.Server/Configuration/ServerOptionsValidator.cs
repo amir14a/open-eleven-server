@@ -57,6 +57,9 @@ public sealed class ServerOptionsValidator : IValidateOptions<ServerOptions>
         if (lobbies.Any(l => string.IsNullOrWhiteSpace(l.Name)))
             failures.Add("Every lobby needs a Name.");
 
+        if (lobbies.Any(l => l.MaxPlayers < 1))
+            failures.Add("Every lobby needs MaxPlayers of at least 1.");
+
         var duplicateNames = lobbies
             .GroupBy(l => l.Name, StringComparer.Ordinal)
             .Where(g => g.Count() > 1)

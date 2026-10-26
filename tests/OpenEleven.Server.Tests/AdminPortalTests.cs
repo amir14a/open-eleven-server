@@ -33,6 +33,7 @@ public class AdminPortalTests
         var services = new ServiceCollection();
         services.AddOptions<ServerOptions>().Bind(config.GetSection(ServerOptions.SectionName))
             .Validate(_ => { duringValidation?.Invoke(config); return true; });
+        services.PostConfigure<ServerOptions>(live.ReplaceLobbies);
         services.AddSingleton<IValidateOptions<ServerOptions>, ServerOptionsValidator>();
         var provider = services.BuildServiceProvider();
         return (provider.GetRequiredService<IOptionsMonitor<ServerOptions>>(), provider.GetRequiredService<IOptionsFactory<ServerOptions>>());
@@ -56,11 +57,11 @@ public class AdminPortalTests
         var live = new LiveSettings();
         var (monitor, factory) = Options(live);
 
-        var failures = live.Check(new Dictionary<string, string?> { ["Server:Lobbies:1:Name"] = "Beginner" }, factory);
+        var failures = live.Check(new Dictionary<string, string?> { ["Server:Protocol:PendingLoginLifetimeSeconds"] = "5" }, factory);
 
-        Assert.Contains(failures, f => f.Contains("unique"));
+        Assert.Contains(failures, f => f.Contains("PendingLoginLifetimeSeconds"));
         Assert.Empty(live.Overrides);
-        Assert.Equal("Expert", monitor.CurrentValue.Lobbies[1].Name);
+        Assert.Equal(300, monitor.CurrentValue.Protocol.PendingLoginLifetimeSeconds);
     }
 
     [Fact]
@@ -70,16 +71,16 @@ public class AdminPortalTests
         string? seenHere = null, seenElsewhere = null;
         var (_, factory) = Options(live, config =>
         {
-            seenHere = config["Server:Lobbies:1:Name"];
+            seenHere = config["Server:Site:Announcement"];
             // A plain thread started without this flow's context (a Task could run inline here).
-            var other = new Thread(() => seenElsewhere = config["Server:Lobbies:1:Name"]);
+            var other = new Thread(() => seenElsewhere = config["Server:Site:Announcement"]);
             other.UnsafeStart();
             other.Join();
         });
 
-        Assert.Empty(live.Check(new Dictionary<string, string?> { ["Server:Lobbies:1:Name"] = "Pro" }, factory));
+        Assert.Empty(live.Check(new Dictionary<string, string?> { ["Server:Site:Announcement"] = "Pro" }, factory));
 
-        Assert.Equal(("Pro", "Expert"), (seenHere, seenElsewhere));
+        Assert.Equal(("Pro", null), (seenHere, seenElsewhere));
     }
 
     [Fact]
@@ -100,6 +101,29 @@ public class AdminPortalTests
         await live.LoadAsync(db, factory, NullLogger.Instance);
 
         Assert.Equal(("", "Cup final"), (monitor.CurrentValue.Admin.Password, monitor.CurrentValue.Site.Announcement));
+    }
+
+    [Fact]
+    public async Task A_saved_lobby_list_replaces_server_yaml_from_the_next_start()
+    {
+        await using var harness = await ServerHarness.CreateAsync();
+        await using var scope = harness.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+        var live = new LiveSettings();
+        var (monitor, factory) = Options(live);
+
+        Assert.NotEmpty(await live.SaveLobbiesAsync(db, factory, [new() { Name = "A", MaxPlayers = 50 }, new() { Name = "A", MaxPlayers = 50 }]));
+        Assert.Empty(await live.SaveLobbiesAsync(db, factory,
+            [new() { Name = "Pro", MaxPlayers = 40 }, new() { Name = "Beginner", MaxPlayers = 80 }, new() { Name = "Cup | Final", MaxPlayers = 20 }]));
+        Assert.Equal(["Beginner", "Expert"], monitor.CurrentValue.Lobbies.Select(l => l.Name));   // not before a restart
+
+        var restarted = new LiveSettings();
+        var (after, restartedFactory) = Options(restarted);
+        await restarted.LoadAsync(db, restartedFactory, NullLogger.Instance);
+        Assert.Equal([("Pro", 40), ("Beginner", 80), ("Cup | Final", 20)], after.CurrentValue.Lobbies.Select(l => (l.Name, l.MaxPlayers)));
+
+        await LiveSettings.ResetLobbiesAsync(db);
+        Assert.Null(await LiveSettings.SavedLobbiesAsync(db));
     }
 
     [Fact]

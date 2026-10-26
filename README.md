@@ -185,12 +185,14 @@ What it does:
 - **Accounts:** search by game id or player name. Ban with a reason (which also disconnects
   them), unban, disconnect, or set a new password (which also ends their sessions).
 - **News:** the information items the game shows after login.
+- **Lobbies:** add, remove, rename, resize and reorder, up to 10. A lobby's id is its
+  position, so the list is saved whole and replaces `server.yaml`'s **at the next restart**;
+  the page says when a saved list is waiting for one. While a saved list exists,
+  `server.yaml`'s `Lobbies` are ignored; *Use server.yaml's lobbies* brings them back.
 - **Settings:** a curated set that applies immediately, without a restart: the home
-  announcement, lobby names and sizes, the rank system and a few game rules. Changes are
-  validated before they go live and stored in the database, so they survive restarts; *Use
-  server.yaml* undoes one. Addresses, ports, HTTPS, the database and the admin settings
-  themselves stay YAML-only. Lobby settings follow the lobby's **position** in the YAML,
-  so after reordering lobbies, reset their overrides.
+  announcement, the rank system and a few game rules. Changes are validated before they go
+  live and stored in the database, so they survive restarts; *Use server.yaml* undoes one.
+  Addresses, ports, HTTPS, the database and the admin settings themselves stay YAML-only.
 
 Every admin action is logged at Warning level with the admin's name.
 

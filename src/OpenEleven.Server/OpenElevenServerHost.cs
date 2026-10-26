@@ -58,6 +58,7 @@ public static class OpenElevenServerHost
         var liveSettings = new LiveSettings();
         ((IConfigurationBuilder)builder.Configuration).Add(liveSettings);
         builder.Services.AddSingleton(liveSettings);
+        builder.Services.PostConfigure<ServerOptions>(liveSettings.ReplaceLobbies);
 
         builder.Services.AddOpenElevenCore(builder.Configuration);
         builder.Services.AddHostedService<RoomWatchPublisher>();
