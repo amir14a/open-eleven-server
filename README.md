@@ -170,8 +170,13 @@ enforces that.
 
 ### Admin portal
 
-Off by default. Turn it on per title with `Admin.User` / `Admin.Password` in the title's
-YAML, or in Docker with `ADMIN_USER` and `ADMIN_PASSWORD_PES20xx` in `docker/.env`.
+Off by default. Turn it on per title:
+
+- **Docker:** `ADMIN_USER` and `ADMIN_PASSWORD_PES20xx` in `docker/.env`.
+- **Local runs:** `Admin.User` / `Admin.Password` in `conf/server.local.yaml` next to the
+  binary.
+
+Never put the password in `conf/server.pes20xxpc.yaml`: those files are tracked by git.
 
 - **One password per title, at least 12 characters.** A shorter one stops the server at
   startup. Each title has its own database, so bans, news and settings are per title anyway.
@@ -204,7 +209,7 @@ Keys worth knowing (all under `Server:`):
 |---|---|
 | `AdvertiseIp` | Written into every `svraddr` and URL. Must be a host name the certificate covers; `auto` or an IP only with HTTPS off. A wrong value sends the client somewhere unreachable; this is the most common misconfiguration. |
 | `Https` | `Enabled`, `CertificatePath`, `KeyPath`. See [Run locally](#run-locally). |
-| `Admin` | `User`, `Password`. Empty password = portal off. |
+| `Admin` | `User`, `Password`. Empty password = portal off. Set them in `.env` or `server.local.yaml`, not in a tracked file. |
 | `Captcha` | Registration captcha: `None` (default), `Turnstile`, `HCaptcha`, `ReCaptcha` or `Custom`. Docker: `CAPTCHA_*` in `.env`. |
 | `Lobbies` | The blocks offered by `CMD_GET_BLOCKLIST`, **maximum 10**. The client joins one by its **position**, so reordering changes what a running client selects. |
 | `Rank` | Rating, points, promotion and relegation for the titles that have divisions. |
