@@ -35,8 +35,8 @@ public sealed class RankScheduler(
                 using var scope = scopes.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
                 var now = time.GetUtcNow().UtcDateTime;
-                await RankSystem.InitializeAsync(db, options.CurrentValue.Rank, now);
-                await RankSystem.RolloverAsync(db, options.CurrentValue.Rank, now);
+                await RankSystem.InitializeAsync(db, options.CurrentValue.Rank, now, options.CurrentValue.GameProfile);
+                await RankSystem.RolloverAsync(db, options.CurrentValue.Rank, now, options.CurrentValue.GameProfile);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {

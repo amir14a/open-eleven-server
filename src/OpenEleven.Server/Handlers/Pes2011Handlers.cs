@@ -110,7 +110,7 @@ public sealed class Pes2011Handlers(
             var player = await players.GetAsync(pid, ctx.CancellationToken);
             var inRoom = ctx.Hub.SessionsForPid(pid).Select(s => s.RoomId).FirstOrDefault(r => r is not null) ?? 0;
             if (player is not null)
-                entries.Add(Pes2011Lists.BlockPlayerEntry(PlayerPresenter.BlockListEntry(player, inRoom)));
+                entries.Add(Pes2011Lists.BlockPlayerEntry(PlayerPresenter.BlockListEntry(player, inRoom, ctx.Profile)));
         }
 
         return [WatchReply(ctx, ctx.Session.BlockPlayerWatch, entries)];
@@ -437,7 +437,7 @@ public sealed class Pes2011Handlers(
                         .Set("manner", p.Manner)
                         .Set("pid", p.Pid)
                         .Set("has_guestplayer", "NO")
-                        .Set("division", RankSystem.DivisionName(p.Division))
+                        .Set("division", RankSystem.Label(p.Division, ctx.Profile))
                         .Set("rating", p.Rating)
                         .Set("side", side));
             }

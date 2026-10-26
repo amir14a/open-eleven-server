@@ -169,7 +169,7 @@ public sealed class MatchResultsTests : IDisposable
             db.Settings.Add(new ServerSetting { Key = RankSystem.SeasonKey, Value = "2026-09" });
             db.SaveChanges();
 
-            await RankSystem.RolloverAsync(db, new RankOptions { PromotePercent = 50, RelegatePercent = 50 }, new DateTime(2026, 10, 5, 0, 0, 0, DateTimeKind.Utc));
+            await RankSystem.RolloverAsync(db, new RankOptions { PromotePercent = 50, RelegatePercent = 50 }, new DateTime(2026, 10, 5, 0, 0, 0, DateTimeKind.Utc), GameProfile.Pes2011Pc);
         }
 
         var (top, bottom) = (Load(1), Load(2));

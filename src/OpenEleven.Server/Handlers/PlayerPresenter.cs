@@ -5,6 +5,8 @@
 
 using OpenEleven.Data.Entities;
 using OpenEleven.Protocol.Kv;
+using OpenEleven.Server.Configuration;
+using OpenEleven.Server.State;
 
 namespace OpenEleven.Server.Handlers;
 
@@ -16,7 +18,7 @@ public static class PlayerPresenter
 {
     public const int DesiredPositionCount = 13;
 
-    public static KvMessage ListEntry(Player p) => new KvMessage()
+    public static KvMessage ListEntry(Player p, GameProfile profile = GameProfile.Pes2011Pc) => new KvMessage()
         .Set("pid", p.Pid)
         .Set("date", p.LastPlayedAt is { } played
             ? new DateTimeOffset(DateTime.SpecifyKind(played, DateTimeKind.Utc)).ToUnixTimeSeconds()
@@ -24,13 +26,13 @@ public static class PlayerPresenter
         .Set("point", p.Point)
         .Set("name", p.Name)
         .Set("match_num", p.Stats.MatchCount)
-        .Set("division", p.Division)
+        .Set("division", RankSystem.Label(p.Division, profile))
         .Set("rating", p.Rating);
 
-    public static KvMessage BlockListEntry(Player p, int roomId) => new KvMessage()
+    public static KvMessage BlockListEntry(Player p, int roomId, GameProfile profile = GameProfile.Pes2011Pc) => new KvMessage()
         .Set("pid", p.Pid)
         .Set("name", p.Name)
-        .Set("division", p.Division)
+        .Set("division", RankSystem.Label(p.Division, profile))
         .Set("room_id", roomId)
         .Set("point", p.Point)
         .Set("rating", p.Rating)

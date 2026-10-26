@@ -32,15 +32,40 @@ public static class RankSystem
     public static string DivisionName(string? value)
         => value == "NONE" || Divisions.Contains(value) ? value! : "D5";
 
+    /// <summary>
+    /// PES 2010's own ladder: D1, D2, D3A, D3B, D3C (it starts in D3C). The internal
+    /// PES 2011 tiers must not leak into its search rows or profile screens.
+    /// </summary>
+    public static string Pes2010DivisionName(string? value) => value switch
+    {
+        "D1" or "D2" or "D3A" or "D3B" or "D3C" => value!,
+        "D3" => "D3A",
+        "D4" => "D3B",
+        _ => "D3C",
+    };
+
+    /// <summary>The division string a title's clients understand.</summary>
+    public static string Label(string? value, GameProfile profile)
+        => profile == GameProfile.Pes2010Pc ? Pes2010DivisionName(value) : DivisionName(value);
+
     public const string WeekKey = "rank.week", SeasonKey = "rank.season", InitializedKey = "rank.initialized";
 
     /// <summary>A never-played profile sits at the start rating, and every profile in a 2011 division.</summary>
-    public static void Normalize(Player p, RankOptions rank)
+    public static void Normalize(Player p, RankOptions rank, GameProfile profile)
     {
         if (p.Stats.MatchCount == 0)
             p.Rating = rank.StartRating;
-        if (!Divisions.Contains(p.Division))
+        // PES 2010 stores D1..D3C; rewriting them to D5 loses the title's own ladder.
+        if (Applies(profile) && !Divisions.Contains(p.Division))
             p.Division = "D5";
+    }
+
+    /// <summary>PES 2010 rows damaged by the old unconditional D5 normalization.</summary>
+    private static void RepairPes2010Divisions(GameDbContext db)
+    {
+        foreach (var p in db.Players.Where(p => p.Division == "D5" || p.Division == "D4"
+                                                || p.Division == "D3" || p.Division == "D2" || p.Division == "D1"))
+            p.Division = Pes2010DivisionName(p.Division);
     }
 
     public static int DivisionIndex(string division) => Math.Max(0, Array.IndexOf(Divisions, division));
@@ -73,15 +98,23 @@ public static class RankSystem
     /// Runs once per database: lifts existing ratings onto the start-rating scale (they used
     /// to start at 0) and moves PES 2010 divisions into D1..D5.
     /// </summary>
-    public static async Task InitializeAsync(GameDbContext db, RankOptions rank, DateTime now)
+    public static async Task InitializeAsync(GameDbContext db, RankOptions rank, DateTime now, GameProfile profile)
     {
+        // Repair runs independently of the one-time rank initialization so databases created
+        // by the old code get their PES 2010 ladder back.
+        if (profile == GameProfile.Pes2010Pc)
+        {
+            RepairPes2010Divisions(db);
+            await db.SaveChangesAsync();
+        }
+
         if (await db.Settings.FindAsync(InitializedKey) is not null)
             return;
 
         foreach (var p in await db.Players.Include(p => p.Stats).ToListAsync())
         {
             p.Rating += rank.StartRating;
-            if (!Divisions.Contains(p.Division))
+            if (Applies(profile) && !Divisions.Contains(p.Division))
                 p.Division = "D5";
         }
 
@@ -93,7 +126,7 @@ public static class RankSystem
     }
 
     /// <summary>Archives the finished week and closes the finished season. Idempotent.</summary>
-    public static async Task RolloverAsync(GameDbContext db, RankOptions rank, DateTime now)
+    public static async Task RolloverAsync(GameDbContext db, RankOptions rank, DateTime now, GameProfile profile)
     {
         var week = Unix(WeekStart(now)).ToString(CultureInfo.InvariantCulture);
         var storedWeek = (await db.Settings.FindAsync(WeekKey))?.Value;
@@ -105,7 +138,7 @@ public static class RankSystem
         var season = SeasonOf(now);
         var storedSeason = (await db.Settings.FindAsync(SeasonKey))?.Value;
         if (storedSeason is not null && storedSeason != season)
-            await CloseSeasonAsync(db, rank, storedSeason, now);
+            await CloseSeasonAsync(db, rank, storedSeason, now, profile);
         if (storedSeason != season)
             Set(db, SeasonKey, season);
 
@@ -137,8 +170,13 @@ public static class RankSystem
     /// season points; the top share goes up, the bottom share goes down. Ratings drift back
     /// toward the start rating so the new season is open.
     /// </summary>
-    private static async Task CloseSeasonAsync(GameDbContext db, RankOptions rank, string season, DateTime now)
+    private static async Task CloseSeasonAsync(GameDbContext db, RankOptions rank, string season, DateTime now,
+        GameProfile profile)
     {
+        // PES 2010 has no season promotion/relegation in this server; its ladder must survive.
+        if (!Applies(profile))
+            return;
+
         var players = await db.Players.Include(p => p.Stats).ToListAsync();
         var oldRank = players.ToDictionary(p => p.Pid, p => p.Rank);
         var moves = new Dictionary<int, (string Old, string New)>();
@@ -157,7 +195,7 @@ public static class RankSystem
 
         foreach (var p in players)
         {
-            Normalize(p, rank);
+            Normalize(p, rank, profile);
             p.Rating = (int)Math.Round(rank.StartRating + (p.Rating - rank.StartRating) * rank.SeasonRatingCarry);
             p.SeasonPoints = p.SeasonMatches = 0;
             if (moves.TryGetValue(p.Pid, out var move))

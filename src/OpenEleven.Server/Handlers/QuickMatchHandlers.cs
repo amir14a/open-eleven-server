@@ -229,7 +229,7 @@ public sealed class QuickMatchHandlers(IPlayerRepository players, ILogger<QuickM
                     .Set("fd_beginnermark", p?.BeginnerMark == true ? "YES" : "NO")
                     .Set("fd_position_want", p?.PositionWant ?? "")
                     .Set("fd_desired_position", p?.DesiredPositionMask ?? 0)
-                    .Set("division", RankSystem.DivisionName(p?.Division))
+                    .Set("division", RankSystem.Label(p?.Division, ctx.Profile))
                     .Set("rating", p?.Rating ?? 0)
                     .Set("ml_division", "ML_DIVISION_5")
                     .Set("ml_point", 0);
