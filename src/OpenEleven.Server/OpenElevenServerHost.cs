@@ -226,6 +226,12 @@ public static class OpenElevenServerHost
         else
             log.LogWarning("HTTPS disabled: plain http://{Host}:{Port}/ (local development only)", catalog.AdvertiseIp, options.Listen.Http);
 
+        // The portal answers 404 while off, so say here how to reach it.
+        if (options.Admin.Enabled)
+            log.LogInformation("Admin portal: on at /admin (user {User})", options.Admin.User);
+        else
+            log.LogInformation("Admin portal: off; set Admin.Password ({Min}+ characters) to turn it on", AdminOptions.MinPasswordLength);
+
         if (fileLog is { IsOpen: true })
             log.LogInformation("Log file: {LogFile}", fileLog.Path);
         else if (!string.IsNullOrWhiteSpace(options.LogFile))
