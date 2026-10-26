@@ -112,6 +112,16 @@ public class ServerOptionsValidatorTests
         Assert.Contains("BlockedTerms",
             string.Join(' ', _validator.Validate(null, options).Failures!));
     }
+
+    [Fact]
+    public void Rejects_control_characters_in_lobby_names()
+    {
+        var options = new ServerOptions { AdvertiseIp = "oe.test" };
+        options.Lobbies.Add(new LobbyOptions { Name = "Pro\nLobby" });
+
+        Assert.Contains("control characters",
+            string.Join(' ', _validator.Validate(null, options).Failures!));
+    }
 }
 
 public class LobbyCapEnforcementTests

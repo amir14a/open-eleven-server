@@ -57,6 +57,10 @@ public sealed class ServerOptionsValidator : IValidateOptions<ServerOptions>
         if (lobbies.Any(l => string.IsNullOrWhiteSpace(l.Name)))
             failures.Add("Every lobby needs a Name.");
 
+        // Names go to the client inside quoted protocol strings.
+        if (lobbies.Any(l => l.Name.Any(char.IsControl)))
+            failures.Add("Lobby names cannot contain control characters.");
+
         if (lobbies.Any(l => l.MaxPlayers < 1))
             failures.Add("Every lobby needs MaxPlayers of at least 1.");
 
