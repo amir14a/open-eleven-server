@@ -21,7 +21,25 @@ public sealed class LiveSettings : ConfigurationProvider, IConfigurationSource
 
     public IConfigurationProvider Build(IConfigurationBuilder builder) => this;
 
+    // A set under validation, seen only by the flow running Check: other threads reading
+    // configuration meanwhile (a server.yaml reload, a second save) keep seeing Data.
+    private readonly AsyncLocal<IDictionary<string, string?>?> _candidate = new();
+
+    private IDictionary<string, string?> View => _candidate.Value ?? Data;
+
     public IReadOnlyDictionary<string, string?> Overrides => new Dictionary<string, string?>(Data, StringComparer.OrdinalIgnoreCase);
+
+    public override bool TryGet(string key, out string? value) => View.TryGetValue(key, out value);
+
+    public override IEnumerable<string> GetChildKeys(IEnumerable<string> earlierKeys, string? parentPath)
+    {
+        var prefix = parentPath is null ? "" : parentPath + ConfigurationPath.KeyDelimiter;
+        return View.Keys
+            .Where(k => k.Length > prefix.Length && k.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            .Select(k => k[prefix.Length..].Split(ConfigurationPath.KeyDelimiter, 2)[0])
+            .Concat(earlierKeys)
+            .Order(ConfigurationKeyComparer.Instance);
+    }
 
     /// <summary>
     /// The validation failures <paramref name="candidate"/> would cause, empty when it is safe.
@@ -34,8 +52,7 @@ public sealed class LiveSettings : ConfigurationProvider, IConfigurationSource
 
         // The factory binds straight from configuration, which reads this provider on every
         // lookup; the monitor's cached options are untouched until OnReload.
-        var current = Data;
-        Data = new Dictionary<string, string?>(candidate, StringComparer.OrdinalIgnoreCase);
+        _candidate.Value = new Dictionary<string, string?>(candidate, StringComparer.OrdinalIgnoreCase);
         try
         {
             factory.Create(Options.DefaultName);
@@ -51,7 +68,7 @@ public sealed class LiveSettings : ConfigurationProvider, IConfigurationSource
         }
         finally
         {
-            Data = current;
+            _candidate.Value = null;
         }
     }
 

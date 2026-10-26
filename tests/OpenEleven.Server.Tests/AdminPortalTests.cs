@@ -17,9 +17,11 @@ namespace OpenEleven.Server.Tests;
 public class AdminPortalTests
 {
     /// <summary>server.yaml stand-in with <paramref name="live"/> layered last, as the host does.</summary>
-    private static (IOptionsMonitor<ServerOptions> Monitor, IOptionsFactory<ServerOptions> Factory) Options(LiveSettings live)
+    private static (IOptionsMonitor<ServerOptions> Monitor, IOptionsFactory<ServerOptions> Factory) Options(LiveSettings live,
+        Action<IConfiguration>? duringValidation = null)
     {
-        var config = new ConfigurationBuilder()
+        IConfiguration config = null!;
+        config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Server:AdvertiseIp"] = "oe.test",
@@ -29,7 +31,8 @@ public class AdminPortalTests
             .Add(live)
             .Build();
         var services = new ServiceCollection();
-        services.AddOptions<ServerOptions>().Bind(config.GetSection(ServerOptions.SectionName));
+        services.AddOptions<ServerOptions>().Bind(config.GetSection(ServerOptions.SectionName))
+            .Validate(_ => { duringValidation?.Invoke(config); return true; });
         services.AddSingleton<IValidateOptions<ServerOptions>, ServerOptionsValidator>();
         var provider = services.BuildServiceProvider();
         return (provider.GetRequiredService<IOptionsMonitor<ServerOptions>>(), provider.GetRequiredService<IOptionsFactory<ServerOptions>>());
@@ -58,6 +61,25 @@ public class AdminPortalTests
         Assert.Contains(failures, f => f.Contains("unique"));
         Assert.Empty(live.Overrides);
         Assert.Equal("Expert", monitor.CurrentValue.Lobbies[1].Name);
+    }
+
+    [Fact]
+    public void A_change_being_checked_is_invisible_to_other_threads()
+    {
+        var live = new LiveSettings();
+        string? seenHere = null, seenElsewhere = null;
+        var (_, factory) = Options(live, config =>
+        {
+            seenHere = config["Server:Lobbies:1:Name"];
+            // A plain thread started without this flow's context (a Task could run inline here).
+            var other = new Thread(() => seenElsewhere = config["Server:Lobbies:1:Name"]);
+            other.UnsafeStart();
+            other.Join();
+        });
+
+        Assert.Empty(live.Check(new Dictionary<string, string?> { ["Server:Lobbies:1:Name"] = "Pro" }, factory));
+
+        Assert.Equal(("Pro", "Expert"), (seenHere, seenElsewhere));
     }
 
     [Fact]
