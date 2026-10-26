@@ -29,6 +29,9 @@ public sealed class LiveSettings : ConfigurationProvider, IConfigurationSource
     /// </summary>
     public IReadOnlyList<string> Check(IReadOnlyDictionary<string, string?> candidate, IOptionsFactory<ServerOptions> factory)
     {
+        if (Unlisted(candidate.Keys, factory) is { Count: > 0 } unlisted)
+            return unlisted.Select(k => $"{k} cannot be changed from the admin portal.").ToList();
+
         // The factory binds straight from configuration, which reads this provider on every
         // lookup; the monitor's cached options are untouched until OnReload.
         var current = Data;
@@ -52,6 +55,18 @@ public sealed class LiveSettings : ConfigurationProvider, IConfigurationSource
         }
     }
 
+    /// <summary>
+    /// Keys outside <see cref="LiveSettingCatalog"/>. Only the catalog may be layered over
+    /// server.yaml: a row written straight into the database must not reach Admin, Captcha,
+    /// Https or anything else the portal does not offer.
+    /// </summary>
+    private static List<string> Unlisted(IEnumerable<string> keys, IOptionsFactory<ServerOptions> factory)
+    {
+        var options = factory.Create(Options.DefaultName);
+        var listed = LiveSettingCatalog.For(options, options.GameProfile).Select(s => s.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return keys.Where(k => !listed.Contains(k)).ToList();
+    }
+
     public void Apply(IReadOnlyDictionary<string, string?> values)
     {
         Data = new Dictionary<string, string?>(values, StringComparer.OrdinalIgnoreCase);
@@ -66,6 +81,15 @@ public sealed class LiveSettings : ConfigurationProvider, IConfigurationSource
             return;
 
         var values = stored.ToDictionary(s => s.Key[Prefix.Length..], s => (string?)s.Value, StringComparer.OrdinalIgnoreCase);
+        // Also drops a lobby that server.yaml no longer has; the next save deletes its rows.
+        if (Unlisted(values.Keys, factory) is { Count: > 0 } unlisted)
+        {
+            log.LogWarning("Ignoring saved settings the admin portal does not offer: {Keys}", string.Join(", ", unlisted));
+            unlisted.ForEach(k => values.Remove(k));
+        }
+
+        if (values.Count == 0)
+            return;
         if (Check(values, factory) is { Count: > 0 } failures)
         {
             log.LogError("Ignoring the settings saved from the admin portal: {Failures}", string.Join(" ", failures));

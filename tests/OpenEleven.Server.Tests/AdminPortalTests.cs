@@ -61,6 +61,26 @@ public class AdminPortalTests
     }
 
     [Fact]
+    public async Task Only_catalog_settings_are_accepted_or_loaded()
+    {
+        await using var harness = await ServerHarness.CreateAsync();
+        await using var scope = harness.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+        var live = new LiveSettings();
+        var (monitor, factory) = Options(live);
+
+        Assert.NotEmpty(live.Check(new Dictionary<string, string?> { ["Server:Admin:Password"] = "a-long-secret-1" }, factory));
+
+        // A row written straight into the database, next to a legitimate one.
+        db.Settings.Add(new() { Key = LiveSettings.Prefix + "Server:Admin:Password", Value = "a-long-secret-1" });
+        db.Settings.Add(new() { Key = LiveSettings.Prefix + "Server:Site:Announcement", Value = "Cup final" });
+        await db.SaveChangesAsync();
+        await live.LoadAsync(db, factory, NullLogger.Instance);
+
+        Assert.Equal(("", "Cup final"), (monitor.CurrentValue.Admin.Password, monitor.CurrentValue.Site.Announcement));
+    }
+
+    [Fact]
     public async Task Saved_settings_survive_a_restart_and_a_reset_removes_them()
     {
         await using var harness = await ServerHarness.CreateAsync();
