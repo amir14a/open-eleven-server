@@ -153,7 +153,7 @@ public sealed class QuickMatchHandlers(IPlayerRepository players, ILogger<QuickM
 
         quick.Complete(group);
         var owner = group.Members[0];
-        ctx.Hub.CreateQuickMatchRoom(
+        var room = ctx.Hub.CreateQuickMatchRoom(
             group.Members.Select(m => m.Session).ToArray(),
             owner.Type == "OC_Rank" ? "OC_RANKING" : "OC_FREE",
             new KvMessage().Set("type", owner.Type).Set("game_time", owner.GameTime).Set("frrate", owner.Frrate));
@@ -164,6 +164,7 @@ public sealed class QuickMatchHandlers(IPlayerRepository players, ILogger<QuickM
             .Set("frrate", m.Frrate)).ToArray();
         foreach (var m in group.Members)
             m.Session.Push(KvMessage.Ok("MSG_QUICK_ACCEPT_MATCH_OFFER_RES", m.Rqid).Set("member", list));
+        ctx.Hub.PublishQuickMatchRoom(room);
         return Reply.None();
     }
 

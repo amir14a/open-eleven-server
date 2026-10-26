@@ -280,6 +280,38 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
         return room;
     }
 
+    /// <summary>
+    /// Quick match never opens the lobby room screen, so the server must send the room-entry
+    /// publications a CMD_JOIN_ROOM tail would carry. Without them PES2010 clients sit in the
+    /// room after MSG_QUICK_ACCEPT_MATCH_OFFER_RES and one eventually leaves.
+    /// </summary>
+    public void PublishQuickMatchRoom(Room room)
+    {
+        if (!Is2010)
+            return;
+
+        // No entry screen to wait for: the server is the host for a quick match.
+        room.TrySetStatus("SETENV");
+        var members = room.Snapshot();
+        for (var i = 0; i < members.Count; i++)
+        {
+            var member = members[i];
+            member.GameEntryNo = i;
+            member.GameSide = i % 2;
+            // First player of each side leads it, as the entry screen would set.
+            member.GameSideLeader = i < 2;
+        }
+        room.MatchStarting = true;
+
+        PublishRoomStateChanged(room);
+        PublishRoomRoster(room);
+        PublishPeerEndpoints(room);
+        PublishGameEntryChanged(room);
+        PublishDecideGameEnv(room);
+        PublishDecideGamePlayer(room);
+        PublishDecideGamePlayerEnv(room);
+    }
+
     public Room CreateRoom(Session owner, string name, int maxMembers)
     {
         if (owner.BlockId is not { } blockId)
