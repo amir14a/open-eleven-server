@@ -1,0 +1,535 @@
+/* After the PES 2011 menus: black glossy bars, a violet floodlit night, white type and a
+   lime-green glow on whatever is selected. Everything is served from this server. */
+
+:root {
+    color-scheme: dark;
+    --ink: #f3f2f7;
+    --muted: #a9a5b8;
+    --faint: #6f6a82;
+    --void: #07060c;
+    --panel: rgba(13, 10, 21, .78);
+    --line: rgba(255, 255, 255, .10);
+    --rule: rgba(255, 255, 255, .32);
+    --tile: linear-gradient(180deg, #3a3842 0%, #222128 52%, #16151b 100%);
+    --bar: linear-gradient(180deg, #2e2d33 0%, #141317 48%, #060607 52%, #0c0c0e 100%);
+    --lime: #8ee23f;
+    --lime-glow: rgba(142, 226, 63, .5);
+    --red: #e0141e;
+    --gold: #e8c547;
+    --sans: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --display: "Arial Black", "Segoe UI Black", "Segoe UI", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: var(--ink);
+    font: 14px/1.5 var(--sans);
+    background-color: var(--void);
+    background-image:
+        url("/img/streaks.svg"),
+        radial-gradient(ellipse 55% 45% at 88% -5%, rgba(178, 130, 245, .55), transparent 70%),
+        radial-gradient(ellipse 45% 55% at 5% 25%, rgba(88, 48, 150, .45), transparent 70%),
+        radial-gradient(ellipse 70% 35% at 65% 95%, rgba(120, 200, 70, .14), transparent 70%),
+        linear-gradient(180deg, #1b1129 0%, #0e0a17 55%, #050408 100%);
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+a { color: inherit; }
+
+/* ---- bars ---------------------------------------------------------------------------- */
+
+.topbar, .bottombar {
+    background: var(--bar);
+    box-shadow: 0 0 18px rgba(0, 0, 0, .7);
+}
+
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+
+.topbar .inner, .bottombar .inner {
+    width: min(1120px, 100% - 32px);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.topbar .inner { min-height: 58px; }
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+/* The round emblem in the corner of every PES 2011 menu. */
+.emblem {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffffff, #b9bcc6 35%, #4a4c55 70%, #1a1b20);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .15), 0 0 12px rgba(178, 130, 245, .45);
+}
+
+.brand b {
+    font: italic 900 17px/1 var(--display);
+    letter-spacing: .01em;
+}
+
+.brand b em { color: var(--red); font-style: inherit; }
+
+.brand small {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.nav {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.nav a {
+    position: relative;
+    padding: 18px 12px;
+    color: var(--muted);
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: .07em;
+    text-decoration: none;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.nav a:hover, .nav a[aria-current="page"] { color: var(--ink); }
+
+/* The selected sub-menu row in the game: a lime line that fades out at both ends. */
+.nav a[aria-current="page"]::after, .nav a:hover::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    bottom: 10px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--lime), transparent);
+    box-shadow: 0 0 10px var(--lime-glow);
+}
+
+.nav a:hover::after { opacity: .5; }
+
+.nav form { align-self: center; margin-left: 8px; }
+
+.bottombar {
+    margin-top: auto;
+    border-top: 1px solid rgba(255, 255, 255, .08);
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.bottombar .inner { min-height: 44px; flex-wrap: wrap; }
+
+.bottombar .hints { display: flex; gap: 22px; margin-left: auto; }
+
+.bottombar a { text-decoration: none; }
+
+.bottombar a:hover { color: var(--ink); }
+
+/* The controller buttons in the game's hint bar. */
+.dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 7px;
+    vertical-align: -1px;
+    border-radius: 50%;
+}
+
+.dot.green { background: radial-gradient(circle at 35% 30%, #e2ffb8, #6fd12a 55%, #2d6b08); }
+.dot.red { background: radial-gradient(circle at 35% 30%, #ffc2c2, #e0141e 55%, #6d0509); }
+.dot.grey { background: radial-gradient(circle at 35% 30%, #ffffff, #8d8b96 55%, #34333a); }
+
+/* ---- page ---------------------------------------------------------------------------- */
+
+main.page {
+    width: min(1120px, 100% - 32px);
+    margin: 32px auto 48px;
+    flex: 1;
+}
+
+h1, h2, h3 { margin: 0; }
+
+.title {
+    margin-bottom: 18px;
+    font: italic 900 26px/1.1 var(--display);
+    text-transform: uppercase;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, .6);
+}
+
+.subtitle { margin: -10px 0 20px; color: var(--muted); }
+
+.rule {
+    height: 1px;
+    margin: 28px 0;
+    border: 0;
+    background: linear-gradient(90deg, transparent, var(--rule) 15%, var(--rule) 85%, transparent);
+}
+
+.grid { display: grid; gap: 20px; }
+.grid.two { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+
+.muted { color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; text-align: right; }
+.center { text-align: center; }
+
+/* ---- hero ---------------------------------------------------------------------------- */
+
+.hero { padding: 36px 0 8px; text-align: center; }
+
+.stars { color: #8d8b96; letter-spacing: .35em; font-size: 12px; }
+
+/* Brushed chrome, like the box art lettering. */
+.logo {
+    margin: 6px 0 10px;
+    font: italic 900 clamp(34px, 7vw, 64px)/1 var(--display);
+    text-transform: uppercase;
+}
+
+.logo .chrome {
+    background: linear-gradient(180deg, #ffffff 0%, #d9dbe1 42%, #75777f 52%, #c9cbd2 70%, #ffffff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .7));
+}
+
+.logo em { color: var(--red); font-style: inherit; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .7)); }
+.logo small { color: var(--muted); font-size: .35em; vertical-align: middle; }
+
+.tagline { margin: 0 0 26px; color: var(--muted); font-size: 15px; }
+
+.announcement {
+    max-width: 720px;
+    margin: 0 auto 26px;
+    padding: 12px 18px;
+    border: 1px solid rgba(232, 197, 71, .45);
+    border-radius: 8px;
+    background: rgba(232, 197, 71, .08);
+    white-space: pre-line;
+}
+
+/* ---- menu tiles ---------------------------------------------------------------------- */
+
+/* The main menu: tiles resting on a thin silver line, the selected one glowing lime. */
+.tiles {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 22px;
+    margin: 26px 0 36px;
+    padding: 0 0 22px;
+}
+
+.tiles::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--rule) 20%, var(--rule) 80%, transparent);
+}
+
+.tile {
+    width: 150px;
+    padding: 18px 10px 14px;
+    border: 2px solid rgba(255, 255, 255, .14);
+    border-radius: 10px;
+    background: var(--tile);
+    text-align: center;
+    text-decoration: none;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 6px 16px rgba(0, 0, 0, .5);
+    -webkit-box-reflect: below 6px linear-gradient(transparent 70%, rgba(255, 255, 255, .14));
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.tile:hover, .tile.selected {
+    border-color: var(--lime);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 0 0 1px var(--lime), 0 0 18px var(--lime-glow);
+}
+
+.tile strong {
+    display: block;
+    font: italic 900 30px/1.1 var(--display);
+    font-variant-numeric: tabular-nums;
+}
+
+.tile span {
+    display: block;
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+/* ---- panels and lists ---------------------------------------------------------------- */
+
+.panel {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+    overflow: hidden;
+}
+
+.panel > h2, .panel > header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .02));
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.panel > header a { margin-left: auto; color: var(--muted); font-weight: 600; text-decoration: none; }
+.panel > header a:hover { color: var(--ink); }
+
+.panel .body { padding: 16px; }
+
+.empty { padding: 22px 16px; color: var(--faint); text-align: center; }
+
+.scroll { overflow-x: auto; }
+
+table.list { width: 100%; border-collapse: collapse; }
+
+.list th, .list td { padding: 9px 14px; text-align: left; white-space: nowrap; }
+
+.list th {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.list th.num, .list td.num { text-align: right; }
+
+.list tbody tr { border-top: 1px solid var(--line); }
+
+.list tbody tr:hover {
+    background: linear-gradient(90deg, transparent, rgba(142, 226, 63, .09) 30%, transparent);
+    box-shadow: inset 0 -1px 0 var(--lime);
+}
+
+.list a { text-decoration: none; font-weight: 600; }
+.list a:hover { color: var(--lime); }
+
+.score { font: italic 900 15px var(--display); font-variant-numeric: tabular-nums; }
+
+.tag {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 1px 6px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.tag.red { border-color: rgba(224, 20, 30, .6); color: #ff8a8f; }
+.tag.lime { border-color: rgba(142, 226, 63, .5); color: var(--lime); }
+
+/* Division badges, gold at the top down to grey. */
+.div {
+    display: inline-block;
+    min-width: 32px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: #111;
+    font: italic 900 11px/1.6 var(--display);
+    text-align: center;
+}
+
+.div.D1 { background: linear-gradient(180deg, #fff1a8, #d9a91c); }
+.div.D2 { background: linear-gradient(180deg, #ffffff, #a9adb8); }
+.div.D3 { background: linear-gradient(180deg, #ffd3a6, #b36b2c); }
+.div.D4 { background: linear-gradient(180deg, #bfe0ff, #3f7fc6); }
+.div.D5 { background: linear-gradient(180deg, #e6e4ec, #77747f); }
+
+.online {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 6px;
+    border-radius: 50%;
+    background: var(--lime);
+    box-shadow: 0 0 8px var(--lime-glow);
+}
+
+/* ---- tabs and paging ----------------------------------------------------------------- */
+
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+
+.tabs a, .pager a, .pager span {
+    padding: 7px 14px;
+    border: 1px solid rgba(255, 255, 255, .14);
+    border-radius: 6px;
+    background: var(--tile);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.tabs a:hover, .pager a:hover { color: var(--ink); }
+
+.tabs a[aria-current="true"], .pager span[aria-current="page"] {
+    border-color: var(--lime);
+    color: var(--ink);
+    box-shadow: 0 0 0 1px var(--lime), 0 0 12px var(--lime-glow);
+}
+
+.pager { display: flex; justify-content: center; gap: 8px; margin: 18px 0 4px; }
+
+/* ---- profile ------------------------------------------------------------------------- */
+
+.profile-head { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin-bottom: 20px; }
+.profile-head .title { margin: 0; }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+
+.stat { padding: 14px 16px; box-shadow: 1px 0 0 var(--line), 0 1px 0 var(--line); }
+.stat strong { display: block; font: italic 900 22px/1.2 var(--display); font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+
+.intro { margin: 0; padding: 14px 16px; color: var(--muted); font-style: italic; white-space: pre-line; }
+
+/* ---- forms --------------------------------------------------------------------------- */
+
+.card { width: 100%; max-width: 440px; margin: 0 auto; }
+.card .body { padding: 24px; }
+
+form.inline { display: inline; }
+
+.search { display: flex; gap: 8px; margin-bottom: 16px; }
+.search input { margin: 0; }
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+label.check { display: flex; align-items: center; gap: 8px; text-transform: none; letter-spacing: 0; font-weight: 600; }
+label.check input { width: auto; margin: 0; }
+
+.hint {
+    display: block;
+    margin: 3px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+input, textarea, select {
+    width: 100%;
+    padding: 9px 11px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, .45);
+    color: var(--ink);
+    font: inherit;
+}
+
+textarea { min-height: 90px; resize: vertical; }
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--lime);
+    box-shadow: 0 0 0 1px var(--lime), 0 0 12px var(--lime-glow);
+}
+
+input[name="RegCode"] { text-transform: uppercase; letter-spacing: .05em; }
+
+.captcha { margin: 16px 0; }
+
+button, .button {
+    display: inline-block;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 6px;
+    background: linear-gradient(180deg, #b4f56e 0%, #79d22e 50%, #5cb51b 100%);
+    color: #0d1a03;
+    font: inherit;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-decoration: none;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), 0 4px 14px rgba(0, 0, 0, .45);
+}
+
+button:hover, .button:hover { filter: brightness(1.08); }
+
+button:disabled { filter: grayscale(1) brightness(.6); cursor: not-allowed; }
+
+button.wide { width: 100%; }
+
+button.secondary, .button.secondary {
+    background: var(--tile);
+    color: var(--ink);
+    border: 1px solid rgba(255, 255, 255, .16);
+}
+
+button.danger { background: linear-gradient(180deg, #ff6b6b 0%, #e0141e 55%, #a50a12 100%); color: #fff; }
+
+button.small, .button.small { padding: 5px 10px; font-size: 11px; }
+
+.msg { margin-bottom: 18px; padding: 10px 12px; border-radius: 6px; font-size: 13px; }
+.msg.error { border: 1px solid rgba(224, 20, 30, .55); background: rgba(224, 20, 30, .14); color: #ffb3b6; }
+.msg.ok { border: 1px solid rgba(142, 226, 63, .45); background: rgba(142, 226, 63, .1); color: #cdf5a6; }
+
+@media (max-width: 640px) {
+    .topbar .inner { flex-wrap: wrap; gap: 0; }
+    .nav { width: 100%; margin: 0; }
+    .nav a { padding: 10px 10px 14px; }
+    .nav a[aria-current="page"]::after, .nav a:hover::after { bottom: 6px; }
+    .tile { width: calc(50% - 11px); }
+}

@@ -1,0 +1,43 @@
+@using OpenEleven.Server.Configuration
+@inject GameProfile Game
+@{
+    var title = TitleProfiles.DisplayName(Game);
+    var name = title.Split(' ');   // "PES", "2011", "(PC)"
+    var nav = ViewData["Nav"] as string;
+    string? Current(string item) => nav == item ? "page" : null;
+}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@(ViewData["Title"] is string page ? $"{page} · {title}" : $"{title} online")</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<header class="topbar">
+    <div class="inner">
+        <a class="brand" href="/">
+            <span class="emblem" aria-hidden="true"></span>
+            <span><b>@name[0] <em>@name.ElementAtOrDefault(1)</em></b><small>Online server @name.ElementAtOrDefault(2)</small></span>
+        </a>
+        <nav class="nav">
+            <a href="/register" aria-current="@Current("register")">Register</a>
+        </nav>
+    </div>
+</header>
+<main class="page">
+    @RenderBody()
+</main>
+<footer class="bottombar">
+    <div class="inner">
+        <span>@title &middot; OpenEleven</span>
+        <span class="hints">
+            <a href="/register"><i class="dot green"></i>Create account</a>
+            <a href="#"><i class="dot red"></i>Back to top</a>
+        </span>
+    </div>
+</footer>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

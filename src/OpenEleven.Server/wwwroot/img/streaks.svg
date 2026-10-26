@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8ee23f" stop-opacity="0"/>
+      <stop offset=".45" stop-color="#8ee23f" stop-opacity=".9"/>
+      <stop offset=".8" stop-color="#e8c547" stop-opacity=".8"/>
+      <stop offset="1" stop-color="#e8c547" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="v" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#b48cff" stop-opacity="0"/>
+      <stop offset=".6" stop-color="#b48cff" stop-opacity=".7"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="2.5"/></filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="9"/></filter>
+  </defs>
+  <g fill="none" stroke-linecap="round">
+    <g stroke="url(#g)" filter="url(#soft)" opacity=".35">
+      <path d="M-50 760 C 380 560, 820 900, 1650 430" stroke-width="40"/>
+    </g>
+    <g stroke="url(#g)" filter="url(#blur)" opacity=".55">
+      <path d="M-40 720 C 360 520, 860 880, 1640 420" stroke-width="3"/>
+      <path d="M-40 760 C 420 580, 900 860, 1640 470" stroke-width="2"/>
+      <path d="M-40 800 C 460 640, 940 900, 1640 520" stroke-width="1.5"/>
+      <path d="M200 900 C 520 640, 1080 760, 1640 300" stroke-width="2"/>
+    </g>
+    <g stroke="url(#v)" filter="url(#blur)" opacity=".45">
+      <path d="M300 -20 C 700 260, 1100 60, 1640 240" stroke-width="2"/>
+      <path d="M380 -20 C 760 300, 1180 120, 1640 300" stroke-width="1.2"/>
+    </g>
+  </g>
+</svg>

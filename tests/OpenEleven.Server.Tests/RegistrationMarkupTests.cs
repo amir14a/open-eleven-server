@@ -13,7 +13,8 @@ namespace OpenEleven.Server.Tests;
 public class RegistrationMarkupTests
 {
     private static readonly string View = ReadAsset("Register.cshtml");
-    private static readonly string Stylesheet = ReadAsset("register.css");
+    private static readonly string Layout = ReadAsset("_Layout.cshtml");
+    private static readonly string Stylesheet = ReadAsset("site.css");
 
     private static string ReadAsset(string name)
         => File.ReadAllText(Path.Combine(AppContext.BaseDirectory, name));
@@ -47,8 +48,8 @@ public class RegistrationMarkupTests
     public void Reaches_nothing_off_this_machine()
     {
         // The game machine has no internet route through this server, so an external
-        // reference would leave the page unstyled. Same-origin /css/register.css is fine.
-        foreach (var asset in new[] { View, Stylesheet })
+        // reference would leave the page unstyled. Same-origin /css/site.css is fine.
+        foreach (var asset in new[] { View, Layout, Stylesheet })
         {
             Assert.DoesNotContain("http://", asset);
             Assert.DoesNotContain("https://", asset);

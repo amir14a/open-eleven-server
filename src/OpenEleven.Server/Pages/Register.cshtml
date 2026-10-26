@@ -3,20 +3,13 @@
 @using OpenEleven.Server.Configuration
 @inject GameProfile Game
 @{
-    Layout = null;
+    ViewData["Title"] = "Create an account";
+    ViewData["Nav"] = "register";
 }
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Create an account</title>
-    <link rel="stylesheet" href="/css/register.css">
-</head>
-<body>
-<main class="card">
-    <h1>Create an account</h1>
-    <p class="sub">@TitleProfiles.DisplayName(Game) online server</p>
+<h1 class="title center">Create an account</h1>
+<p class="subtitle center">@TitleProfiles.DisplayName(Game) online server</p>
+<section class="panel card">
+<div class="body">
 
     @if (Model.Created is { Length: > 0 })
     {
@@ -65,9 +58,11 @@
         }
 
         @* Disabled until the challenge is passed; the server checks the token regardless. *@
-        <button type="submit" id="submit" disabled="@(Model.Captcha is not null)">Create account</button>
+        <button type="submit" id="submit" class="wide" disabled="@(Model.Captcha is not null)">Create account</button>
     </form>
-</main>
+</div>
+</section>
+@section Scripts {
 @if (Model.Captcha is { } widget)
 {
     <script>
@@ -76,5 +71,4 @@
     </script>
     <script src="@widget.ScriptUrl" async defer></script>
 }
-</body>
-</html>
+}

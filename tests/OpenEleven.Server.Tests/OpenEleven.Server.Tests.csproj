@@ -16,13 +16,15 @@
   </ItemGroup>
 
   <!--
-    The registration markup, copied in as plain files so RegistrationMarkupTests can read
-    it. A .cshtml is inert here: this is not a Web SDK project, so nothing compiles it.
+    The registration markup with its layout and stylesheet, copied in as plain files so
+    RegistrationMarkupTests can read them. A .cshtml is inert here: this is not a Web SDK project, so nothing compiles it.
   -->
   <ItemGroup>
     <None Include="..\..\src\OpenEleven.Server\Pages\Register.cshtml" Link="Register.cshtml"
           CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\..\src\OpenEleven.Server\wwwroot\css\register.css" Link="register.css"
+    <None Include="..\..\src\OpenEleven.Server\Pages\Shared\_Layout.cshtml" Link="_Layout.cshtml"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\OpenEleven.Server\wwwroot\css\site.css" Link="site.css"
           CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
