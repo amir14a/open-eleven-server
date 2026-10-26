@@ -17,7 +17,7 @@ public sealed class AccountsModel(GameDbContext db) : PageModel
 {
     [BindProperty(SupportsGet = true)] public string? Q { get; set; }
     [BindProperty(SupportsGet = true)] public bool Banned { get; set; }
-    [BindProperty(SupportsGet = true, Name = "page")] public int PageNumber { get; set; } = 1;
+    [BindProperty(SupportsGet = true, Name = "p")] public int PageNumber { get; set; } = 1;
 
     public IReadOnlyList<Account> List { get; private set; } = [];
     public Pager Pager { get; private set; } = new(1, 1, _ => "");
@@ -39,6 +39,6 @@ public sealed class AccountsModel(GameDbContext db) : PageModel
         List = await query.OrderByDescending(a => a.CreatedAt)
             .Skip((PageNumber - 1) * SiteData.PageSize).Take(SiteData.PageSize).ToListAsync(ct);
         var filter = $"{(string.IsNullOrWhiteSpace(Q) ? "" : $"q={Uri.EscapeDataString(Q.Trim())}&")}{(Banned ? "banned=true&" : "")}";
-        Pager = new Pager(PageNumber, pages, n => $"/admin/accounts?{filter}page={n}");
+        Pager = new Pager(PageNumber, pages, n => $"/admin/accounts?{filter}p={n}");
     }
 }

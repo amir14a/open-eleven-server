@@ -22,7 +22,7 @@ public sealed class PlayersModel(GameDbContext db, Hub hub, GameProfile game) : 
     public const int MaxSearchLength = 32;   // the form's maxlength; a longer query matches no name anyway
 
     [BindProperty(SupportsGet = true)] public string? Q { get; set; }
-    [BindProperty(SupportsGet = true, Name = "page")] public int PageNumber { get; set; } = 1;
+    [BindProperty(SupportsGet = true, Name = "p")] public int PageNumber { get; set; } = 1;
 
     public bool Ranked => RankSystem.Applies(game);
     public IReadOnlyList<Player> List { get; private set; } = [];
@@ -51,6 +51,6 @@ public sealed class PlayersModel(GameDbContext db, Hub hub, GameProfile game) : 
             .Skip((PageNumber - 1) * SiteData.PageSize).Take(SiteData.PageSize)
             .ToListAsync(ct);
         var q = string.IsNullOrWhiteSpace(Q) ? "" : $"q={Uri.EscapeDataString(Q.Trim())}&";
-        Pager = new Pager(PageNumber, pages, n => $"/players?{q}page={n}");
+        Pager = new Pager(PageNumber, pages, n => $"/players?{q}p={n}");
     }
 }

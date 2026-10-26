@@ -26,7 +26,7 @@ public sealed class RankingsModel(GameDbContext db, Hub hub, GameProfile game) :
     [BindProperty(SupportsGet = true)] public string? Sort { get; set; }
     [BindProperty(SupportsGet = true)] public bool Week { get; set; }
     [BindProperty(SupportsGet = true)] public string? Division { get; set; }
-    [BindProperty(SupportsGet = true, Name = "page")] public int PageNumber { get; set; } = 1;
+    [BindProperty(SupportsGet = true, Name = "p")] public int PageNumber { get; set; } = 1;
 
     public bool Ranked => RankSystem.Applies(game);
     public IEnumerable<(string Key, string Label, int Type)> Shown => Tabs.Where(t => Ranked || t.Key != "rating");
@@ -53,5 +53,5 @@ public sealed class RankingsModel(GameDbContext db, Hub hub, GameProfile game) :
     }
 
     public static string Link(string? sort, bool week, string? division, int page = 1)
-        => $"/rankings?sort={sort}{(week ? "&week=true" : "")}{(division is null ? "" : $"&division={division}")}{(page > 1 ? $"&page={page}" : "")}";
+        => $"/rankings?sort={sort}{(week ? "&week=true" : "")}{(division is null ? "" : $"&division={division}")}{(page > 1 ? $"&p={page}" : "")}";
 }

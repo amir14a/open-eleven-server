@@ -16,7 +16,7 @@ namespace OpenEleven.Server.Pages;
 [OutputCache(Duration = 30)]
 public sealed class MatchesModel(GameDbContext db) : PageModel
 {
-    [BindProperty(SupportsGet = true, Name = "page")] public int PageNumber { get; set; } = 1;
+    [BindProperty(SupportsGet = true, Name = "p")] public int PageNumber { get; set; } = 1;
 
     public IReadOnlyList<MatchRow> List { get; private set; } = [];
     public Pager Pager { get; private set; } = new(1, 1, _ => "");
@@ -27,6 +27,6 @@ public sealed class MatchesModel(GameDbContext db) : PageModel
         PageNumber = Math.Clamp(PageNumber, 1, pages);
         List = await SiteData.NameAsync(db,
             SiteData.Finished(db).Skip((PageNumber - 1) * SiteData.PageSize).Take(SiteData.PageSize), ct);
-        Pager = new Pager(PageNumber, pages, n => $"/matches?page={n}");
+        Pager = new Pager(PageNumber, pages, n => $"/matches?p={n}");
     }
 }
