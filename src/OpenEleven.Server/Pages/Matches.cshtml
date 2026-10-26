@@ -1,0 +1,12 @@
+@page "/matches"
+@model MatchesModel
+@{
+    ViewData["Title"] = "Matches";
+    ViewData["Nav"] = "matches";
+}
+<h1 class="title">Matches</h1>
+
+<section class="panel">
+    <partial name="_Matches" model="Model.List" />
+</section>
+<partial name="_Pager" model="Model.Pager" />

@@ -61,6 +61,7 @@ public sealed class ServerOptions
     /// <summary>PES 2011 rank system: rating, points, seasons and anti-farming.</summary>
     public RankOptions Rank { get; set; } = new();
 
+    public SiteOptions Site { get; set; } = new();
     public HttpsOptions Https { get; set; } = new();
     public CaptchaOptions Captcha { get; set; } = new();
     public DatabaseOptions Database { get; set; } = new();
@@ -249,6 +250,13 @@ public sealed class UrlOptions
 
     /// <summary>DOWNLOAD only: the text the client shows for the update (manifest line 5); empty = built-in, translated.</summary>
     public string Description { get; set; } = "";
+}
+
+/// <summary>The public web pages.</summary>
+public sealed class SiteOptions
+{
+    /// <summary>Shown at the top of the home page; empty shows nothing.</summary>
+    public string Announcement { get; set; } = "";
 }
 
 /// <summary>

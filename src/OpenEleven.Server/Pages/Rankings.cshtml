@@ -1,0 +1,75 @@
+@page "/rankings"
+@model RankingsModel
+@using OpenEleven.Server.State
+@{
+    ViewData["Title"] = "Rankings";
+    ViewData["Nav"] = "rankings";
+    string? On(bool selected) => selected ? "true" : null;
+}
+<h1 class="title">Rankings</h1>
+
+<nav class="tabs" aria-label="Period">
+    <a href="@RankingsModel.Link(Model.Sort, false, Model.Division)" aria-current="@On(!Model.Week)">All time</a>
+    <a href="@RankingsModel.Link(Model.Sort, true, Model.Division)" aria-current="@On(Model.Week)">This week</a>
+</nav>
+<nav class="tabs" aria-label="Sort">
+    @foreach (var t in Model.Shown)
+    {
+        <a href="@RankingsModel.Link(t.Key, Model.Week, Model.Division)" aria-current="@On(t.Key == Model.Sort)">@t.Label</a>
+    }
+</nav>
+@if (Model.Ranked)
+{
+    <nav class="tabs" aria-label="Division">
+        <a href="@RankingsModel.Link(Model.Sort, Model.Week, null)" aria-current="@On(Model.Division is null)">All divisions</a>
+        @foreach (var d in Enumerable.Reverse(RankSystem.Divisions))
+        {
+            <a href="@RankingsModel.Link(Model.Sort, Model.Week, d)" aria-current="@On(d == Model.Division)">@d</a>
+        }
+    </nav>
+}
+
+<section class="panel">
+    @if (Model.Lines.Count == 0)
+    {
+        <p class="empty">Nobody has played @(Model.Week ? "this week" : "yet").</p>
+    }
+    else
+    {
+        <div class="scroll">
+            <table class="list">
+                <thead>
+                <tr>
+                    <th class="num">#</th><th>Player</th>
+                    @if (Model.Ranked) { <th>Div</th><th class="num">Rating</th><th class="num">Pts</th> }
+                    <th class="num">P</th><th class="num">W</th><th class="num">D</th><th class="num">L</th>
+                    <th class="num">Win %</th><th class="num">Streak</th>
+                </tr>
+                </thead>
+                <tbody>
+                @for (var i = 0; i < Model.Lines.Count; i++)
+                {
+                    var l = Model.Lines[i];
+                    <tr>
+                        <td class="num muted">@(Model.First + i + 1)</td>
+                        <td>@if (Model.Online.Contains(l.Pid)) { <span class="online" title="Online"></span> }<a href="/players/@l.Pid">@l.Name</a></td>
+                        @if (Model.Ranked)
+                        {
+                            <td><span class="div @l.Division">@l.Division</span></td>
+                            <td class="num score">@l.Rating</td>
+                            <td class="num">@l.Value</td>
+                        }
+                        <td class="num">@l.Matches</td>
+                        <td class="num">@l.Wins</td>
+                        <td class="num">@l.Draws</td>
+                        <td class="num">@l.Losses</td>
+                        <td class="num">@SiteData.WinPercent(l.Wins, l.Matches)</td>
+                        <td class="num">@l.Streak</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+<partial name="_Pager" model="Model.Pager" />

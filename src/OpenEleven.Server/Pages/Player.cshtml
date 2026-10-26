@@ -1,0 +1,51 @@
+@page "/players/{pid:int}"
+@model PlayerModel
+@{
+    var p = Model.Profile;
+    var s = p.Stats;
+    ViewData["Title"] = p.Name;
+    ViewData["Nav"] = "players";
+}
+<div class="profile-head">
+    <h1 class="title">@p.Name</h1>
+    @if (Model.Ranked) { <span class="div @p.Division">@p.Division</span> }
+    @if (Model.IsOnline) { <span class="tag lime"><span class="online"></span>Online</span> }
+    <span class="muted">
+        Member since @Model.MemberSince.ToString("yyyy-MM-dd")
+        @if (p.LastPlayedAt is { } at) { <text>&middot; last played @SiteData.Date(at) UTC</text> }
+    </span>
+</div>
+
+<section class="panel">
+    <div class="stats">
+        @if (Model.Ranked)
+        {
+            <div class="stat"><strong>@p.Rating</strong><span>Rating</span></div>
+            <div class="stat"><strong>@(p.Rank > 0 ? $"#{p.Rank}" : "–")</strong><span>Rank</span></div>
+            <div class="stat"><strong>@p.Point</strong><span>Points</span></div>
+            <div class="stat"><strong>@p.SeasonPoints</strong><span>Season pts</span></div>
+            <div class="stat"><strong>@p.WeeklyPoints</strong><span>Week pts</span></div>
+        }
+        <div class="stat"><strong>@s.MatchCount</strong><span>Matches</span></div>
+        <div class="stat"><strong>@s.WinCount</strong><span>Wins</span></div>
+        <div class="stat"><strong>@s.DrawCount</strong><span>Draws</span></div>
+        <div class="stat"><strong>@s.LoseCount</strong><span>Losses</span></div>
+        <div class="stat"><strong>@SiteData.WinPercent(s.WinCount, s.MatchCount)</strong><span>Win %</span></div>
+        <div class="stat"><strong>@s.Goals</strong><span>Goals for</span></div>
+        <div class="stat"><strong>@s.GoalsAgainst</strong><span>Goals against</span></div>
+        <div class="stat"><strong>@s.ContinuousWins</strong><span>Win streak</span></div>
+        <div class="stat"><strong>@s.MaxContinuousWins</strong><span>Best streak</span></div>
+        <div class="stat"><strong>@s.DisconnectCount</strong><span>Disconnects</span></div>
+    </div>
+    @if (!string.IsNullOrWhiteSpace(p.Intro))
+    {
+        <p class="intro">&ldquo;@p.Intro&rdquo;</p>
+    }
+</section>
+
+<hr class="rule">
+
+<section class="panel">
+    <h2>Recent matches</h2>
+    <partial name="_Matches" model="Model.Recent" />
+</section>

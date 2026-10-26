@@ -1,0 +1,15 @@
+@model Pager
+@if (Model.Pages > 1)
+{
+    <nav class="pager" aria-label="Pages">
+        @if (Model.Page > 1)
+        {
+            <a href="@Model.Href(Model.Page - 1)">&lsaquo; Prev</a>
+        }
+        <span aria-current="page">@Model.Page / @Model.Pages</span>
+        @if (Model.Page < Model.Pages)
+        {
+            <a href="@Model.Href(Model.Page + 1)">Next &rsaquo;</a>
+        }
+    </nav>
+}

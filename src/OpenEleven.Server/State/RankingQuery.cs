@@ -37,7 +37,7 @@ public sealed class RankingQuery(GameDbContext db)
         var me = Arg("pid", 0);
         string? divisionName = division is >= 0 and <= 4 ? RankSystem.Divisions[division] : null;
 
-        List<RankSystem.Line> lines;
+        List<RankSystem.Line> ordered;
         (DateTime, DateTime)? week = null;
         if (q.ContainsKey("weekid"))
         {
@@ -49,32 +49,15 @@ public sealed class RankingQuery(GameDbContext db)
             var rows = await db.WeeklyRankings.Where(r => r.WeekStart == start)
                 .Where(r => divisionName == null || r.Division == divisionName)
                 .ToListAsync(ct);
-            lines = rows.Select(r => new RankSystem.Line(r.Pid, r.Name, r.Matches, r.Wins, r.Draws, r.Losses,
-                r.Points, r.Division, r.Rating, Streak: r.Streak)).ToList();
+            ordered = Order(rows.Select(r => new RankSystem.Line(r.Pid, r.Name, r.Matches, r.Wins, r.Draws, r.Losses,
+                r.Points, r.Division, r.Rating, Streak: r.Streak)), type);
             var weekStart = DateTimeOffset.FromUnixTimeSeconds(start).UtcDateTime;
             week = (weekStart, weekStart.AddDays(7).AddSeconds(-1));
         }
-        else if (type > 8)
-        {
-            var players = await db.Players.Where(p => p.WeeklyMatches > 0)
-                .Where(p => divisionName == null || p.Division == divisionName)
-                .ToListAsync(ct);
-            lines = players.Select(p => new RankSystem.Line(p.Pid, p.Name, p.WeeklyMatches, p.WeeklyWins,
-                p.WeeklyDraws, p.WeeklyLosses, p.WeeklyPoints, p.Division, p.Rating, Streak: p.WeeklyBestStreak)).ToList();
-        }
         else
         {
-            var players = await db.Players.Include(p => p.Stats)
-                .Where(p => p.Stats.MatchCount > 0)
-                .Where(p => divisionName == null || p.Division == divisionName)
-                .ToListAsync(ct);
-            lines = players.Select(p => new RankSystem.Line(p.Pid, p.Name, p.Stats.MatchCount, p.Stats.WinCount,
-                p.Stats.DrawCount, p.Stats.LoseCount, p.Point, p.Division, p.Rating, p.Stats.Goals,
-                p.Stats.MaxContinuousWins)).ToList();
+            ordered = await OrderedAsync(type, divisionName, ct);
         }
-
-        var ordered = lines.OrderByDescending(l => RankSystem.Metric(type, l))
-            .ThenByDescending(l => l.Rating).ThenBy(l => l.Pid).ToList();
 
         // "Jump to me": the page that holds the player (FUN_005f02d0 looks for its pid).
         if (q.GetValueOrDefault("flag") == "1" && ordered.FindIndex(l => l.Pid == me) is var mine and >= 0)
@@ -83,6 +66,34 @@ public sealed class RankingQuery(GameDbContext db)
         var registered = await db.Players.CountAsync(ct);
         return RankSystem.Format(ordered, type, from, records, now, week, registered);
     }
+
+    /// <summary>
+    /// The all-time table (type 1..7) or the running week (9..15) in the tab's order, limited to
+    /// one division unless <paramref name="divisionName"/> is null. Also feeds the web rankings.
+    /// </summary>
+    public async Task<List<RankSystem.Line>> OrderedAsync(int type, string? divisionName, CancellationToken ct = default)
+    {
+        if (type > 8)
+        {
+            var weekly = await db.Players.Where(p => p.WeeklyMatches > 0)
+                .Where(p => divisionName == null || p.Division == divisionName)
+                .ToListAsync(ct);
+            return Order(weekly.Select(p => new RankSystem.Line(p.Pid, p.Name, p.WeeklyMatches, p.WeeklyWins,
+                p.WeeklyDraws, p.WeeklyLosses, p.WeeklyPoints, p.Division, p.Rating, Streak: p.WeeklyBestStreak)), type);
+        }
+
+        var players = await db.Players.Include(p => p.Stats)
+            .Where(p => p.Stats.MatchCount > 0)
+            .Where(p => divisionName == null || p.Division == divisionName)
+            .ToListAsync(ct);
+        return Order(players.Select(p => new RankSystem.Line(p.Pid, p.Name, p.Stats.MatchCount, p.Stats.WinCount,
+            p.Stats.DrawCount, p.Stats.LoseCount, p.Point, p.Division, p.Rating, p.Stats.Goals,
+            p.Stats.MaxContinuousWins)), type);
+    }
+
+    private static List<RankSystem.Line> Order(IEnumerable<RankSystem.Line> lines, int type)
+        => lines.OrderByDescending(l => RankSystem.Metric(type, l))
+            .ThenByDescending(l => l.Rating).ThenBy(l => l.Pid).ToList();
 
     /// <summary>Start (unix seconds) of the archived weeks, newest first.</summary>
     public static async Task<List<int>> ArchivedWeeksAsync(GameDbContext db, int count, CancellationToken ct)

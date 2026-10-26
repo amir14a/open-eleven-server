@@ -1,0 +1,51 @@
+@page "/players"
+@model PlayersModel
+@{
+    ViewData["Title"] = "Players";
+    ViewData["Nav"] = "players";
+}
+<h1 class="title">Players</h1>
+
+<form class="search" method="get" action="/players" role="search">
+    <input name="q" value="@Model.Q" placeholder="Search by name" maxlength="32" aria-label="Player name">
+    <button type="submit" class="secondary">Search</button>
+</form>
+
+<section class="panel">
+    @if (Model.List.Count == 0)
+    {
+        <p class="empty">@(string.IsNullOrWhiteSpace(Model.Q) ? "No players yet." : "No player matches that name.")</p>
+    }
+    else
+    {
+        <div class="scroll">
+            <table class="list">
+                <thead>
+                <tr>
+                    <th>Player</th>
+                    @if (Model.Ranked) { <th>Div</th><th class="num">Rating</th> }
+                    <th class="num">P</th><th class="num">W–D–L</th><th class="num">Win %</th><th>Last played (UTC)</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var p in Model.List)
+                {
+                    <tr>
+                        <td>@if (Model.Online.Contains(p.Pid)) { <span class="online" title="Online"></span> }<a href="/players/@p.Pid">@p.Name</a></td>
+                        @if (Model.Ranked)
+                        {
+                            <td><span class="div @p.Division">@p.Division</span></td>
+                            <td class="num score">@p.Rating</td>
+                        }
+                        <td class="num">@p.Stats.MatchCount</td>
+                        <td class="num">@p.Stats.WinCount–@p.Stats.DrawCount–@p.Stats.LoseCount</td>
+                        <td class="num">@SiteData.WinPercent(p.Stats.WinCount, p.Stats.MatchCount)</td>
+                        <td class="muted">@(p.LastPlayedAt is { } at ? SiteData.Date(at) : "–")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+<partial name="_Pager" model="Model.Pager" />

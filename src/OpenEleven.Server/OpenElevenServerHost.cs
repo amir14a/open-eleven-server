@@ -62,6 +62,9 @@ public static class OpenElevenServerHost
         builder.Services.AddRazorPages();
         builder.Services.AddHttpRateLimits();
 
+        // The public pages read whole tables; a few seconds of staleness keeps that off the database.
+        builder.Services.AddOutputCache();
+
         // Antiforgery tokens are protected with Data Protection keys, which default to a
         // per-user directory that a container does not persist. Without this, every restart
         // invalidates the tokens on already-open registration pages and the next submit fails.
@@ -138,6 +141,7 @@ public static class OpenElevenServerHost
 
         app.UseMiddleware<HttpTraceMiddleware>();
         app.UseRateLimiter();
+        app.UseOutputCache();
 
         app.MapRazorPages();
         app.MapGameEndpoints();

@@ -1,0 +1,117 @@
+@page "/"
+@model IndexModel
+@using OpenEleven.Server.Configuration
+@inject GameProfile Game
+@{
+    ViewData["Nav"] = "home";
+    var name = TitleProfiles.DisplayName(Game).Split(' ');   // "PES", "2011", "(PC)"
+}
+<section class="hero">
+    <div class="stars" aria-hidden="true">★★★★★★★★★★★</div>
+    <h1 class="logo"><span class="chrome">@name[0]</span> <em>@name.ElementAtOrDefault(1)</em> <small>@name.ElementAtOrDefault(2)</small></h1>
+    <p class="tagline">Online multiplayer is back. Free, no subscription.</p>
+    @if (Model.Announcement.Length > 0)
+    {
+        <p class="announcement">@Model.Announcement</p>
+    }
+    <a class="button" href="/register">Create an account</a>
+</section>
+
+<div class="tiles">
+    <a class="tile selected" href="/players"><strong>@Model.Online</strong><span>Online now</span></a>
+    <a class="tile" href="#live"><strong>@Model.Live.Count</strong><span>Playing now</span></a>
+    <a class="tile" href="/players"><strong>@Model.Players</strong><span>Players</span></a>
+    <a class="tile" href="/matches"><strong>@Model.Matches</strong><span>Matches</span></a>
+</div>
+
+<div class="grid two">
+    <section class="panel" id="live">
+        <h2><span class="online"></span>Live matches</h2>
+        @if (Model.Live.Count == 0)
+        {
+            <p class="empty">Nobody is playing right now.</p>
+        }
+        else
+        {
+            <table class="list">
+                <tbody>
+                @foreach (var m in Model.Live)
+                {
+                    <tr>
+                        <td class="num">@m.Home</td>
+                        <td class="center score">@m.HomeGoals &ndash; @m.AwayGoals</td>
+                        <td>@m.Away</td>
+                        <td class="num"><span class="tag lime">@m.Phase</span></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </section>
+
+    <section class="panel">
+        <header>Top players <a href="/rankings">Rankings &rsaquo;</a></header>
+        @if (Model.Top.Count == 0)
+        {
+            <p class="empty">No ranked players yet.</p>
+        }
+        else
+        {
+            <table class="list">
+                <tbody>
+                @for (var i = 0; i < Model.Top.Count; i++)
+                {
+                    var p = Model.Top[i];
+                    <tr>
+                        <td class="num muted">@(i + 1)</td>
+                        <td><a href="/players/@p.Pid">@p.Name</a></td>
+                        @if (Model.Ranked)
+                        {
+                            <td><span class="div @p.Division">@p.Division</span></td>
+                            <td class="num score">@p.Rating</td>
+                        }
+                        else
+                        {
+                            <td class="num score">@p.Wins W</td>
+                        }
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </section>
+</div>
+
+<hr class="rule">
+
+<div class="grid two">
+    <section class="panel">
+        <header>Latest matches <a href="/matches">All matches &rsaquo;</a></header>
+        <partial name="_Matches" model="Model.Recent" />
+    </section>
+
+    <section class="panel">
+        <h2>News</h2>
+        @if (Model.News.Count == 0)
+        {
+            <p class="empty">No news.</p>
+        }
+        else
+        {
+            <table class="list">
+                <tbody>
+                @foreach (var n in Model.News)
+                {
+                    <tr>
+                        <td style="white-space: normal">
+                            <strong>@n.Subject</strong> @if (n.Important) { <span class="tag red">Important</span> }
+                            <div class="muted" style="white-space: pre-line">@n.Body</div>
+                        </td>
+                        <td class="num muted">@n.PublishedAt.ToString("yyyy-MM-dd")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </section>
+</div>
