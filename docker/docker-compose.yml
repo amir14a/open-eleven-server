@@ -8,7 +8,8 @@
 # each title's config, because those are the ports the server tells the client to use.
 # Each title reads its config from conf/ on the host (edit it and restart, no rebuild) and
 # writes logs to logs/<title>; data/<title> keeps the keys that sign admin and form cookies
-# across rebuilds. The containers run as root, so the host folders need no chown.
+# across rebuilds (chmod 700 data on the host). The containers run as root, so the host
+# folders need no chown. Each title has its own admin password: ADMIN_PASSWORD_PES20xx.
 
 name: openeleven
 
@@ -44,7 +45,7 @@ services:
       CAPTCHA_SITE_KEY: "${CAPTCHA_SITE_KEY:-}"
       CAPTCHA_SECRET_KEY: "${CAPTCHA_SECRET_KEY:-}"
       ADMIN_USER: "${ADMIN_USER:-}"
-      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD_PES2010:-}"
       OPENELEVEN_Server__Database__ConnectionString: >-
         Server=mysql;Port=3306;Database=pes2010pc;User=openeleven;Password=${MYSQL_PASSWORD:?set MYSQL_PASSWORD};
 
@@ -73,7 +74,7 @@ services:
       CAPTCHA_SITE_KEY: "${CAPTCHA_SITE_KEY:-}"
       CAPTCHA_SECRET_KEY: "${CAPTCHA_SECRET_KEY:-}"
       ADMIN_USER: "${ADMIN_USER:-}"
-      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD_PES2011:-}"
       OPENELEVEN_Server__Database__ConnectionString: >-
         Server=mysql;Port=3306;Database=pes2011pc;User=openeleven;Password=${MYSQL_PASSWORD:?set MYSQL_PASSWORD};
 
@@ -102,7 +103,7 @@ services:
       CAPTCHA_SITE_KEY: "${CAPTCHA_SITE_KEY:-}"
       CAPTCHA_SECRET_KEY: "${CAPTCHA_SECRET_KEY:-}"
       ADMIN_USER: "${ADMIN_USER:-}"
-      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD_PES2012:-}"
       OPENELEVEN_Server__Database__ConnectionString: >-
         Server=mysql;Port=3306;Database=pes2012pc;User=openeleven;Password=${MYSQL_PASSWORD:?set MYSQL_PASSWORD};
 
@@ -131,7 +132,7 @@ services:
       CAPTCHA_SITE_KEY: "${CAPTCHA_SITE_KEY:-}"
       CAPTCHA_SECRET_KEY: "${CAPTCHA_SECRET_KEY:-}"
       ADMIN_USER: "${ADMIN_USER:-}"
-      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD_PES2013:-}"
       OPENELEVEN_Server__Database__ConnectionString: >-
         Server=mysql;Port=3306;Database=pes2013pc;User=openeleven;Password=${MYSQL_PASSWORD:?set MYSQL_PASSWORD};
 
