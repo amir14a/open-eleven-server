@@ -62,6 +62,7 @@ public sealed class ServerOptions
     public RankOptions Rank { get; set; } = new();
 
     public SiteOptions Site { get; set; } = new();
+    public AdminOptions Admin { get; set; } = new();
     public HttpsOptions Https { get; set; } = new();
     public CaptchaOptions Captcha { get; set; } = new();
     public DatabaseOptions Database { get; set; } = new();
@@ -257,6 +258,20 @@ public sealed class SiteOptions
 {
     /// <summary>Shown at the top of the home page; empty shows nothing.</summary>
     public string Announcement { get; set; } = "";
+}
+
+/// <summary>
+/// The admin portal at /admin, off while <see cref="Password"/> is empty. The ADMIN_USER and
+/// ADMIN_PASSWORD environment variables override these when set.
+/// </summary>
+public sealed class AdminOptions
+{
+    public const int MinPasswordLength = 12;
+
+    public string User { get; set; } = "admin";
+    public string Password { get; set; } = "";
+
+    public bool Enabled => Password.Length > 0;
 }
 
 /// <summary>

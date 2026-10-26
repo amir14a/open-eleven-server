@@ -1,0 +1,92 @@
+@page "/admin/accounts/{id:int}"
+@model OpenEleven.Server.Pages.Admin.AccountModel
+@{
+    var a = Model.Account;
+    ViewData["Title"] = a.GameId;
+    ViewData["Nav"] = "admin-accounts";
+}
+<div class="profile-head">
+    <h1 class="title">@a.GameId</h1>
+    @if (a.Banned) { <span class="tag red">Banned</span> } else { <span class="tag">Active</span> }
+    @if (Model.Connections > 0) { <span class="tag lime"><span class="online"></span>Online (@Model.Connections connections)</span> }
+    <span class="muted">
+        Created @SiteData.Date(a.CreatedAt) &middot; last login @(a.LastLoginAt is { } at ? SiteData.Date(at) : "never") (UTC)
+    </span>
+</div>
+@if (Model.Message is { Length: > 0 })
+{
+    <p class="msg ok" role="status">@Model.Message</p>
+}
+@if (Model.Error is { Length: > 0 })
+{
+    <p class="msg error" role="alert">@Model.Error</p>
+}
+
+<section class="panel">
+    <h2>Players</h2>
+    @if (a.Players.Count == 0)
+    {
+        <p class="empty">No players created yet.</p>
+    }
+    else
+    {
+        <table class="list">
+            <thead><tr><th>Name</th><th>Div</th><th class="num">Rating</th><th class="num">P</th><th class="num">W–D–L</th><th>Last played (UTC)</th></tr></thead>
+            <tbody>
+            @foreach (var p in a.Players)
+            {
+                <tr>
+                    <td><a href="/players/@p.Pid">@p.Name</a></td>
+                    <td><span class="div @p.Division">@p.Division</span></td>
+                    <td class="num score">@p.Rating</td>
+                    <td class="num">@p.Stats.MatchCount</td>
+                    <td class="num">@p.Stats.WinCount–@p.Stats.DrawCount–@p.Stats.LoseCount</td>
+                    <td class="muted">@(p.LastPlayedAt is { } lp ? SiteData.Date(lp) : "–")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</section>
+
+<hr class="rule">
+
+<div class="grid two">
+    <section class="panel">
+        <h2>Ban</h2>
+        <div class="body">
+            @if (a.Banned)
+            {
+                <p>Reason: <strong>@(a.BanReason ?? "none given")</strong></p>
+                <form method="post" asp-page-handler="Unban">
+                    <button type="submit" class="secondary">Lift the ban</button>
+                </form>
+            }
+            else
+            {
+                <form method="post" asp-page-handler="Ban">
+                    <label for="reason">Reason <span class="hint">Kept with the account; banning also disconnects it.</span></label>
+                    <input id="reason" name="reason" maxlength="@OpenEleven.Server.Pages.Admin.AccountModel.MaxReasonLength">
+                    <button type="submit" class="danger">Ban account</button>
+                </form>
+            }
+            <hr class="rule">
+            <form method="post" asp-page-handler="Kick">
+                <button type="submit" class="secondary" disabled="@(Model.Connections == 0)">Disconnect now</button>
+            </form>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>New password</h2>
+        <div class="body">
+            <form method="post" asp-page-handler="Password" autocomplete="off">
+                <label for="password">Password <span class="hint">Printable ASCII, at most @RegistrationEndpoint.MaxPasswordLength characters, like registration.</span></label>
+                <input id="password" name="password" type="password" maxlength="@RegistrationEndpoint.MaxPasswordLength" required>
+                <label for="confirm">Confirm</label>
+                <input id="confirm" name="confirm" type="password" maxlength="@RegistrationEndpoint.MaxPasswordLength" required>
+                <button type="submit">Set password</button>
+            </form>
+        </div>
+    </section>
+</div>

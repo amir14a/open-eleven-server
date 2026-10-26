@@ -7,7 +7,8 @@
 # privkey.pem for it (see certbot-deploy-hook.sh). Published ports must equal the ports in
 # each title's config, because those are the ports the server tells the client to use.
 # Each title reads its config from conf/ on the host (edit it and restart, no rebuild) and
-# writes logs to logs/<title>. The containers run as root, so the host folders need no chown.
+# writes logs to logs/<title>; data/<title> keeps the keys that sign admin and form cookies
+# across rebuilds. The containers run as root, so the host folders need no chown.
 
 name: openeleven
 
@@ -27,6 +28,7 @@ services:
       - ../certs:/app/certs:ro
       - ../conf/server.pes2010pc.yaml:/app/conf/server.yaml:ro
       - ../logs/pes2010pc:/app/logs
+      - ../data/pes2010pc:/app/data
     ports:
       - "443:443"       # https
       - "28010:28010"   # gate
@@ -41,6 +43,8 @@ services:
       CAPTCHA_PROVIDER: "${CAPTCHA_PROVIDER:-}"
       CAPTCHA_SITE_KEY: "${CAPTCHA_SITE_KEY:-}"
       CAPTCHA_SECRET_KEY: "${CAPTCHA_SECRET_KEY:-}"
+      ADMIN_USER: "${ADMIN_USER:-}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
       OPENELEVEN_Server__Database__ConnectionString: >-
         Server=mysql;Port=3306;Database=pes2010pc;User=openeleven;Password=${MYSQL_PASSWORD:?set MYSQL_PASSWORD};
 
@@ -53,6 +57,7 @@ services:
       - ../certs:/app/certs:ro
       - ../conf/server.pes2011pc.yaml:/app/conf/server.yaml:ro
       - ../logs/pes2011pc:/app/logs
+      - ../data/pes2011pc:/app/data
     ports:
       - "8444:8444"     # https
       - "4010:4010"     # gate
@@ -67,6 +72,8 @@ services:
       CAPTCHA_PROVIDER: "${CAPTCHA_PROVIDER:-}"
       CAPTCHA_SITE_KEY: "${CAPTCHA_SITE_KEY:-}"
       CAPTCHA_SECRET_KEY: "${CAPTCHA_SECRET_KEY:-}"
+      ADMIN_USER: "${ADMIN_USER:-}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
       OPENELEVEN_Server__Database__ConnectionString: >-
         Server=mysql;Port=3306;Database=pes2011pc;User=openeleven;Password=${MYSQL_PASSWORD:?set MYSQL_PASSWORD};
 
@@ -79,6 +86,7 @@ services:
       - ../certs:/app/certs:ro
       - ../conf/server.pes2012pc.yaml:/app/conf/server.yaml:ro
       - ../logs/pes2012pc:/app/logs
+      - ../data/pes2012pc:/app/data
     ports:
       - "8445:8445"     # https
       - "28016:28016"   # gate
@@ -93,6 +101,8 @@ services:
       CAPTCHA_PROVIDER: "${CAPTCHA_PROVIDER:-}"
       CAPTCHA_SITE_KEY: "${CAPTCHA_SITE_KEY:-}"
       CAPTCHA_SECRET_KEY: "${CAPTCHA_SECRET_KEY:-}"
+      ADMIN_USER: "${ADMIN_USER:-}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
       OPENELEVEN_Server__Database__ConnectionString: >-
         Server=mysql;Port=3306;Database=pes2012pc;User=openeleven;Password=${MYSQL_PASSWORD:?set MYSQL_PASSWORD};
 
@@ -105,6 +115,7 @@ services:
       - ../certs:/app/certs:ro
       - ../conf/server.pes2013pc.yaml:/app/conf/server.yaml:ro
       - ../logs/pes2013pc:/app/logs
+      - ../data/pes2013pc:/app/data
     ports:
       - "8446:8446"     # https
       - "15010:15010"   # gate
@@ -119,6 +130,8 @@ services:
       CAPTCHA_PROVIDER: "${CAPTCHA_PROVIDER:-}"
       CAPTCHA_SITE_KEY: "${CAPTCHA_SITE_KEY:-}"
       CAPTCHA_SECRET_KEY: "${CAPTCHA_SECRET_KEY:-}"
+      ADMIN_USER: "${ADMIN_USER:-}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
       OPENELEVEN_Server__Database__ConnectionString: >-
         Server=mysql;Port=3306;Database=pes2013pc;User=openeleven;Password=${MYSQL_PASSWORD:?set MYSQL_PASSWORD};
 

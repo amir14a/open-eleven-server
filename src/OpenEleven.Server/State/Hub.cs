@@ -180,6 +180,19 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
     public IReadOnlyList<Session> SessionsForAccount(int accountId)
         => _sessions.Values.Where(s => s.AccountId == accountId && accountId != 0).ToArray();
 
+    /// <summary>
+    /// Closes every connection of an account (an admin kick or ban); returns how many. Completing
+    /// the outbound queue ends the writer, which closes the socket, so the client is sent nothing
+    /// it has never been seen to receive.
+    /// </summary>
+    public int Disconnect(int accountId)
+    {
+        var sessions = SessionsForAccount(accountId);
+        foreach (var session in sessions)
+            session.CompleteOutbound();
+        return sessions.Count;
+    }
+
     /// <summary>Clears a deleted profile from every inactive service connection.</summary>
     public void ResetPlayerIdentity(int accountId, int pid)
     {

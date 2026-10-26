@@ -118,6 +118,9 @@ public sealed class ServerOptionsValidator : IValidateOptions<ServerOptions>
                 failures.Add("Captcha.Provider Custom needs ScriptUrl, VerifyUrl, WidgetClass and ResponseField.");
         }
 
+        if (options.Admin.Enabled && (options.Admin.User.Length == 0 || options.Admin.Password.Length < AdminOptions.MinPasswordLength))
+            failures.Add($"Admin needs a User and a Password of at least {AdminOptions.MinPasswordLength} characters (or no Password to keep the portal off).");
+
         // An unknown type silently inherits the previous entry's type in the client's parser.
         foreach (var url in options.Urls)
         {

@@ -4,6 +4,7 @@
     var title = TitleProfiles.DisplayName(Game);
     var name = title.Split(' ');   // "PES", "2011", "(PC)"
     var nav = ViewData["Nav"] as string;
+    var admin = nav is not null && nav.StartsWith("admin", StringComparison.Ordinal) && nav != "admin-login";
     string? Current(string item) => nav == item ? "page" : null;
 }
 <!doctype html>
@@ -22,11 +23,22 @@
             <span><b>@name[0] <em>@name.ElementAtOrDefault(1)</em></b><small>Online server @name.ElementAtOrDefault(2)</small></span>
         </a>
         <nav class="nav">
-            <a href="/" aria-current="@Current("home")">Home</a>
-            <a href="/rankings" aria-current="@Current("rankings")">Rankings</a>
-            <a href="/players" aria-current="@Current("players")">Players</a>
-            <a href="/matches" aria-current="@Current("matches")">Matches</a>
-            <a href="/register" aria-current="@Current("register")">Register</a>
+            @if (admin)
+            {
+                <a href="/admin" aria-current="@Current("admin")">Online</a>
+                <a href="/admin/accounts" aria-current="@Current("admin-accounts")">Accounts</a>
+                <a href="/admin/news" aria-current="@Current("admin-news")">News</a>
+                <a href="/">Site</a>
+                <form method="post" asp-page="/Admin/Login" asp-page-handler="Logout" class="inline"><button type="submit" class="small secondary">Sign out</button></form>
+            }
+            else
+            {
+                <a href="/" aria-current="@Current("home")">Home</a>
+                <a href="/rankings" aria-current="@Current("rankings")">Rankings</a>
+                <a href="/players" aria-current="@Current("players")">Players</a>
+                <a href="/matches" aria-current="@Current("matches")">Matches</a>
+                <a href="/register" aria-current="@Current("register")">Register</a>
+            }
         </nav>
     </div>
 </header>

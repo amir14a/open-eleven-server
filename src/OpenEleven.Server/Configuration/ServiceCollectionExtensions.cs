@@ -55,6 +55,8 @@ public static class ServiceCollectionExtensions
             FromEnv("CAPTCHA_PROVIDER", v => o.Captcha.Provider = v);
             FromEnv("CAPTCHA_SITE_KEY", v => o.Captcha.SiteKey = v);
             FromEnv("CAPTCHA_SECRET_KEY", v => o.Captcha.SecretKey = v);
+            FromEnv("ADMIN_USER", v => o.Admin.User = v);
+            FromEnv("ADMIN_PASSWORD", v => o.Admin.Password = v);
         });
 
         var options = configuration.GetSection(ServerOptions.SectionName).Get<ServerOptions>()

@@ -20,6 +20,9 @@ public static class HttpRateLimits
     /// <summary>The ranking screen: every request reads the whole players table.</summary>
     public const string Ranking = "ranking";
 
+    /// <summary>Admin sign-in attempts: posts only.</summary>
+    public const string AdminLogin = "admin-login";
+
     // ponytail: fixed numbers; make them configurable if a host ever needs different ones.
     public static IServiceCollection AddHttpRateLimits(this IServiceCollection services)
         => services.AddRateLimiter(limits =>
@@ -29,6 +32,9 @@ public static class HttpRateLimits
                 ? PerAddress(http, permits: 10, TimeSpan.FromHours(1))
                 : RateLimitPartition.GetNoLimiter(""));
             limits.AddPolicy(Ranking, http => PerAddress(http, permits: 60, TimeSpan.FromMinutes(1)));
+            limits.AddPolicy(AdminLogin, http => HttpMethods.IsPost(http.Request.Method)
+                ? PerAddress(http, permits: 10, TimeSpan.FromMinutes(5))
+                : RateLimitPartition.GetNoLimiter(""));
         });
 
     private static RateLimitPartition<string> PerAddress(HttpContext http, int permits, TimeSpan window)

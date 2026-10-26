@@ -19,6 +19,9 @@ Server:
     Provider: None                # None | Turnstile | HCaptcha | ReCaptcha | Custom
     SiteKey: ""
     SecretKey: ""
+  Admin:
+    User: admin
+    Password: ""                  # empty = admin portal off
 
   Database:
     Provider: Sqlite              # Sqlite | MySql

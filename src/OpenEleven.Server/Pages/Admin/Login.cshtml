@@ -1,0 +1,22 @@
+@page "/admin/login"
+@model OpenEleven.Server.Pages.Admin.LoginModel
+@{
+    ViewData["Title"] = "Admin sign-in";
+    ViewData["Nav"] = "admin-login";
+}
+<h1 class="title center">Admin</h1>
+<section class="panel card">
+    <div class="body">
+        @if (Model.Error is { Length: > 0 })
+        {
+            <p class="msg error" role="alert">@Model.Error</p>
+        }
+        <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
+            <label asp-for="UserName">User</label>
+            <input asp-for="UserName" autocomplete="username" required autofocus>
+            <label asp-for="Password">Password</label>
+            <input asp-for="Password" type="password" autocomplete="current-password" required>
+            <button type="submit" class="wide">Sign in</button>
+        </form>
+    </div>
+</section>

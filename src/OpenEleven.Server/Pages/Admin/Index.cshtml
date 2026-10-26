@@ -1,0 +1,86 @@
+@page "/admin"
+@model OpenEleven.Server.Pages.Admin.IndexModel
+@{
+    ViewData["Title"] = "Admin";
+    ViewData["Nav"] = "admin";
+}
+<h1 class="title">Online now</h1>
+@if (Model.Message is { Length: > 0 })
+{
+    <p class="msg ok" role="status">@Model.Message</p>
+}
+
+<div class="tiles">
+    <div class="tile selected"><strong>@Model.Accounts.Count</strong><span>Signed in</span></div>
+    <div class="tile"><strong>@Model.Rooms.Count</strong><span>Rooms</span></div>
+    <div class="tile"><strong>@Model.Rooms.Count(r => r.Status == "GAME")</strong><span>Playing</span></div>
+    <div class="tile"><strong>@Model.Anonymous</strong><span>Not signed in</span></div>
+</div>
+
+<section class="panel">
+    <h2>Signed-in accounts</h2>
+    @if (Model.Accounts.Count == 0)
+    {
+        <p class="empty">Nobody is signed in.</p>
+    }
+    else
+    {
+        <div class="scroll">
+            <table class="list">
+                <thead><tr><th>Game ID</th><th>Player</th><th>Address</th><th>Services</th><th>Since (UTC)</th><th>Room</th><th></th></tr></thead>
+                <tbody>
+                @foreach (var c in Model.Accounts)
+                {
+                    <tr>
+                        <td><a href="/admin/accounts/@c.AccountId">@c.GameId</a></td>
+                        <td>@c.Player</td>
+                        <td class="muted">@c.Address</td>
+                        <td class="muted">@c.Services</td>
+                        <td class="muted">@SiteData.Date(c.Since.UtcDateTime)</td>
+                        <td>@c.RoomId</td>
+                        <td class="num">
+                            <form method="post" asp-page-handler="Kick" class="inline">
+                                <input type="hidden" name="accountId" value="@c.AccountId">
+                                <input type="hidden" name="gameId" value="@c.GameId">
+                                <button type="submit" class="small danger">Kick</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+<hr class="rule">
+
+<section class="panel">
+    <h2>Rooms</h2>
+    @if (Model.Rooms.Count == 0)
+    {
+        <p class="empty">No rooms open.</p>
+    }
+    else
+    {
+        <div class="scroll">
+            <table class="list">
+                <thead><tr><th>#</th><th>Name</th><th>Players</th><th>Status</th><th class="center">Score</th><th>Phase</th><th>Opened (UTC)</th></tr></thead>
+                <tbody>
+                @foreach (var r in Model.Rooms)
+                {
+                    <tr>
+                        <td class="muted">@r.Id</td>
+                        <td>@r.Name</td>
+                        <td>@string.Join(", ", r.Snapshot().Select(s => s.PlayerName))</td>
+                        <td><span class="tag @(r.Status == "GAME" ? "lime" : "")">@r.Status</span></td>
+                        <td class="center score">@r.HomeGoals &ndash; @r.AwayGoals</td>
+                        <td class="muted">@r.Phase</td>
+                        <td class="muted">@SiteData.Date(r.CreatedAt.UtcDateTime)</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

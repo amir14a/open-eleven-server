@@ -1,0 +1,41 @@
+@page "/admin/accounts"
+@model OpenEleven.Server.Pages.Admin.AccountsModel
+@{
+    ViewData["Title"] = "Accounts";
+    ViewData["Nav"] = "admin-accounts";
+}
+<h1 class="title">Accounts</h1>
+
+<form class="search" method="get" role="search">
+    <input name="q" value="@Model.Q" placeholder="Game ID or player name" aria-label="Game ID or player name">
+    <label class="check"><input type="checkbox" name="banned" value="true" checked="@Model.Banned"> Banned only</label>
+    <button type="submit" class="secondary">Search</button>
+</form>
+
+<section class="panel">
+    @if (Model.List.Count == 0)
+    {
+        <p class="empty">No accounts found.</p>
+    }
+    else
+    {
+        <div class="scroll">
+            <table class="list">
+                <thead><tr><th>Game ID</th><th>Players</th><th>Created (UTC)</th><th>Last login (UTC)</th><th>Status</th></tr></thead>
+                <tbody>
+                @foreach (var a in Model.List)
+                {
+                    <tr>
+                        <td><a href="/admin/accounts/@a.Id">@a.GameId</a></td>
+                        <td>@string.Join(", ", a.Players.Select(p => p.Name))</td>
+                        <td class="muted">@SiteData.Date(a.CreatedAt)</td>
+                        <td class="muted">@(a.LastLoginAt is { } at ? SiteData.Date(at) : "never")</td>
+                        <td>@if (a.Banned) { <span class="tag red">Banned</span> } else { <span class="tag">Active</span> }</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+<partial name="_Pager" model="Model.Pager" />

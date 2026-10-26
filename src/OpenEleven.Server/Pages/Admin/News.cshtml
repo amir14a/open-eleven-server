@@ -1,0 +1,70 @@
+@page "/admin/news"
+@model OpenEleven.Server.Pages.Admin.NewsModel
+@using OpenEleven.Server.Pages.Admin
+@{
+    ViewData["Title"] = "News";
+    ViewData["Nav"] = "admin-news";
+}
+<h1 class="title">News</h1>
+<p class="subtitle">Shown in the game after login and on the home page. An important item pops up once for each player.</p>
+@if (Model.Message is { Length: > 0 })
+{
+    <p class="msg ok" role="status">@Model.Message</p>
+}
+@if (Model.Error is { Length: > 0 })
+{
+    <p class="msg error" role="alert">@Model.Error</p>
+}
+
+<div class="grid two">
+    <section class="panel">
+        <h2>@(Model.Item.Id == 0 ? "New item" : "Edit item")</h2>
+        <div class="body">
+            <form method="post" asp-page-handler="Save">
+                <input type="hidden" asp-for="Item.Id">
+                <label asp-for="Item.Subject">Subject</label>
+                <input asp-for="Item.Subject" maxlength="@NewsModel.MaxSubject" required>
+                <label asp-for="Item.Body">Text</label>
+                <textarea asp-for="Item.Body" maxlength="@NewsModel.MaxBody"></textarea>
+                <label class="check"><input asp-for="Item.Important"> Important (pops up in the game)</label>
+                <label class="check"><input asp-for="Item.Enabled"> Published</label>
+                <p></p>
+                <button type="submit">Save</button>
+                @if (Model.Item.Id != 0) { <a class="button secondary" href="/admin/news">Cancel</a> }
+            </form>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Items</h2>
+        @if (Model.Items.Count == 0)
+        {
+            <p class="empty">No news yet.</p>
+        }
+        else
+        {
+            <table class="list">
+                <tbody>
+                @foreach (var n in Model.Items)
+                {
+                    <tr>
+                        <td style="white-space: normal">
+                            <strong>@n.Subject</strong>
+                            @if (n.Important) { <span class="tag red">Important</span> }
+                            @if (!n.Enabled) { <span class="tag">Hidden</span> }
+                            <div class="muted">@n.PublishedAt.ToString("yyyy-MM-dd")</div>
+                        </td>
+                        <td class="num">
+                            <a class="button small secondary" href="/admin/news?edit=@n.Id">Edit</a>
+                            <form method="post" asp-page-handler="Delete" class="inline">
+                                <input type="hidden" name="id" value="@n.Id">
+                                <button type="submit" class="small danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </section>
+</div>

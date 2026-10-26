@@ -59,7 +59,12 @@ public static class OpenElevenServerHost
 
         // Serves the registration form at /register. Razor Pages ships in the shared
         // framework, so this needs no package reference.
-        builder.Services.AddRazorPages();
+        builder.Services.AddRazorPages(pages =>
+        {
+            pages.Conventions.AuthorizeFolder("/Admin");
+            pages.Conventions.AllowAnonymousToPage("/Admin/Login");
+            pages.Conventions.AddFolderApplicationModelConvention("/Admin", page => page.Filters.Add(new AdminPortalFilter()));
+        });
         builder.Services.AddHttpRateLimits();
 
         // The public pages read whole tables; a few seconds of staleness keeps that off the database.
@@ -74,6 +79,8 @@ public static class OpenElevenServerHost
 
         var startupOptions = builder.Configuration.GetSection(ServerOptions.SectionName).Get<ServerOptions>()
                              ?? new ServerOptions();
+
+        builder.Services.AddAdminPortal(startupOptions.Https.Enabled);
 
         // Durable copy of the log. Console output is gone as soon as it scrolls, and a client
         // attempt that fails in two seconds is exactly the evidence that cannot be re-derived.
@@ -140,6 +147,8 @@ public static class OpenElevenServerHost
         app.UseRouting();
 
         app.UseMiddleware<HttpTraceMiddleware>();
+        app.UseAuthentication();
+        app.UseAuthorization();
         app.UseRateLimiter();
         app.UseOutputCache();
 
