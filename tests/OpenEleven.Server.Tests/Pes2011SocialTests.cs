@@ -162,6 +162,31 @@ public class Pes2011SocialTests
     }
 
     [Fact]
+    public async Task An_injury_end_settles_only_a_match_being_played()
+    {
+        await using var harness = await Harness();
+        var other = await AddPlayerAsync(harness, "guest");
+        var owner = Player(harness, 1, SessionState.InBlock);
+        var created = Assert.Single(await harness.DispatchAsync(owner, "CMD_CREATEJOIN_ROOM", withFields: r => r
+            .Set("name", "r").Set("max_players", 2)), m => m.MsgName == "CMD_CREATEJOIN_ROOM");
+        var room = harness.Hub.FindRoom(created.GetInt32("room_id"))!;
+        var guest = Player(harness, other, SessionState.InBlock);
+        await harness.DispatchAsync(guest, "CMD_JOIN_ROOM", withFields: r => r.Set("room_id", room.Id));
+        var before = room.Status;
+
+        await harness.DispatchAsync(owner, "CMD_SET_INJURYGAMEEND", withFields: r => r.Set("side", "AWAY"));   // nothing started
+        Assert.Equal((before, false), (room.Status, room.ResultRecorded));
+
+        await harness.DispatchAsync(owner, "CMD_SET_GAMEMEMBERENV");
+        await harness.DispatchAsync(owner, "CMD_CHANGE_GAMEPHASE", withFields: r => r.Set("phase", "1ST"));
+        await harness.DispatchAsync(guest, "CMD_SET_INJURYGAMEEND", withFields: r => r.Set("side", "HOME"));   // not the host
+        Assert.Equal(("GAME", false), (room.Status, room.ResultRecorded));
+
+        await harness.DispatchAsync(owner, "CMD_SET_INJURYGAMEEND", withFields: r => r.Set("side", "AWAY"));
+        Assert.Equal("RESULT", room.Status);
+    }
+
+    [Fact]
     public async Task Ranking_lists_played_players_by_the_requested_type()
     {
         await using var harness = await Harness();

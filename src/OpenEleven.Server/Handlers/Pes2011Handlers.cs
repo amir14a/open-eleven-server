@@ -342,6 +342,7 @@ public sealed class Pes2011Handlers(
     /// <summary>
     /// The match host ends the match because a side ran out of players (FUN_005fa030 event 1,
     /// <c>side</c> = the side that lost). Same outcome as phase END: the room shows the result.
+    /// Only while a match is being played, so nobody can settle one before it started.
     /// </summary>
     [Command("CMD_SET_INJURYGAMEEND", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.InRoom)]
     public async ValueTask<KvMessage[]> SetInjuryGameEnd(CommandContext ctx)
@@ -349,6 +350,8 @@ public sealed class Pes2011Handlers(
         var room = ctx.Session.RoomId is { } id ? ctx.Hub.FindRoom(id) : null;
         if (room is null)
             return [ctx.Fail("ERR_NOTINROOM")];
+        if (room.Status != "GAME" || !IsMatchHost(ctx, room))
+            return [ctx.Ok()];
 
         await matchResults.RecordAsync(room, MatchResults.Lineup(room), leaverPid: null, noMatch: false);
         return await AckThenSetStatus(ctx, room, "RESULT");
