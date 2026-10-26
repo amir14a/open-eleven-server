@@ -180,7 +180,11 @@ public sealed class RoomHandlers(
         room.GameEnvironment = environment;
         // The other occupants only ever learn the settings through this watch.
         ctx.Hub.PublishDecideGameEnv(room);
-        ctx.Hub.PublishRoomUpdated(room, ctx.Session.Id);
+        // PES 2010 sends this right after creating the room, and its room-list cache comes out
+        // empty from entering the room (rebuilt by FUN_00733eb0). The room menu is built after
+        // this reply and checks ownership in that cache only then (FUN_008E6540 ->
+        // FUN_00728e20), so the owner gets the entry here or "Match Room Manager" stays disabled.
+        ctx.Hub.PublishRoomUpdated(room, Is2010 ? null : ctx.Session.Id);
 
         log.LogInformation(
             "Room {RoomId} settings: gametime={Time} cpu={Cpu} ball={Ball} subs={Subs}",

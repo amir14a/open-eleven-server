@@ -1006,8 +1006,12 @@ public class GameEnvironmentTests
             .Set("enable_guest", "YES"));
         var roomId = created[0].GetInt32("room_id");
 
-        await harness.DispatchAsync(owner, "CMD_SET_GAMEENV", withFields: r =>
+        var settings = await harness.DispatchAsync(owner, "CMD_SET_GAMEENV", withFields: r =>
             r.Set("game_env", new KvMessage().Set("gametime", "10MINUTES")));
+        // Entering the room empties the creator's room-list cache, and its room menu checks
+        // ownership there once, after this reply (FUN_008E6540): the owner needs the entry here.
+        var mine = Assert.Single(settings, m => m.MsgName == "MSG_ROOMLISTUPDATE");
+        Assert.Contains("is_room_owner=\"YES\"", harness.Render(mine));
         var room = harness.Hub.RequireRoom(roomId);
         Assert.Equal("WAITING", room.Status);
 
