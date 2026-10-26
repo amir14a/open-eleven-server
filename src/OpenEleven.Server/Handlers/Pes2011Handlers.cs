@@ -258,8 +258,8 @@ public sealed class Pes2011Handlers(
 
         var r = ctx.Request;
         room.Sheet.Goal(away, room.Phase, string.Join('|',
-            r.GetInt32("goal_player_pid", 0), r.GetInt32("goal_gameplayer_id", 0), r.GetString("goal_player_side") ?? "",
-            r.GetString("assist_side") ?? "", r.GetInt32("assist_gameplayer_id", 0), r.GetString("assist_player_side") ?? ""));
+            r.GetInt32("goal_player_pid", 0), r.GetInt32("goal_gameplayer_id", 0), Side(r.GetString("goal_player_side")),
+            Side(r.GetString("assist_side")), r.GetInt32("assist_gameplayer_id", 0), Side(r.GetString("assist_player_side"))));
 
         log.LogInformation("Room {RoomId} goal by pid {Pid} ({Phase}): {Home}-{Away}",
             room.Id, r.GetInt32("goal_player_pid", 0), room.Phase, room.HomeGoals, room.AwayGoals);
@@ -276,15 +276,18 @@ public sealed class Pes2011Handlers(
         if (ctx.Session.RoomId is { } id && ctx.Hub.FindRoom(id) is { } room && IsMatchHost(ctx, room))
         {
             var r = ctx.Request;
-            if (r.GetString("card_kind") is { } kind and not "NONE")
-                room.Sheet.Event(string.Join('|', "CARD", room.Phase, r.GetString("card_side") ?? "", kind,
+            if (r.GetString("card_kind") is { } kind and ("YELLOW" or "RED"))
+                room.Sheet.Event(string.Join('|', "CARD", room.Phase, Side(r.GetString("card_side")), kind,
                     r.GetInt32("card_pid", 0), r.GetInt32("card_gameplayer_id", 0)));
-            if (r.GetString("injury_side") is { Length: > 0 } injurySide)
+            if (Side(r.GetString("injury_side")) is { Length: > 0 } injurySide)
                 room.Sheet.Event(string.Join('|', "INJURY", room.Phase, injurySide, r.GetInt32("injury_gameplayer_id", 0)));
         }
 
         return Reply.Of(ctx.Ok());
     }
+
+    /// <summary>A side as the client names it, or empty: event fields are stored with the match.</summary>
+    private static string Side(string? value) => value is "HOME" or "AWAY" ? value : "";
 
     /// <summary>The host's combination play for the match (total_comb, max_comb); credited to the host.</summary>
     [Command("CMD_UPDATE_COMBINATION", Roles = ServiceRole.Menu, Profiles = GameProfile.Pes2011Pc, RequiredState = SessionState.InRoom)]

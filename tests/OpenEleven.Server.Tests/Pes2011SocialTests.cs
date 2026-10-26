@@ -162,6 +162,24 @@ public class Pes2011SocialTests
     }
 
     [Fact]
+    public async Task Fouls_keep_only_known_card_kinds_and_sides()
+    {
+        await using var harness = await Harness();
+        var owner = Player(harness, 1, SessionState.InBlock);
+        var created = Assert.Single(await harness.DispatchAsync(owner, "CMD_CREATEJOIN_ROOM", withFields: r => r
+            .Set("name", "r").Set("max_players", 2)), m => m.MsgName == "CMD_CREATEJOIN_ROOM");
+        var room = harness.Hub.FindRoom(created.GetInt32("room_id"))!;
+        await harness.DispatchAsync(owner, "CMD_SET_GAMEMEMBERENV");
+        await harness.DispatchAsync(owner, "CMD_CHANGE_GAMEPHASE", withFields: r => r.Set("phase", "1ST"));
+
+        await harness.DispatchAsync(owner, "CMD_ADD_FOUL", withFields: r => r.Set("card_kind", new string('x', 500)).Set("card_side", "HOME"));
+        await harness.DispatchAsync(owner, "CMD_ADD_FOUL", withFields: r => r.Set("card_kind", "RED").Set("card_side", "Visit our site!"));
+        await harness.DispatchAsync(owner, "CMD_ADD_FOUL", withFields: r => r.Set("injury_side", "<b>junk</b>"));
+
+        Assert.Equal("CARD|1ST||RED|0|0", room.Sheet.Events);
+    }
+
+    [Fact]
     public async Task An_injury_end_settles_only_a_match_being_played()
     {
         await using var harness = await Harness();
