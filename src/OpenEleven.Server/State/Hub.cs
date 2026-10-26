@@ -393,7 +393,9 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
         {
             _rooms.TryRemove(roomId, out _);
             log.LogInformation("Room {RoomId} disposed (empty)", roomId);
-            PublishRoomDeleted(room, session.Id);
+            // The leaver is back in the block and its room list still holds the room, so it
+            // is told as well (as is a kicked player, which leaves through here too).
+            PublishRoomDeleted(room, null);
             return new RoomLeaveResult(RoomLeaveStatus.Left, roomId, true, removal.OwnerChanged);
         }
 
@@ -424,7 +426,8 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
         if (HasMatchFlow && room.Count < 2)
             SetRoomStatus(room, "WAITING");
 
-        PublishRoomUpdated(room, session.Id);
+        // Everyone in the block, the leaver included: its room list still counts it in the room.
+        PublishRoomUpdated(room);
         return new RoomLeaveResult(RoomLeaveStatus.Left, roomId, false, removal.OwnerChanged);
     }
 

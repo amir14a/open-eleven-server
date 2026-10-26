@@ -613,6 +613,27 @@ public class RoomTests
     }
 
     [Fact]
+    public async Task The_leaver_gets_the_room_list_change_too()
+    {
+        await using var harness = await ServerHarness.CreateAsync();
+        var owner = harness.NewSession(ServiceRole.Lobby, SessionState.InBlock);
+        owner.Pid = 1;
+        var roomId = (await harness.DispatchAsync(owner, "CMD_CREATEJOIN_ROOM"))[0].GetInt32("room_id");
+        var guest = harness.NewSession(ServiceRole.Lobby, SessionState.InBlock);
+        guest.Pid = 2;
+        await harness.DispatchAsync(guest, "CMD_JOIN_ROOM", withFields: r => r.Set("room_id", roomId));
+
+        // Back in the block, its room list would otherwise still count it in the room.
+        var left = await harness.DispatchAsync(guest, "CMD_LEAVE_ROOM");
+        var update = Assert.Single(left, m => m.MsgName == "MSG_ROOMLISTUPDATE");
+        Assert.Equal(1, Assert.Single(update.GetList("roomList")).GetInt32("gamer_num"));
+
+        // The last one out sees the room go.
+        var closed = await harness.DispatchAsync(owner, "CMD_LEAVE_ROOM");
+        Assert.Equal(roomId, Assert.Single(closed, m => m.MsgName == "MSG_ROOMLISTDEL").GetInt32("rid"));
+    }
+
+    [Fact]
     public async Task Only_the_owner_can_kick_a_room_member()
     {
         await using var harness = await ServerHarness.CreateAsync();
