@@ -128,8 +128,16 @@ Running the whole time, independent of the stage above:
   `CMD_WATCH_SHORTMAIL`, `CMD_WATCH_IPANDPORT` are all registered together in one burst. `CMD_SEND_TEXTCHAT`
   + `CMD_WATCH_TEXTCHAT` are gated on `scene == LOBBY`.
 - **Social**: `CMD_GET_BLACKLIST` fetch is immediately followed by registering `CMD_WATCH_FRIENDLIST` +
-  `CMD_WATCH_FRIENDREQ`. Friend requests, invitations and mail (`CMD_SEND_FRIENDREQ`, `CMD_SEND_SHORTMAIL`,
+  `CMD_WATCH_FRIENDREQ` (`FUN_0077dc90` state 3). Both are answered requests, and `FUN_0077db80`
+  re-reads `CMD_GET_FRIENDLIST` once they answer, so the server must ACK them instead of parking
+  them. PES2010 sends the social and mail commands on the **Lobby** socket.
+  Friend requests, invitations and mail (`CMD_SEND_FRIENDREQ`, `CMD_SEND_SHORTMAIL`,
   `CMD_SEND_INVITATION`, `CMD_ADD_BLACKLIST`, etc.) are all fire-when-clicked, no fixed sequence.
+  Accepting, declining, withdrawing, deleting or blocking pushes a fresh
+  `CMD_WATCH_FRIENDLIST` (`friend_num`/`flist`, same shape as `CMD_GET_FRIENDLIST`) to every
+  affected online player, followed by a bare `CMD_WATCH_FRIENDREQ` when subscribed. Unsolicited
+  pushes use rqid 0. Without this, an already-open reply/mail screen keeps the pre-accept list
+  (`RecievedReq` instead of `Friend`) until the friend screen is reopened.
 - **Community (COMMU)** and **Competition League (COMPLG)**: separate optional sub-flows reachable from
   LOBBY, summarized in [Community & league flow](#community-commu--competition-league-complg-flow) below.
 
@@ -162,7 +170,7 @@ response is handed to an un-decompiled parser function, that's noted instead of 
 | `CMD_CREATE_PLAYER` | `svrtype`="ACCOUNT", **`name`** | error-check only | → `CMD_SET_LANGUAGE` |
 | `CMD_CHECK_STRING` | **`str`** (the string being validated) | error-check only | precedes `CMD_SET_PLAYERPROFILE` at one call site; standalone validator at another |
 | `CMD_GET_PLAYERLIST` | `svrtype`="ACCOUNT" | player-slot count (via `FUN_00732d20`, exact field names not resolved) | → `CMD_GET_PRIVATEINFO` |
-| `CMD_GET_PRIVATEINFO` | `svrtype`="ACCOUNT", **`pid`** (current profile) | not resolved (`FUN_00731c60`) | → `CMD_GET_DIVISIONUPDATE` |
+| `CMD_GET_PRIVATEINFO` | `svrtype`="ACCOUNT", **`pid`** (current profile) | `count`, then `privInfo[i].reldate|iid|title|info|important|present` (`FUN_00731c60`) | → `CMD_GET_DIVISIONUPDATE` |
 | `CMD_SET_PLAYERPROFILE` | one field keyed `"svrtype"` but holding a **profile-type enum value**, not a service tag — flagged as ambiguous, possibly decompiler mis-association | error-check only | |
 
 ### Lobby / menu
@@ -283,14 +291,196 @@ members find out what the host is configuring:
   `entrygame[i].pid`, `.entryNum`, `.gameNum`. It requires every unoccupied
   slot to be present with `gameNum=-1`, and only enables the local ready flag
   when more than one entry has `gameNum != -1`.
-- `CMD_WATCH_DECIDE_GAMEPLAYER` (`FUN_0072ED20`) does **not** read a list: it
-  reads the scalar key `pid` eight times and `video` eight times into fixed
-  eight-slot arrays. Sending `pid=[...]`/`video=[...]` makes its integer
-  parser fall back to `0x7b`.
+- `CMD_WATCH_DECIDE_GAMEPLAYER` (`FUN_0072ED20`) reads the unindexed key `pid`
+  eight times and `video` eight times into fixed arrays. **These reads do not
+  advance through repeated keys.** The 2026-10-26 crash dump contains the wire
+  response `pid=1,pid=2,pid=-1,...`, but the parsed PID array at
+  `(*0x016f0284)+0x3d50` is eight copies of `1`. Offline execution of the real
+  tokenizer/reader confirms the same behavior for scalar and bracketed lists:
+  querying `pid` always selects the first item. Only explicit `pid[i]` queries
+  select later items; this callback never constructs those queries. The uint
+  reader `FUN_00B6EB80` also rejects textual `-1` (fallback `0x7b`), whereas
+  `4294967295` produces the all-ones sentinel. **A response-only format fix has
+  not been established; do not confuse eight transmitted values with eight
+  successfully parsed slots.**
+- `CMD_GET_FRIENDLIST` / `CMD_WATCH_FRIENDLIST` entries are parsed by `FUN_00735DE0` as
+  `state` (enum 0x18: Friend/SentReq/RecievedReq), `pid`, `npid`, `xuid`, `name`,
+  `is_login`, `is_ingame`, `server`, `lobby_id`, `lobby_name`, `block_id`,
+  `block_name`, `room_id`, `room_name`, `req_date`, `req_read`, `division`
+  (enum 0x16: D3C/D3B/D3A/D2/D1/NONE) and `mode` (enum 0x25: NONE/NETWORK/COMPE/
+  COMMUNITY/LEGENDS/...). `mode` is the friend's availability: if it is omitted the
+  entry stays at `NONE`, and the mail screen treats that friend as unavailable even
+  though the friend list still draws it. The server now sends `mode=NETWORK` for an
+  online friend and `NONE` otherwise, plus `lobby_id`/`block_id`/`req_date`/`req_read`.
+- `CMD_GET_PRIVATEINFO` (`FUN_00731C60`): see the dedicated section below; `present`
+  is mandatory.
 - `MSG_ROOMINNOTICE` and `MSG_PxROOMOUTNOTICE` match `FUN_00BB4D70`'s field
-  table, but `MSG_ROOMINNOTICE` still closes the recipient's Lobby connection.
-  The server keeps them opt-in and refreshes the roster with the
-  START/LIST/END stream instead. See `README.md`.
+  table and are required. `CMD_WATCH_ROOMPLAYERLIST` (`FUN_00BB4060`) is not a
+  subscription: it sends `MSG_REQRMEMBERLIST`, takes one START/LIST/END stream
+  (`FUN_00BB5190` then marks the task done) and only changes afterwards through
+  these two notices. Without `MSG_ROOMINNOTICE` the host never adds the joiner
+  as a P2P peer (`FUN_007C7FC0`), drops the joiner's probes (`FUN_00F8BFF0`),
+  and the joiner leaves after the 15 s handshake timeout (`FUN_007C0670`
+  status 6, `FUN_007B8AD0`). Confirmed live in a LAN test: with the notice, the
+  join completes and the Lobby connection stays up.
+
+### Server-side match-setup corrections (2026-10-26)
+
+- `CMD_SET_GAMEMEMBERENV`: validate the owner's complete selected-player decision
+  before applying it, retain `sideLeader`, ACK first, then publish
+  `CMD_WATCH_DECIDE_GAMEPLAYERENV`. Previously only the PES2011 roomplayer publisher
+  ran, leaving PES2010 peers without the final decision.
+- `CMD_SET_GAMEMEMBER`: after an accepted side decision, ACK first and publish the
+  final `CMD_WATCH_DECIDE_GAMEPLAYER` roster. Previously this was a bare ACK.
+- The PES2010 roster counts/includes entered participants, not all room occupants.
+  Unused scalar PID slots now carry unsigned `4294967295`, which the native reader
+  accepts. **This does not repair the repeated-first-PID callback described above.**
+- Room advertisements use the reported phase and team IDs, including phase changes
+  that leave status at GAME. Returning to WAITING/SETENV resets phase to ENTRY.
+- Regression coverage: `tests/OpenEleven.Server.Tests/Pes2010MatchSetupTests.cs`.
+  These are server protocol/state corrections, **not a verified kickoff-crash fix**.
+  Live validation still requires restarting the server with the changes and starting
+  a two-client match with unchanged executables. Check final watch delivery to both
+  peers between the host's setup commands and phase 1ST; reaching kickoff without
+  the recorded crash is the required client-side result.
+
+### PES2010 division ladder and team history (2026-10-26)
+
+- PES2010 ranks on **D1, D2, D3A, D3B, D3C** and starts in D3C. The reference
+  capture proves `CMD_GET_PLAYERLIST`/`CMD_GET_PLAYERINFO` carry `division="D3C"` /
+  `div="D3C"`.
+- `RankSystem.Normalize` used to rewrite any non-D5..D1 value to `D5` after every
+  match, and the one-time rank initialization did the same. That destroyed the
+  PES2010 ladder, which is why `CMD_SEARCH_PLAYER` advertised `division="D5"`.
+  Normalization is now gated by `RankSystem.Applies(profile)`, and a startup repair
+  maps already-damaged rows back: D5→D3C, D4→D3B, D3→D3A (D1/D2 unchanged).
+- The same repair applies to every PES2010 output that carries a division:
+  search, player list, block list, friend list, game results and quick match.
+- `CMD_GET_PLAYERINFO` must send `teamLog=[a,b,c,d,e]` and `desired_position=[...]`
+  in list form. The parser (`FUN_00732230`) asks for `teamLog[0]`, but the lookup
+  (`FUN_00b6e0f0`) splits that into key `teamLog` plus element 0. The reference's flat
+  `teamLog[0]=v` pairs never match, so every slot stayed at the -1 its reset
+  (`FUN_004a3640`) leaves (seen live with a CE write watch). Values land as words at
+  player+0x1e0..0x1e8. `FD_teamLog` is read by the parser too but is absent from the
+  reference capture, so it is deliberately **not** invented here.
+- The same lookup reads every `x[i].y` key (`date_list[i].id`, `ulist[i]...`) as
+  element i of list `x`.
+
+### PES2010 `CMD_GET_PRIVATEINFO` notice fields
+
+`FUN_00731C60` reads exactly six fields per notice and **stops the whole entry at the
+first missing one**, after already accepting `count`:
+
+- `privInfo[i].reldate` (int)
+- `privInfo[i].iid` (int)
+- `privInfo[i].title` (string)
+- `privInfo[i].info` (string)
+- `privInfo[i].important` (enum type 0: FALSE/TRUE)
+- `privInfo[i].present` (enum type 0: FALSE/TRUE)
+
+The server sent the first five only. PES2010 therefore showed `count=1` with no rows;
+PES2011's parser does not require `present`, so it looked fine there. The response now
+sends `present="TRUE"`.
+
+### PES2010 quick match room entry
+
+`MSG_QUICK_ACCEPT_MATCH_OFFER_RES` only confirms the formed group. PES2010 never opens the
+lobby room screen for a quick match, so the server must also send the room tail a
+`CMD_JOIN_ROOM` response carries. It previously created the room silently: both clients
+stayed on the room screen with no roster/state and one left after a few seconds.
+
+`Hub.PublishQuickMatchRoom` now, for PES2010:
+
+- moves the room to `SETENV` and marks `MatchStarting`;
+- assigns `GameEntryNo` (0..n-1), alternating `GameSide`, and one leader per side;
+- pushes `CMD_WATCH_ROOMSTATE`, `MSG_RMEMBERLISTSTART/LIST/END`,
+  `CMD_WATCH_ROOMPLAYERLIST`, `CMD_WATCH_IPANDPORT`, `CMD_WATCH_ENTRY_GAME`,
+  `CMD_WATCH_DECIDE_GAMEENV`, `CMD_WATCH_DECIDE_GAMEPLAYER` and
+  `CMD_WATCH_DECIDE_GAMEPLAYERENV`.
+
+`MSG_QUICK_REQ_MATCHING_START` still pairs only equal `type|player_num|game_time|frrate`.
+A "free 2vs2" (`player_num=4`) search with two clients cannot form a match by design.
+
+### Online kickoff crash: 2026-10-26 dump
+
+Confirmed for executable SHA-256
+`90297023199b3e59a48ab936c2f67f71722bc27ae1cbdda20a45251060a2c680`:
+
+- `pes2010.exe.52740.dmp`: read AV `0xc0000005` at `0x0097afa9`
+  (`FLD [EAX]`), reading `0x01f00598`. This is an out-of-bounds **read**,
+  not evidence of a stack-buffer overwrite or an oversized network packet.
+- Event `0x03000051` at `0x01eff988` has a 2-by-11 coordinate table at `+0x1c`
+  and eight controller records at `+0x124`, stride `0x1c`. Slots 0/1 contain
+  `(side,player)=(0,10)/(1,10)`; slots 2–7 contain `(0,255)`.
+- `FUN_0097AF20`, the **in-match chat overlay** event handler, reads
+  `event + 0x1c + 12*(side*11+player)` before its
+  visibility checks. Slot 2 therefore reads `0x01f00598`, exactly matching
+  the exception. `FUN_009815E0` contains the same unguarded lookup at
+  `0x009816b0`; it is another chat-related display component, not a proved
+  second crash in this run (the dump's HUD pointer for that component is null).
+- `FUN_00B17830` deliberately initializes empty controller records with
+  `player=0xff`; this byte is **not proof of a failed network enum lookup**.
+  `FUN_00B1D580` interpolates snapshots and dispatches this event at
+  `0x00b1db74` (return `0x00b1db79`). `0x00985adb` is an intermediate
+  forwarding return address, not the event constructor.
+- Source chain recovered from the dump, not inferred from packet field names:
+  scene `0x23ce8b70` -> HUD `0x23f3c330` -> chat object `0x23d24260`
+  (vtable `0x01226510`). The HUD's `+0x88` pointer matches the faulting `ESI`.
+  Game `0x1d2b1720` -> controller table `0x2411d650`: slot 0 has assigned slot 0,
+  side 0, selected global footballer 11; slot 1 has assigned slot 1, side 1,
+  selected global footballer 22. Slots 2–7 have unassigned slot/side/footballer
+  `0xff`. Thus the actual match controller table is a two-player HOME/AWAY
+  setup, **not eight duplicate active controllers**.
+- `FUN_00B1BE90` reads each controller's selected global footballer at `+0x3d`.
+  At `0x00b1bfab` it initializes the event player index to `0xff`; the
+  `0x00b1c002`–`0x00b1c008` range permits only footballers 1–22 to replace that
+  default. Inactive controllers therefore produce the observed empty records.
+  The current snapshot at `0x23da5990`, embedded event at `+0x4eb0`
+  (`0x23daa840`), contains the exact eight `(side,player,active,...)` prefixes
+  dispatched on the stack. `FUN_00B1D580`'s saved frame at `0x01effd44`
+  references that current snapshot and previous snapshot `0x23e39e50`.
+  No network enum parse is needed to explain the `0xff` reaching the handler.
+- Why offline can work: `FUN_00B0AD50` creates this chat widget when HUD mode
+  (`+0xbc`) is 5 or game type (`+0xb8`) is 10. The dump has type 0/mode 5,
+  so the widget is created and all eight records are forwarded to it. A
+  **read-only** comparison with the same executable running offline (PID 66980,
+  started `10:53:40`) has type 0/mode 4 and null chat widgets at HUD `+0x88`
+  and `+0x8c`, while its unused controller slots also contain `0xff`.
+  This establishes the extra online consumer, not a different empty-slot value.
+- The TEB gives `StackBase=0x01f00000`: the recorded read is 0x598 above it.
+  **Capture-time caveat:** the full dump contains a zero-filled, RW, MEM_MAPPED
+  page at `0x01f00000`. Its mapping timing cannot be established from this dump.
+  Do not claim this page is absent from the captured memory or that an emulator
+  loaded with all captured pages reproduces the Windows AV. The exception
+  record proves the fault; instruction tracing proves the out-of-table address.
+- Investigated handler/parser bytes match the executable on disk. The module
+  list contains no loaded kitserver DLL. This does not establish that the
+  entire executable is pristine or rule out earlier modifications.
+- The duplicated parsed PID roster is a separate confirmed defect. A causal
+  link from it to this AV, a server-only repair, and an end-to-end match fix
+  remain unproven. Do not fill empty slots with fake players to hide the AV.
+  Tracing the unchanged handler with the captured cached PIDs and with cached
+  PIDs `(1,2,-1,-1,-1,-1,-1,-1)` reaches the same out-of-table address, with
+  no reads of the network state before that instruction. This counterfactual
+  keeps the match event fixed; it does not prove upstream setup is unaffected.
+- Session log correlation (`src/OpenEleven.Pes2010Pc/bin/Debug/net9.0/logs/pes2010pc.log`):
+  at `10:27:06.933` the server sends that exact roster and correct HOME/AWAY
+  sideinfo (lines 87273/87355). The host itself submits the correct two-player
+  `envlist` at `10:27:08.304` (line 87974), so duplicated parsed PIDs alone
+  do not prove that the actual match-side assignment was wrong. Team selection
+  succeeds at `10:27:16.017`; `phase="1ST"` is ACKed at `10:27:19.233`.
+  The host disconnect and recorded loss occur at `10:27:28.059`, after the
+  `10:27:27` dump, not before it. The log does not show a server error or
+  timeout immediately preceding the crash.
+
+Read-only reproduction: `tools/analyze_pes2010_crash.py DUMP --exe EXE
+--replay-parser --replay-handler --output .artifacts/pes2010-crash-20261026/evidence.json`.
+Dependencies: `minidump`, plus `unicorn` for offline instruction tracing. Retained
+response strings in the dump are not an ordered capture of the final packets.
+The handler trace runs unchanged game instructions, stubs UI hide calls, and
+stops before the first out-of-table lookup. It is neither an OS-fault replay
+nor a full-match validation. **Investigation constraint: no executable or
+live-memory patches; no client/server behavior changes were made in this pass.**
 
 ### Quick match
 
@@ -520,3 +710,16 @@ competition, as opposed to browsing the list) have any live callers independent 
 - 28 commands from pass 1 (mostly `CMD_SEND_*`/`CMD_SET_*` one-way calls and some `CMD_WATCH_*`) have no
   verified data here at all — they weren't among the 123 call sites found, meaning either they're sent from
   a code path outside the normal UI flow (e.g. peer-to-peer relay) or via a helper this survey didn't reach.
+
+### PES2010 room menu: "Match Room Manager" (2026-10-26)
+
+- The room menu (FUN_008E6540, 9 items at 0x017018E8; item 4 = 0x01F9003E) enables
+  Match Room Manager only when it is built, from FUN_00728e20 -> FUN_0075a950: the
+  player's slot in the room-list cache (DAT_016f02bc+0x400, 1000 bytes per room; slot
+  i at +0xb8+i*0x60, pid at +8, owner flag at +0xc) must have the owner flag. The
+  refresh (FUN_008e6430) re-checks only Start Match and Select sides.
+- The cache is rebuilt by FUN_00733eb0 (`room_num` / `rlist[i]`) from the client's
+  own room list, which comes out empty while the room is being created. An update
+  sent with CMD_CREATEJOIN_ROOM (before or after the reply) is lost. The create flow
+  (FUN_007b9950) then sends CMD_SET_GAMEENV and builds the menu after that reply,
+  so the server sends the owner its MSG_ROOMLISTUPDATE there. Confirmed live with CE.
