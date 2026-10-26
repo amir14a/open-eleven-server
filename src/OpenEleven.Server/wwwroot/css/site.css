@@ -222,6 +222,9 @@ h1, h2, h3 { margin: 0; }
 
 .muted { color: var(--muted); }
 .num { font-variant-numeric: tabular-nums; text-align: right; }
+
+/* Two renderings of one value; phones get the short one. */
+.short { display: none; }
 .center { text-align: center; }
 
 /* ---- hero ---------------------------------------------------------------------------- */
@@ -713,4 +716,6 @@ button.small, .button.small { padding: 5px 10px; font-size: 11px; }
     .nav form { margin: 10px 22px; }
 
     .tile { width: calc(50% - 11px); }
+    .long { display: none; }
+    .short { display: inline; }
 }

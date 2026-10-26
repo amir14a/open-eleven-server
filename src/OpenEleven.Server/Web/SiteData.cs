@@ -107,5 +107,8 @@ public static class SiteData
 
     public static string Date(DateTime utc) => utc.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
 
+    /// <summary>The phone layout's form of <see cref="Date"/>.</summary>
+    public static string ShortDate(DateTime utc) => utc.ToString("d MMM HH:mm", CultureInfo.InvariantCulture);
+
     public static string WinPercent(int wins, int matches) => matches == 0 ? "–" : $"{wins * 100.0 / matches:0.#}%";
 }

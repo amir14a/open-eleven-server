@@ -13,7 +13,7 @@ else
             {
                 var m = row.Match;
                 <tr>
-                    <td class="muted">@SiteData.Date(m.PlayedAt)</td>
+                    <td class="muted"><span class="long">@SiteData.Date(m.PlayedAt)</span><span class="short">@SiteData.ShortDate(m.PlayedAt)</span></td>
                     <td class="num"><a href="/players/@m.HomePid">@row.Home</a></td>
                     <td class="center"><button type="button" class="scorebutton" popovertarget="match-@m.Id" title="Match details">@m.HomeScore &ndash; @m.AwayScore</button></td>
                     <td><a href="/players/@m.AwayPid">@row.Away</a></td>
