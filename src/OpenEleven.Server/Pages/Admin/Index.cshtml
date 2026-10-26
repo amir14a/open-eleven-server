@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Admin";
     ViewData["Nav"] = "admin";
+    ViewData["Live"] = true;
 }
 <h1 class="title">Online now</h1>
 @if (Model.Message is { Length: > 0 })
@@ -10,14 +11,14 @@
     <p class="msg ok" role="status">@Model.Message</p>
 }
 
-<div class="tiles">
+<div class="tiles" id="totals" data-live>
     <div class="tile selected"><strong>@Model.Accounts.Count</strong><span>Signed in</span></div>
     <div class="tile"><strong>@Model.Rooms.Count</strong><span>Rooms</span></div>
     <div class="tile"><strong>@Model.Rooms.Count(r => r.Status == "GAME")</strong><span>Playing</span></div>
     <div class="tile"><strong>@Model.Anonymous</strong><span>Not signed in</span></div>
 </div>
 
-<section class="panel">
+<section class="panel" id="accounts" data-live>
     <h2>Signed-in accounts</h2>
     @if (Model.Accounts.Count == 0)
     {
@@ -55,7 +56,7 @@
 
 <hr class="rule">
 
-<section class="panel">
+<section class="panel" id="rooms" data-live>
     <h2>Rooms</h2>
     @if (Model.Rooms.Count == 0)
     {

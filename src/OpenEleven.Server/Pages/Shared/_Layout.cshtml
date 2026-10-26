@@ -59,6 +59,10 @@
         </span>
     </div>
 </footer>
+@if (ViewData["Live"] is true)
+{
+    <script src="/js/live.js" asp-append-version="true" defer></script>
+}
 @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

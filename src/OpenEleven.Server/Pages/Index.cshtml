@@ -4,6 +4,7 @@
 @inject GameProfile Game
 @{
     ViewData["Nav"] = "home";
+    ViewData["Live"] = true;   // sections marked data-live refresh themselves (wwwroot/js/live.js)
     var name = TitleProfiles.DisplayName(Game).Split(' ');   // "PES", "2011", "(PC)"
 }
 <section class="hero">
@@ -18,7 +19,7 @@
     <a class="button" href="/register">Create an account</a>
 </section>
 
-<div class="tiles">
+<div class="tiles" id="totals" data-live>
     <a class="tile selected" href="/players"><strong>@Model.Online</strong><span>Online now</span></a>
     <a class="tile" href="#live"><strong>@Model.Live.Count</strong><span>Playing now</span></a>
     <a class="tile" href="/players"><strong>@Model.Players</strong><span>Players</span></a>
@@ -26,7 +27,7 @@
 </div>
 
 <div class="grid two">
-    <section class="panel" id="live">
+    <section class="panel" id="live" data-live>
         <h2><span class="online"></span>Live matches</h2>
         @if (Model.Live.Count == 0)
         {
@@ -86,12 +87,12 @@
 <hr class="rule">
 
 <div class="grid two">
-    <section class="panel">
+    <section class="panel" id="latest" data-live>
         <header>Latest matches <a href="/matches">All matches &rsaquo;</a></header>
         <partial name="_Matches" model="Model.Recent" />
     </section>
 
-    <section class="panel">
+    <section class="panel" id="news" data-live>
         <h2>News</h2>
         @if (Model.News.Count == 0)
         {
