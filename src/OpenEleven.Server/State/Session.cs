@@ -77,6 +77,8 @@ public sealed class Session
     public int RoomEntryNo { get; set; } = -1;
     public int GameEntryNo { get; set; } = -1;
     public int GameSide { get; set; } = -1;
+    /// <summary>Host's final captain choice; null while entry-screen defaults apply.</summary>
+    public bool? GameSideLeader { get; set; }
     public int? GameEntryWatchRqid { get; set; }
     public int? RoomStateWatchRqid { get; set; }
     public int? IpAndPortWatchRqid { get; set; }

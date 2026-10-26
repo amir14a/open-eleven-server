@@ -340,7 +340,7 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
         // Leaving a match in progress (connection dropped or CMD_LEAVE_ROOM), or being the
         // player the other one just forfeited over, is a disconnect. Read before removal.
         var lineup = MatchResults.Lineup(room);
-        var walkedOut = Is2011 && (room.Status == "GAME"
+        var walkedOut = HasMatchFlow && (room.Status == "GAME"
                                    || room.ForfeitStayerPid is { } stayer && stayer != session.Pid);
 
         var removal = room.Remove(session);
@@ -387,9 +387,9 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
         if (removal.OwnerChanged)
             PublishRoomStateChanged(room, "OwnerChanged");
 
-        // A match cannot go on alone: WAITING is what makes the remaining PES 2011 client
-        // leave its in-match screen (FUN_005fa030) instead of waiting forever.
-        if (Is2011 && room.Count < 2)
+        // A match cannot go on alone: WAITING is what makes the remaining client leave its
+        // in-match screen (PES 2011 FUN_005fa030, PES 2010 FUN_007c1f80) instead of waiting forever.
+        if (HasMatchFlow && room.Count < 2)
             SetRoomStatus(room, "WAITING");
 
         PublishRoomUpdated(room, session.Id);
@@ -665,21 +665,22 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
     }
 
     /// <summary>
-    /// The room roster as fixed slots. FUN_0072ED20 reads status and player_count, then
-    /// walks pid and video as plain scalar lists of one entry per slot — the same bracketed
-    /// form as desiredPosition, not brace-wrapped records.
+    /// The selected match roster as eight fixed slots, distinct from the room occupants.
     /// </summary>
     public int PublishDecideGamePlayer(Room room)
     {
         var members = room.Snapshot();
 
-        // FUN_0072ED20 walks a fixed eight slots, whatever the room size is: it reads the
-        // scalar key "pid" eight times and "video" eight times, not a bracketed list. A
-        // bracketed value makes its integer parser fall back to 0x7b, so send eight
-        // scalars and fill unused slots with -1.
+        var is2010 = Is2010;
+        var players = is2010 ? members.Where(m => m.GameEntryNo >= 0).ToArray() : members.ToArray();
+        // Preserve the scalar wire shape. This build's FUN_0072ED20 repeatedly queries
+        // the first unindexed pid; neither repeated scalars nor arrays repair that loop.
+        // Its unsigned reader rejects textual -1, so encode the all-ones sentinel as uint.
         const int rosterSlots = 8;
         var pids = Enumerable.Range(0, rosterSlots)
-            .Select(slot => (object?)(members.FirstOrDefault(m => m.RoomEntryNo == slot)?.Pid ?? -1))
+            .Select(slot => is2010
+                ? (object)(uint)(players.FirstOrDefault(m => m.RoomEntryNo == slot)?.Pid ?? -1)
+                : (object)(players.FirstOrDefault(m => m.RoomEntryNo == slot)?.Pid ?? -1))
             .ToArray();
 
         var sent = 0;
@@ -688,7 +689,7 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
             var rqid = member.DecideGamePlayerWatchRqid ?? UnsolicitedRqid;
             var update = KvMessage.Ok("CMD_WATCH_DECIDE_GAMEPLAYER", rqid)
                 .Set("status", room.Status)
-                .Set("player_count", members.Count);
+                .Set("player_count", players.Length);
 
             foreach (var pid in pids)
                 update.Set("pid", pid);
@@ -745,12 +746,12 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
     }
 
     /// <summary>
-    /// One record per member that has taken a side. The room owner leads HOME; the lowest
-    /// entry number on AWAY leads that side.
+    /// One record per selected member. Preserve the host's final captain choice;
+    /// before that, use entry-screen defaults.
     /// </summary>
     private static KvMessage[] BuildSideInfoEntries(Room room)
     {
-        var sided = room.Snapshot().Where(member => member.GameSide is 0 or 1).ToArray();
+        var sided = room.Snapshot().Where(member => member.GameEntryNo >= 0 && member.GameSide is 0 or 1).ToArray();
         var awayLeaderId = sided
             .Where(member => member.GameSide == 1)
             .OrderBy(member => member.RoomEntryNo)
@@ -761,7 +762,8 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
                 // Enum type 0x19 accepts only HOME/AWAY, type 0x36 only NO/YES.
                 .Set("side", member.GameSide == 0 ? "HOME" : "AWAY")
                 .Set("sideLeader",
-                    (member.GameSide == 0 && member.Pid == room.OwnerPid) || member.Id == awayLeaderId
+                    (member.GameSideLeader ??
+                        ((member.GameSide == 0 && member.Pid == room.OwnerPid) || member.Id == awayLeaderId))
                         ? "YES"
                         : "NO"))
             .ToArray();

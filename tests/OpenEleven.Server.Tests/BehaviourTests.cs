@@ -527,9 +527,9 @@ public class RoomTests
         // FUN_0072ED20 reads the scalar key "pid" eight times, whatever the room size.
         var pids = roster.Fields
             .Where(field => field.Key == "pid")
-            .Select(field => Convert.ToInt32(field.Value))
+            .Select(field => Convert.ToUInt32(field.Value))
             .ToArray();
-        Assert.Equal([1, 2, -1, -1, -1, -1, -1, -1], pids);
+        Assert.Equal([1u, 2u, uint.MaxValue, uint.MaxValue, uint.MaxValue, uint.MaxValue, uint.MaxValue, uint.MaxValue], pids);
         Assert.Equal(8, roster.Fields.Count(field => field.Key == "video"));
 
         var sides = pushed.Last(message => message.MsgName == "CMD_WATCH_DECIDE_GAMEPLAYERENV");

@@ -151,7 +151,7 @@ public class ReferenceParityTests
     }
 
     [Fact]
-    public async Task Current_player_result_matches_the_reference_byte_for_byte()
+    public async Task Current_player_result_matches_the_reference_except_for_the_team_list()
     {
         await using var harness = await ServerHarness.CreateAsync();
         var session = harness.NewSession(ServiceRole.Account, SessionState.Authenticated);
@@ -159,7 +159,14 @@ public class ReferenceParityTests
 
         var actual = await harness.RenderFirstAsync(session, "CMD_SET_CURRENTPLAYER");
 
-        Assert.Equal(Reference["CMD_SET_CURRENTPLAYER"], actual);
+        // The reference sent no teams, which leaves PES 2010 without a default team: the match
+        // is abandoned right after Start Match (see TitleProfiles.UseableTeams).
+        var teams = TitleProfiles.UseableTeams(GameProfile.Pes2010Pc);
+        var expected = Reference["CMD_SET_CURRENTPLAYER"].Replace(
+            "useable_team_size=0",
+            $"useable_team_size={teams.Length},useable_team_id=[{string.Join(',', teams)}]");
+
+        Assert.Equal(expected, actual);
     }
 
     [Fact]

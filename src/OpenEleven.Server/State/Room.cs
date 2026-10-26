@@ -148,6 +148,9 @@ public sealed class Room
             session.RoomEntryNo = -1;
             session.GameEntryNo = -1;
             session.GameSide = -1;
+            session.GameSideLeader = null;
+            foreach (var member in _members)
+                member.GameSideLeader = null;
             session.GameEntryWatchRqid = null;
             session.RoomStateWatchRqid = null;
             session.DecideGameEnvWatchRqid = null;
@@ -173,6 +176,9 @@ public sealed class Room
         {
             MatchStarting = false;
             MatchId = 0;
+            Phase = "ENTRY";
+            foreach (var member in Snapshot())
+                member.GameSideLeader = null;
         }
 
         return true;
@@ -185,6 +191,9 @@ public sealed class Room
             if (_members.All(member => member.Id != session.Id))
                 return false;
 
+            foreach (var member in _members)
+                member.GameSideLeader = null;
+
             if (!entered)
             {
                 session.GameEntryNo = -1;
@@ -195,6 +204,46 @@ public sealed class Room
             if (session.GameEntryNo < 0)
                 session.GameEntryNo = NextFreeGameEntryNo();
             session.GameSide = side;
+            return true;
+        }
+    }
+
+    /// <summary>Validate the complete PES2010 host decision before changing any member.</summary>
+    public bool TrySetGameMemberEnvironment(Session host, IReadOnlyList<KvMessage> entries)
+    {
+        lock (_gate)
+        {
+            if (host.Pid != OwnerPid || _members.All(m => m.Id != host.Id))
+                return false;
+
+            var selected = _members.Where(m => m.GameEntryNo >= 0).ToArray();
+            if (selected.Length is < 2 or > 8 || entries.Count != selected.Length)
+                return false;
+
+            var assignments = new Dictionary<int, (int Side, bool Leader)>();
+            foreach (var entry in entries)
+            {
+                var pid = entry.GetInt32("pid", -1);
+                var side = entry.GetString("side") switch { "HOME" => 0, "AWAY" => 1, _ => -1 };
+                var leader = entry.GetString("sideLeader");
+                if (side < 0 || leader is not ("YES" or "NO")
+                    || selected.All(m => m.Pid != pid)
+                    || !assignments.TryAdd(pid, (side, leader == "YES")))
+                    return false;
+            }
+
+            // Both sides need exactly one captain, not necessarily the room owner.
+            if (Enumerable.Range(0, 2).Any(side =>
+                    assignments.Values.Count(a => a.Side == side && a.Leader) != 1))
+                return false;
+
+            foreach (var member in selected)
+            {
+                var assignment = assignments[member.Pid];
+                member.GameSide = assignment.Side;
+                member.GameSideLeader = assignment.Leader;
+            }
+            MatchStarting = true;
             return true;
         }
     }
