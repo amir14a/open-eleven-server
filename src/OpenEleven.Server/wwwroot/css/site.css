@@ -113,13 +113,24 @@ a { color: inherit; }
     text-transform: uppercase;
 }
 
+/* The nav is a popover so phones can fold it behind .burger; these undo the browser's
+   popover defaults (hidden, centred, framed), which page styles always override. */
 .nav {
     display: flex;
+    position: static;
+    width: auto;
+    height: auto;
     gap: 4px;
-    margin-left: auto;
+    margin: 0 0 0 auto;
+    padding: 0;
+    border: 0;
+    color: inherit;
+    background: none;
     overflow-x: auto;
     scrollbar-width: none;
 }
+
+.burger { display: none; }
 
 .nav a {
     position: relative;
@@ -656,9 +667,50 @@ button.small, .button.small { padding: 5px 10px; font-size: 11px; }
 .msg.ok { border: 1px solid rgba(142, 226, 63, .45); background: rgba(142, 226, 63, .1); color: #cdf5a6; }
 
 @media (max-width: 640px) {
-    .topbar .inner { flex-wrap: wrap; gap: 0; }
-    .nav { width: 100%; margin: 0; }
-    .nav a { padding: 10px 10px 14px; }
-    .nav a[aria-current="page"]::after, .nav a:hover::after { bottom: 6px; }
+    .topbar .inner { gap: 12px; }
+
+    .burger {
+        display: block;
+        flex: none;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: 1px solid rgba(255, 255, 255, .16);
+        border-radius: 6px;
+        background:
+            linear-gradient(var(--ink), var(--ink)) center 12px / 18px 2px no-repeat,
+            linear-gradient(var(--ink), var(--ink)) center 19px / 18px 2px no-repeat,
+            linear-gradient(var(--ink), var(--ink)) center 26px / 18px 2px no-repeat,
+            var(--tile);
+        box-shadow: none;
+    }
+
+    .burger:hover, .burger:focus-visible { border-color: var(--lime); box-shadow: 0 0 10px var(--lime-glow); }
+
+    .nav:not(:popover-open) { display: none; }
+
+    /* Open: a panel dropping from the top bar on the left, like the game's side menus. */
+    .nav:popover-open {
+        position: fixed;
+        inset: 58px auto auto 0;
+        width: min(280px, 85vw);
+        max-height: calc(100vh - 58px);
+        flex-direction: column;
+        gap: 0;
+        margin: 0;
+        padding: 8px 0;
+        border-right: 1px solid var(--lime);
+        border-bottom: 1px solid var(--lime);
+        border-radius: 0 0 10px 0;
+        background: linear-gradient(180deg, #1d1a26, #0d0b13);
+        box-shadow: 0 0 24px var(--lime-glow), 0 20px 60px rgba(0, 0, 0, .7);
+        overflow-y: auto;
+    }
+
+    .nav::backdrop { background: rgba(5, 4, 8, .55); }
+    .nav a { padding: 13px 22px; font-size: 13px; }
+    .nav a[aria-current="page"]::after, .nav a:hover::after { left: 22px; right: 40%; bottom: 6px; }
+    .nav form { margin: 10px 22px; }
+
     .tile { width: calc(50% - 11px); }
 }
