@@ -20,13 +20,35 @@ public sealed record LiveMatch(string Home, string Away, int HomeGoals, int Away
 /// <summary>One page of a long list; <see cref="Href"/> builds the link to another page.</summary>
 public sealed record Pager(int Page, int Pages, Func<int, string> Href)
 {
+    /// <summary>Rows per page, offered through <see cref="SizeHref"/> on lists that let the reader choose.</summary>
+    public int Size { get; init; }
+    public Func<int, string>? SizeHref { get; init; }
+
     public static int Count(int total, int size) => Math.Max(1, (total + size - 1) / size);
+
+    /// <summary>The first and last page and two either side of this one; 0 marks a gap.</summary>
+    public IEnumerable<int> Numbers()
+    {
+        var last = 0;
+        for (var n = 1; n <= Pages; n++)
+        {
+            if (n != 1 && n != Pages && Math.Abs(n - Page) > 2)
+                continue;
+            if (n - last > 1)
+                yield return 0;
+            yield return last = n;
+        }
+    }
 }
 
 /// <summary>Queries shared by the public pages.</summary>
 public static class SiteData
 {
     public const int PageSize = 50;
+    public static readonly int[] PageSizes = [25, 50, 100];
+
+    /// <summary><paramref name="requested"/> when it is one of <see cref="PageSizes"/>, else the default.</summary>
+    public static int Size(int requested) => PageSizes.Contains(requested) ? requested : PageSize;
 
     /// <summary>Completed matches, newest first.</summary>
     public static IQueryable<MatchRecord> Finished(GameDbContext db)

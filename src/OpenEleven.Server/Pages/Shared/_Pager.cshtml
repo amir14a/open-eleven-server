@@ -1,15 +1,41 @@
 @model Pager
-@if (Model.Pages > 1)
+@if (Model.Pages > 1 || Model.SizeHref is not null)
 {
     <nav class="pager" aria-label="Pages">
-        @if (Model.Page > 1)
+        @if (Model.Pages > 1)
         {
-            <a href="@Model.Href(Model.Page - 1)">&lsaquo; Prev</a>
+            @if (Model.Page > 1)
+            {
+                <a href="@Model.Href(Model.Page - 1)" aria-label="Previous page">&lsaquo;</a>
+            }
+            @foreach (var n in Model.Numbers())
+            {
+                if (n == 0)
+                {
+                    <span class="gap">&hellip;</span>
+                }
+                else if (n == Model.Page)
+                {
+                    <span aria-current="page">@n</span>
+                }
+                else
+                {
+                    <a href="@Model.Href(n)">@n</a>
+                }
+            }
+            @if (Model.Page < Model.Pages)
+            {
+                <a href="@Model.Href(Model.Page + 1)" aria-label="Next page">&rsaquo;</a>
+            }
         }
-        <span aria-current="page">@Model.Page / @Model.Pages</span>
-        @if (Model.Page < Model.Pages)
+        @if (Model.SizeHref is { } sizeHref)
         {
-            <a href="@Model.Href(Model.Page + 1)">Next &rsaquo;</a>
+            <span class="sizes">Per page
+                @foreach (var size in SiteData.PageSizes)
+                {
+                    <a href="@sizeHref(size)" aria-current="@(size == Model.Size ? "true" : null)">@size</a>
+                }
+            </span>
         }
     </nav>
 }

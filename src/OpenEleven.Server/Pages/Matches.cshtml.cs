@@ -17,16 +17,21 @@ namespace OpenEleven.Server.Pages;
 public sealed class MatchesModel(GameDbContext db) : PageModel
 {
     [BindProperty(SupportsGet = true, Name = "p")] public int PageNumber { get; set; } = 1;
+    [BindProperty(SupportsGet = true, Name = "size")] public int Size { get; set; }
 
     public IReadOnlyList<MatchRow> List { get; private set; } = [];
     public Pager Pager { get; private set; } = new(1, 1, _ => "");
 
     public async Task OnGetAsync(CancellationToken ct)
     {
-        var pages = Pager.Count(await db.Matches.CountAsync(m => m.Completed, ct), SiteData.PageSize);
+        var size = SiteData.Size(Size);
+        var pages = Pager.Count(await db.Matches.CountAsync(m => m.Completed, ct), size);
         PageNumber = Math.Clamp(PageNumber, 1, pages);
         List = await SiteData.NameAsync(db,
-            SiteData.Finished(db).Skip((PageNumber - 1) * SiteData.PageSize).Take(SiteData.PageSize), ct);
-        Pager = new Pager(PageNumber, pages, n => $"/matches?p={n}");
+            SiteData.Finished(db).Skip((PageNumber - 1) * size).Take(size), ct);
+        Pager = new Pager(PageNumber, pages, n => Link(n, size)) { Size = size, SizeHref = s => Link(1, s) };
     }
+
+    private static string Link(int page, int size)
+        => size == SiteData.PageSize ? $"/matches?p={page}" : $"/matches?p={page}&size={size}";
 }

@@ -399,7 +399,7 @@ table.list { width: 100%; border-collapse: collapse; }
 
 .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
 
-.tabs a, .pager a, .pager span {
+.tabs a, .pager a, .pager span[aria-current] {
     padding: 7px 14px;
     border: 1px solid rgba(255, 255, 255, .14);
     border-radius: 6px;
@@ -414,13 +414,26 @@ table.list { width: 100%; border-collapse: collapse; }
 
 .tabs a:hover, .pager a:hover { color: var(--ink); }
 
-.tabs a[aria-current="true"], .pager span[aria-current="page"] {
+.tabs a[aria-current="true"], .pager span[aria-current="page"], .pager a[aria-current="true"] {
     border-color: var(--lime);
     color: var(--ink);
     box-shadow: 0 0 0 1px var(--lime), 0 0 12px var(--lime-glow);
 }
 
-.pager { display: flex; justify-content: center; gap: 8px; margin: 18px 0 4px; }
+.pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin: 18px 0 4px; }
+.pager .gap { color: var(--faint); }
+
+.pager .sizes {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 14px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
 
 /* ---- profile ------------------------------------------------------------------------- */
 
