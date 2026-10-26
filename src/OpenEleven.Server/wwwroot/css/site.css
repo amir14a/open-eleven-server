@@ -438,7 +438,7 @@ table.list { width: 100%; border-collapse: collapse; }
 /* ---- details windows (native popovers) ----------------------------------------------- */
 
 /* Plain buttons: undo the lime menu button style below. */
-.scorebutton, .modal .close {
+.scorebutton, .linkbutton, .modal .close {
     padding: 0;
     border: 0;
     background: none;
@@ -458,7 +458,10 @@ table.list { width: 100%; border-collapse: collapse; }
     font-variant-numeric: tabular-nums;
 }
 
+.linkbutton { font: 600 14px var(--sans); text-align: left; }
+
 .scorebutton:hover, .scorebutton:focus-visible { border-color: var(--lime); box-shadow: 0 0 10px var(--lime-glow); }
+.linkbutton:hover, .linkbutton:focus-visible { color: var(--lime); }
 
 .modal {
     width: min(560px, 100% - 32px);
@@ -499,7 +502,9 @@ table.list { width: 100%; border-collapse: collapse; }
 
 .modal .close:hover { color: var(--ink); }
 
+.modal h3 { margin: 18px 18px 6px; font: italic 900 20px/1.2 var(--display); }
 .modal .small { margin: 12px 18px 18px; font-size: 12px; }
+.newsbody { margin: 0 18px 20px; white-space: pre-line; }
 
 .scoreline {
     display: grid;

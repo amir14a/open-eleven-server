@@ -104,14 +104,26 @@
                 {
                     <tr>
                         <td style="white-space: normal">
-                            <strong>@n.Subject</strong> @if (n.Important) { <span class="tag red">Important</span> }
-                            <div class="muted" style="white-space: pre-line">@n.Body</div>
+                            <button type="button" class="linkbutton" popovertarget="news-@n.Id">@n.Subject</button>
+                            @if (n.Important) { <span class="tag red">Important</span> }
                         </td>
                         <td class="num muted">@n.PublishedAt.ToString("yyyy-MM-dd")</td>
                     </tr>
                 }
                 </tbody>
             </table>
+            @foreach (var n in Model.News)
+            {
+                <div id="news-@n.Id" popover class="modal" role="dialog" aria-label="@n.Subject">
+                    <header>
+                        <span>@n.PublishedAt.ToString("yyyy-MM-dd")</span>
+                        @if (n.Important) { <span class="tag red">Important</span> }
+                        <button type="button" class="close" popovertarget="news-@n.Id" popovertargetaction="hide" aria-label="Close">&times;</button>
+                    </header>
+                    <h3>@n.Subject</h3>
+                    <p class="newsbody">@n.Body</p>
+                </div>
+            }
         }
     </section>
 </div>
