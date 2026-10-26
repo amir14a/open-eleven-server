@@ -54,6 +54,11 @@ public static class OpenElevenServerHost
             [$"{ServerOptions.SectionName}:{nameof(ServerOptions.GameProfile)}"] = profile.ToString(),
         });
 
+        // Last, so what the admin portal saves wins over the files; filled once the database is up.
+        var liveSettings = new LiveSettings();
+        ((IConfigurationBuilder)builder.Configuration).Add(liveSettings);
+        builder.Services.AddSingleton(liveSettings);
+
         builder.Services.AddOpenElevenCore(builder.Configuration);
         builder.Services.AddHostedService<RoomWatchPublisher>();
 
@@ -132,6 +137,7 @@ public static class OpenElevenServerHost
         var app = builder.Build();
 
         await InitializeDatabaseAsync(app);
+        await LoadLiveSettingsAsync(app);
         LogStartupSummary(app, startupOptions, fileLog);
 
         // The ranked list of commands the client wanted and did not get is the
@@ -176,6 +182,15 @@ public static class OpenElevenServerHost
         await using var scope = app.Services.CreateAsyncScope();
         var initializer = scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
         await initializer.InitializeAsync();
+    }
+
+    private static async Task LoadLiveSettingsAsync(WebApplication app)
+    {
+        await using var scope = app.Services.CreateAsyncScope();
+        await app.Services.GetRequiredService<LiveSettings>().LoadAsync(
+            scope.ServiceProvider.GetRequiredService<GameDbContext>(),
+            app.Services.GetRequiredService<IOptionsFactory<ServerOptions>>(),
+            app.Services.GetRequiredService<ILoggerFactory>().CreateLogger<LiveSettings>());
     }
 
     /// <summary>Loads the PEM chain + key named in <see cref="HttpsOptions"/>.</summary>

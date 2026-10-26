@@ -1,0 +1,63 @@
+@page "/admin/settings"
+@model OpenEleven.Server.Pages.Admin.SettingsModel
+@using OpenEleven.Server.Configuration
+@{
+    ViewData["Title"] = "Settings";
+    ViewData["Nav"] = "admin-settings";
+}
+<h1 class="title">Settings</h1>
+<p class="subtitle">Saved over server.yaml and in effect at once, no restart. Addresses, ports, HTTPS and the database stay in server.yaml.</p>
+@if (Model.Message is { Length: > 0 })
+{
+    <p class="msg ok" role="status">@Model.Message</p>
+}
+@foreach (var error in Model.Errors)
+{
+    <p class="msg error" role="alert">@error</p>
+}
+
+<form method="post" asp-page-handler="Save" id="settings"></form>
+<div class="grid two">
+    @foreach (var group in Model.Settings.GroupBy(s => s.Group))
+    {
+        <section class="panel">
+            <h2>@group.Key</h2>
+            <div class="body">
+                @foreach (var s in group)
+                {
+                    var value = s.Current(Model.Current);
+                    var overridden = Model.Overrides.ContainsKey(s.Key);
+                    @if (s.Kind == LiveSettingKind.Toggle)
+                    {
+                        <label class="check"><input type="checkbox" form="settings" name="@s.Key" value="true" checked="@(value == "true")"> @s.Label</label>
+                    }
+                    else
+                    {
+                        <label for="@s.Key">@s.Label</label>
+                        @if (s.Kind == LiveSettingKind.LongText)
+                        {
+                            <textarea id="@s.Key" form="settings" name="@s.Key" maxlength="@s.MaxLength">@value</textarea>
+                        }
+                        else
+                        {
+                            <input id="@s.Key" form="settings" name="@s.Key" value="@value" maxlength="@s.MaxLength"
+                                   inputmode="@(s.Kind is LiveSettingKind.Number ? "numeric" : s.Kind is LiveSettingKind.Decimal ? "decimal" : null)">
+                        }
+                    }
+                    <span class="hint" style="margin: -10px 0 14px">
+                        @s.Help
+                        @if (overridden)
+                        {
+                            <span class="tag lime">Changed here</span>
+                            <form method="post" asp-page-handler="Reset" class="inline">
+                                <input type="hidden" name="key" value="@s.Key">
+                                <button type="submit" class="small secondary">Use server.yaml</button>
+                            </form>
+                        }
+                    </span>
+                }
+            </div>
+        </section>
+    }
+</div>
+<p class="center" style="margin-top: 22px"><button type="submit" form="settings">Save settings</button></p>
