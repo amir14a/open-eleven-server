@@ -92,6 +92,19 @@ a { color: inherit; }
 
 .brand b em { color: var(--red); font-style: inherit; }
 
+/* Says whose server this is, so nobody mistakes it for Konami's. */
+.brand .oe {
+    margin-left: 6px;
+    padding: 2px 6px;
+    border: 1px solid rgba(142, 226, 63, .5);
+    border-radius: 4px;
+    color: var(--lime);
+    font: 900 10px/1 var(--display);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    vertical-align: 2px;
+}
+
 .brand small {
     display: block;
     color: var(--muted);
@@ -223,6 +236,15 @@ h1, h2, h3 { margin: 0; }
 
 .logo em { color: var(--red); font-style: inherit; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .7)); }
 .logo small { color: var(--muted); font-size: .35em; vertical-align: middle; }
+
+.wordmark {
+    margin: 0 0 14px;
+    color: var(--lime);
+    font: italic 900 clamp(16px, 2.6vw, 24px)/1 var(--display);
+    letter-spacing: .28em;
+    text-transform: uppercase;
+    text-shadow: 0 0 14px var(--lime-glow);
+}
 
 .tagline { margin: 0 0 26px; color: var(--muted); font-size: 15px; }
 
