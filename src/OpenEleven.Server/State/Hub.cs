@@ -612,9 +612,7 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
         foreach (var member in members)
         {
             // PES2010 arms this watch locally (FUN_007bacc0) and does not send a
-            // matching wire request.  A parked rqid is still supported for other
-            // protocol variants, but the normal client needs unsolicited rqid=0
-            // snapshots until it has populated every game slot.
+            // matching wire request, so it gets rqid 0; a parked rqid is still used if sent.
             var rqid = member.GameEntryWatchRqid ?? UnsolicitedRqid;
 
             var update = KvMessage.Ok("CMD_WATCH_ENTRY_GAME", rqid)
@@ -805,31 +803,6 @@ public sealed class Hub(ILogger<Hub> log, IOptionsMonitor<ServerOptions> options
             .Set("event", eventName)
             .Set("owner_pid", room.OwnerPid)
             .Set("state", room.Status);
-
-    public int PublishStartableGameEntrySnapshots()
-    {
-        // Entry changes are pushed when they happen; PES 2011 needs no periodic repeat.
-        if (Is2011)
-            return 0;
-
-        var sent = 0;
-        foreach (var room in Rooms.Where(room => room.IsStartable))
-            sent += PublishGameEntryChanged(room);
-        return sent;
-    }
-
-    public int PublishRoomStateSnapshots()
-    {
-        // PES 2011 counts every push as a new state (FUN_0051c110); a repeated RESULT would
-        // restart CMD_GET_GAMEADDPOINT each time. It gets pushes on change only.
-        if (Is2011)
-            return 0;
-
-        var sent = 0;
-        foreach (var room in Rooms.Where(room => !room.IsEmpty))
-            sent += PublishRoomStateChanged(room);
-        return sent;
-    }
 
     private void PublishRoomDeleted(Room room, Guid? except)
     {

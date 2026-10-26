@@ -38,8 +38,6 @@ public sealed class Room
     public DateTimeOffset CreatedAt { get; } = DateTimeOffset.UtcNow;
     public string Status { get; private set; } = "WAITING";
 
-    public bool IsStartable => Status is "WAITING" or "SETENV";
-
     /// <summary>
     /// Match settings from CMD_SET_GAMEENV (half length, injuries, ball, substitutions).
     /// Held verbatim: the client owns this shape, and it has to survive unchanged until
