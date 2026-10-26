@@ -194,6 +194,9 @@ What it does:
   position, so the list is saved whole and replaces `server.yaml`'s **at the next restart**;
   the page says when a saved list is waiting for one. While a saved list exists,
   `server.yaml`'s `Lobbies` are ignored; *Use server.yaml's lobbies* brings them back.
+- **Blocked words:** one word or phrase per line, up to 200. They replace
+  `Protocol.BlockedTerms` from `server.yaml` **at once** and survive restarts; *Use
+  server.yaml's list* goes back.
 - **Settings:** a curated set that applies immediately, without a restart: the home
   announcement, the rank system and a few game rules. Changes are validated before they go
   live and stored in the database, so they survive restarts; *Use server.yaml* undoes one.
@@ -212,6 +215,7 @@ Keys worth knowing (all under `Server:`):
 | `Admin` | `User`, `Password`. Empty password = portal off. Set them in `.env` or `server.local.yaml`, not in a tracked file. |
 | `Captcha` | Registration captcha: `None` (default), `Turnstile`, `HCaptcha`, `ReCaptcha` or `Custom`. Docker: `CAPTCHA_*` in `.env`. |
 | `Lobbies` | The blocks offered by `CMD_GET_BLOCKLIST`, **maximum 10**. The client joins one by its **position**, so reordering changes what a running client selects. |
+| `Protocol.BlockedTerms` | Banned words, matched as whole words in any case. Room names and names the game checks (`CMD_CHECK_STRING`) are refused if they contain one; in text chat they become `***`. Empty by default. Editable from the admin portal (*Words*), which then overrides this list. |
 | `Rank` | Rating, points, promotion and relegation for the titles that have divisions. |
 | `Protocol.EnforceSessionState` | Rejects commands that arrive before their stage instead of running them against half-initialised state. |
 | `Protocol.ShareIdentityByRemoteAddress` | Off. Copies identity between sockets by remote IP; unsafe behind NAT. Captures show real clients authenticate every socket. |

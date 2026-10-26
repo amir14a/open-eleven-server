@@ -1,0 +1,35 @@
+@page "/admin/words"
+@model OpenEleven.Server.Pages.Admin.WordsModel
+@using OpenEleven.Server.Pages.Admin
+@{
+    ViewData["Title"] = "Blocked words";
+    ViewData["Nav"] = "admin-words";
+}
+<h1 class="title">Blocked words</h1>
+<p class="subtitle">Whole words, any case. Room names and names the game checks are refused if they contain one; in chat they become ***. In effect at once.</p>
+@if (Model.Message is { Length: > 0 })
+{
+    <p class="msg ok" role="status">@Model.Message</p>
+}
+@foreach (var error in Model.Errors)
+{
+    <p class="msg error" role="alert">@error</p>
+}
+
+<section class="panel card" style="max-width: 640px">
+    <div class="body">
+        <form method="post" asp-page-handler="Save">
+            <label for="terms">One word or phrase per line</label>
+            <textarea id="terms" name="terms" rows="16">@Model.Text</textarea>
+            <p class="hint">Up to @WordsModel.MaxTerms. No control characters, at most 114 bytes each.</p>
+            <button type="submit">Save words</button>
+        </form>
+        <p class="muted">From @(Model.FromPortal ? "the list saved here" : "server.yaml (Protocol.BlockedTerms)").</p>
+        @if (Model.FromPortal)
+        {
+            <form method="post" asp-page-handler="Reset">
+                <button type="submit" class="small secondary">Use server.yaml's list</button>
+            </form>
+        }
+    </div>
+</section>

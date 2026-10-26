@@ -14,8 +14,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@(ViewData["Title"] is string page ? $"{page} · Open Eleven {title}" : $"Open Eleven · {title} online")</title>
     @* The version hash changes the URL whenever the file does, so no browser keeps an old copy. *@
-    <link rel="stylesheet" href="/css/site.css" asp-append-version="true">
-</head>
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true"></head>
 <body>
 <header class="topbar">
     <div class="inner">
@@ -32,6 +31,7 @@
                 <a href="/admin/accounts" aria-current="@Current("admin-accounts")">Accounts</a>
                 <a href="/admin/news" aria-current="@Current("admin-news")">News</a>
                 <a href="/admin/lobbies" aria-current="@Current("admin-lobbies")">Lobbies</a>
+                <a href="/admin/words" aria-current="@Current("admin-words")">Words</a>
                 <a href="/admin/settings" aria-current="@Current("admin-settings")">Settings</a>
                 <a href="/">Site</a>
                 <form method="post" asp-page="/Admin/Login" asp-page-handler="Logout" class="inline"><button type="submit" class="small secondary">Sign out</button></form>

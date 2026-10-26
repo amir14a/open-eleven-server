@@ -33,7 +33,7 @@ public class AdminPortalTests
         var services = new ServiceCollection();
         services.AddOptions<ServerOptions>().Bind(config.GetSection(ServerOptions.SectionName))
             .Validate(_ => { duringValidation?.Invoke(config); return true; });
-        services.PostConfigure<ServerOptions>(live.ReplaceLobbies);
+        services.PostConfigure<ServerOptions>(live.ReplaceLists);
         services.AddSingleton<IValidateOptions<ServerOptions>, ServerOptionsValidator>();
         var provider = services.BuildServiceProvider();
         return (provider.GetRequiredService<IOptionsMonitor<ServerOptions>>(), provider.GetRequiredService<IOptionsFactory<ServerOptions>>());
@@ -124,6 +124,32 @@ public class AdminPortalTests
 
         await LiveSettings.ResetLobbiesAsync(db);
         Assert.Null(await LiveSettings.SavedLobbiesAsync(db));
+    }
+
+    [Fact]
+    public async Task Saved_blocked_terms_apply_at_once_and_survive_a_restart()
+    {
+        await using var harness = await ServerHarness.CreateAsync();
+        await using var scope = harness.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+        var live = new LiveSettings();
+        var (monitor, factory) = Options(live);
+
+        Assert.NotEmpty(await live.SaveBlockedTermsAsync(db, factory, ["bad\u0001word"]));
+        Assert.Empty(await live.SaveBlockedTermsAsync(db, factory, ["insult", "rude word"]));
+        Assert.Equal(["insult", "rude word"], monitor.CurrentValue.Protocol.BlockedTerms);
+
+        var restarted = new LiveSettings();
+        var (after, restartedFactory) = Options(restarted);
+        await restarted.LoadAsync(db, restartedFactory, NullLogger.Instance);
+        Assert.Equal(["insult", "rude word"], after.CurrentValue.Protocol.BlockedTerms);
+
+        Assert.Empty(await restarted.SaveBlockedTermsAsync(db, restartedFactory, []));   // an empty list still overrides
+        Assert.Empty(after.CurrentValue.Protocol.BlockedTerms);
+        Assert.NotNull(await LiveSettings.SavedBlockedTermsAsync(db));
+
+        await restarted.ResetBlockedTermsAsync(db);
+        Assert.Null(await LiveSettings.SavedBlockedTermsAsync(db));
     }
 
     [Fact]

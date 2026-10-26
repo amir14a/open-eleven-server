@@ -15,15 +15,20 @@ namespace OpenEleven.Server.Configuration;
 /// <see cref="Prefix"/> and layered over server.yaml as the last configuration source, so every
 /// <see cref="IOptionsMonitor{TOptions}"/> reader sees a change without a restart.
 /// <para>
-/// The lobby list is the exception: a configuration layer can change entries but never remove
-/// one, and lobby ids are positions, so a list saved under <see cref="LobbyPrefix"/> replaces
-/// server.yaml's whole list (<see cref="ReplaceLobbies"/>) from the next start.
+/// Lists are the exception, because a configuration layer can change entries but never remove
+/// one. They are saved whole and replace server.yaml's list (<see cref="ReplaceLists"/>): the
+/// lobby list (<see cref="LobbyPrefix"/>) from the next start, since lobby ids are positions,
+/// and the blocked terms (<see cref="BlockedPrefix"/>) at once.
 /// </para>
 /// </summary>
 public sealed class LiveSettings : ConfigurationProvider, IConfigurationSource
 {
     public const string Prefix = "config:";
     public const string LobbyPrefix = "lobbies:";
+    public const string BlockedPrefix = "blocked:";
+
+    // Present whenever a blocked-term list is saved, so a saved empty list still overrides.
+    private const string BlockedMarker = BlockedPrefix + "saved";
 
     public IConfigurationProvider Build(IConfigurationBuilder builder) => this;
 
@@ -31,15 +36,21 @@ public sealed class LiveSettings : ConfigurationProvider, IConfigurationSource
     // configuration meanwhile (a server.yaml reload, a second save) keep seeing Data.
     private readonly AsyncLocal<IDictionary<string, string?>?> _candidate = new();
     private readonly AsyncLocal<IReadOnlyList<LobbyOptions>?> _candidateLobbies = new();
+    private readonly AsyncLocal<IReadOnlyList<string>?> _candidateBlocked = new();
 
     /// <summary>The saved lobby list in force since startup; null while server.yaml's applies.</summary>
     public IReadOnlyList<LobbyOptions>? Lobbies { get; private set; }
 
-    /// <summary>Post-configure step: puts the saved lobby list (or one under validation) in place of server.yaml's.</summary>
-    public void ReplaceLobbies(ServerOptions options)
+    /// <summary>The saved blocked terms in force; null while server.yaml's apply.</summary>
+    public IReadOnlyList<string>? BlockedTerms { get; private set; }
+
+    /// <summary>Post-configure step: puts the saved lists (or ones under validation) in place of server.yaml's.</summary>
+    public void ReplaceLists(ServerOptions options)
     {
         if ((_candidateLobbies.Value ?? Lobbies) is { } lobbies)
             options.Lobbies = lobbies.Select(l => new LobbyOptions { Name = l.Name, MaxPlayers = l.MaxPlayers }).ToList();
+        if ((_candidateBlocked.Value ?? BlockedTerms) is { } terms)
+            options.Protocol.BlockedTerms = terms.ToList();
     }
 
     private IDictionary<string, string?> View => _candidate.Value ?? Data;
@@ -123,6 +134,18 @@ public sealed class LiveSettings : ConfigurationProvider, IConfigurationSource
                 Lobbies = lobbies;
                 OnReload();   // options read before this point were bound with server.yaml's list
                 log.LogInformation("Using the {Count} lobbies saved from the admin portal", lobbies.Count);
+            }
+        }
+
+        if (await SavedBlockedTermsAsync(db, ct) is { } terms)
+        {
+            if (CheckBlockedTerms(terms, factory) is { Count: > 0 } invalid)
+                log.LogError("Ignoring the blocked terms saved from the admin portal: {Failures}", string.Join(" ", invalid));
+            else
+            {
+                BlockedTerms = terms;
+                OnReload();
+                log.LogInformation("Using the {Count} blocked terms saved from the admin portal", terms.Count);
             }
         }
 
@@ -219,6 +242,56 @@ public sealed class LiveSettings : ConfigurationProvider, IConfigurationSource
         finally
         {
             _candidateLobbies.Value = null;
+        }
+    }
+
+    /// <summary>The blocked terms saved from the portal, or null when none are (server.yaml's then apply).</summary>
+    public static async Task<List<string>?> SavedBlockedTermsAsync(GameDbContext db, CancellationToken ct = default)
+    {
+        // A marker row plus one row per term, "blocked:0000".."blocked:9999" in order.
+        var rows = await db.Settings.Where(s => s.Key.StartsWith(BlockedPrefix)).ToListAsync(ct);
+        if (!rows.Any(r => r.Key == BlockedMarker))
+            return null;
+        return rows.Where(r => r.Key != BlockedMarker).OrderBy(r => r.Key, StringComparer.Ordinal).Select(r => r.Value).ToList();
+    }
+
+    /// <summary>Validates, stores and applies <paramref name="terms"/> in place of server.yaml's list.</summary>
+    public async Task<IReadOnlyList<string>> SaveBlockedTermsAsync(GameDbContext db, IOptionsFactory<ServerOptions> factory,
+        IReadOnlyList<string> terms, CancellationToken ct = default)
+    {
+        if (CheckBlockedTerms(terms, factory) is { Count: > 0 } failures)
+            return failures;
+
+        db.Settings.RemoveRange(await db.Settings.Where(s => s.Key.StartsWith(BlockedPrefix)).ToListAsync(ct));
+        db.Settings.Add(new ServerSetting { Key = BlockedMarker, Value = terms.Count.ToString(System.Globalization.CultureInfo.InvariantCulture) });
+        for (var i = 0; i < terms.Count; i++)
+            db.Settings.Add(new ServerSetting { Key = $"{BlockedPrefix}{i:D4}", Value = terms[i] });
+        await db.SaveChangesAsync(ct);
+
+        BlockedTerms = terms;
+        OnReload();
+        return [];
+    }
+
+    /// <summary>Forgets the saved blocked terms; server.yaml's apply again at once.</summary>
+    public async Task ResetBlockedTermsAsync(GameDbContext db, CancellationToken ct = default)
+    {
+        db.Settings.RemoveRange(await db.Settings.Where(s => s.Key.StartsWith(BlockedPrefix)).ToListAsync(ct));
+        await db.SaveChangesAsync(ct);
+        BlockedTerms = null;
+        OnReload();
+    }
+
+    private IReadOnlyList<string> CheckBlockedTerms(IReadOnlyList<string> terms, IOptionsFactory<ServerOptions> factory)
+    {
+        _candidateBlocked.Value = terms;
+        try
+        {
+            return Validate(Overrides, factory);
+        }
+        finally
+        {
+            _candidateBlocked.Value = null;
         }
     }
 }
