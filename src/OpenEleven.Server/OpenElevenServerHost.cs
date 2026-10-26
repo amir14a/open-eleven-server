@@ -73,7 +73,9 @@ public static class OpenElevenServerHost
         builder.Services.AddHttpRateLimits();
 
         // The public pages read whole tables; a few seconds of staleness keeps that off the database.
-        builder.Services.AddOutputCache();
+        // Every distinct query string is its own entry, so the size cap (default 100 MB) is what
+        // bounds a crawl of made-up searches.
+        builder.Services.AddOutputCache(cache => cache.SizeLimit = 16 * 1024 * 1024);
 
         // Antiforgery tokens are protected with Data Protection keys, which default to a
         // per-user directory that a container does not persist. Without this, every restart

@@ -19,6 +19,8 @@ namespace OpenEleven.Server.Pages;
 [OutputCache(Duration = 30)]
 public sealed class PlayersModel(GameDbContext db, Hub hub, GameProfile game) : PageModel
 {
+    public const int MaxSearchLength = 32;   // the form's maxlength; a longer query matches no name anyway
+
     [BindProperty(SupportsGet = true)] public string? Q { get; set; }
     [BindProperty(SupportsGet = true, Name = "page")] public int PageNumber { get; set; } = 1;
 
@@ -34,6 +36,8 @@ public sealed class PlayersModel(GameDbContext db, Hub hub, GameProfile game) : 
         if (!string.IsNullOrWhiteSpace(Q))
         {
             var term = Q.Trim().ToUpperInvariant();
+            if (term.Length > MaxSearchLength)
+                term = term[..MaxSearchLength];
             query = query.Where(p => p.NormalizedName.Contains(term));
         }
 
