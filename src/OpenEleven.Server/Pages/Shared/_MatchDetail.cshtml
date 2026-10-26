@@ -1,0 +1,71 @@
+@model MatchRow
+@using OpenEleven.Server.State
+@{
+    // A native popover: the score button opens it, Esc or a click outside closes it. No script.
+    var m = Model.Match;
+    var home = MatchSheet.Parse(m.HomePeriods);
+    var away = MatchSheet.Parse(m.AwayPeriods);
+    var periods = Enumerable.Range(0, 5).Where(i => i < 2 || (i < 4 && m.ExtraTime) || (i == 4 && m.Penalties)).ToList();
+    var events = SiteData.Events(m);
+    // Matches recorded without a period breakdown would show a table of zeros under a real score.
+    var hasPeriods = home.Sum() + away.Sum() > 0 || m.HomeScore + m.AwayScore == 0;
+    string? quitter = m.DisconnectedPid == m.HomePid ? Model.Home : m.DisconnectedPid == m.AwayPid ? Model.Away : null;
+}
+<div id="match-@m.Id" popover class="modal" role="dialog" aria-label="Match details">
+    <header>
+        <span>@SiteData.Date(m.PlayedAt) UTC</span>
+        <span class="tag @(m.Ranked ? "lime" : "")">@(m.Ranked ? "Ranked" : "Friendly")</span>
+        <button type="button" class="close" popovertarget="match-@m.Id" popovertargetaction="hide" aria-label="Close">&times;</button>
+    </header>
+    <div class="scoreline">
+        <a href="/players/@m.HomePid">@Model.Home</a>
+        <strong>@m.HomeScore &ndash; @m.AwayScore</strong>
+        <a href="/players/@m.AwayPid">@Model.Away</a>
+    </div>
+    @if (m.Penalties)
+    {
+        <p class="center muted">Penalties @home[4] &ndash; @away[4]</p>
+    }
+
+    @if (hasPeriods)
+    {
+        <div class="scroll">
+            <table class="list periods">
+                <thead><tr><th></th>@foreach (var i in periods) { <th class="center">@SiteData.PeriodNames[i]</th> }</tr></thead>
+                <tbody>
+                <tr><td>@Model.Home</td>@foreach (var i in periods) { <td class="center score">@home[i]</td> }</tr>
+                <tr><td>@Model.Away</td>@foreach (var i in periods) { <td class="center score">@away[i]</td> }</tr>
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (events.Count > 0)
+    {
+        <ul class="timeline">
+            @foreach (var e in events)
+            {
+                <li class="@(e.Away ? "away" : "home")">
+                    <span class="muted">@e.Period</span>
+                    <i class="mark @e.Kind.Replace(" ", "-").ToLowerInvariant()" aria-hidden="true"></i>
+                    @e.Kind &middot; @(e.Away ? Model.Away : Model.Home)
+                </li>
+            }
+        </ul>
+    }
+
+    <p class="muted small">
+        @if (m.Ranked)
+        {
+            @(m.Rated ? "Rating and points were updated." : "Ranked, but rating and points were not moved (anti-farming rules).")
+        }
+        else
+        {
+            @:Friendly: rating and points unchanged.
+        }
+        @if (m.Disconnected)
+        {
+            <br>@(quitter is null ? "Ended by a disconnect." : $"{quitter} disconnected.")
+        }
+    </p>
+</div>

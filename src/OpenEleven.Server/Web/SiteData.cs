@@ -17,6 +17,9 @@ public sealed record MatchRow(MatchRecord Match, string Home, string Away);
 /// <summary>A match being played right now.</summary>
 public sealed record LiveMatch(string Home, string Away, int HomeGoals, int AwayGoals, string Phase);
 
+/// <summary>A goal, card or injury from <see cref="MatchRecord.Events"/>.</summary>
+public sealed record MatchEventRow(string Period, string Kind, bool Away);
+
 /// <summary>One page of a long list; <see cref="Href"/> builds the link to another page.</summary>
 public sealed record Pager(int Page, int Pages, Func<int, string> Href)
 {
@@ -49,6 +52,30 @@ public static class SiteData
 
     /// <summary><paramref name="requested"/> when it is one of <see cref="PageSizes"/>, else the default.</summary>
     public static int Size(int requested) => PageSizes.Contains(requested) ? requested : PageSize;
+
+    /// <summary>Labels for <see cref="MatchSheet.Periods"/>.</summary>
+    public static readonly string[] PeriodNames = ["1st half", "2nd half", "Extra time 1", "Extra time 2", "Penalties"];
+
+    /// <summary>
+    /// The stored event lines (GOAL|phase|side|…, CARD|phase|side|kind|…, INJURY|phase|side|…),
+    /// reduced to what a page can show: the footballers are only in-game ids.
+    /// </summary>
+    public static List<MatchEventRow> Events(MatchRecord match)
+        => match.Events.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(line => line.Split('|'))
+            .Where(f => f.Length >= 3)
+            .Select(f => new MatchEventRow(
+                PeriodNames[MatchSheet.PeriodOf(f[1])],
+                f[0] switch
+                {
+                    "GOAL" => "Goal",
+                    "CARD" when f.Length > 3 && f[3] == "RED" => "Red card",
+                    "CARD" => "Yellow card",
+                    "INJURY" => "Injury",
+                    var other => other,
+                },
+                f[2] == "AWAY"))
+            .ToList();
 
     /// <summary>Completed matches, newest first.</summary>
     public static IQueryable<MatchRecord> Finished(GameDbContext db)

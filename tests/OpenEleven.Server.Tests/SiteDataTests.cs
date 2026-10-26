@@ -3,6 +3,7 @@
 //
 // This file is part of OpenEleven. See the LICENSE file at the repository root.
 
+using OpenEleven.Data.Entities;
 using OpenEleven.Server.Web;
 
 namespace OpenEleven.Server.Tests;
@@ -34,4 +35,21 @@ public class SiteDataTests
     [Fact]
     public void Only_the_offered_page_sizes_are_accepted()
         => Assert.Equal((25, 100, 50, 50), (SiteData.Size(25), SiteData.Size(100), SiteData.Size(0), SiteData.Size(100000)));
+
+    [Fact]
+    public void Stored_events_read_as_period_kind_and_side()
+    {
+        var match = new MatchRecord
+        {
+            Events = "GOAL|1ST|HOME|7|12|HOME||0|\nCARD|BREAK2|AWAY|RED|8|3\nCARD|EX1ST|HOME|YELLOW|7|4\nINJURY|PK|AWAY|5\nbad",
+        };
+
+        Assert.Equal(
+        [
+            new MatchEventRow("1st half", "Goal", false),
+            new MatchEventRow("2nd half", "Red card", true),
+            new MatchEventRow("Extra time 1", "Yellow card", false),
+            new MatchEventRow("Penalties", "Injury", true),
+        ], SiteData.Events(match));
+    }
 }
