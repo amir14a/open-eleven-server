@@ -201,7 +201,8 @@ public sealed class AccountHandlers(
                     : null;
 
             var teams = await players.GetRecentTeamsAsync(player.Pid, 5, ctx.CancellationToken);
-            var reply = PlayerPresenter.FillPlayerInfo(ctx.Ok(), player, division, listSyntax: is2011, teams);
+            var reply = PlayerPresenter.FillPlayerInfo(ctx.Ok(), player, division,
+                listSyntax: options.CurrentValue.GameProfile is GameProfile.Pes2010Pc or GameProfile.Pes2011Pc, teams);
             if (is2011)
             {
                 // Profile page 2 "Weekly Ranking TOP 10 / TOP 100": weeks finished in that range.

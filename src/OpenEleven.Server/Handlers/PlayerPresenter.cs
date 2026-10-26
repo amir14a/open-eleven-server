@@ -101,8 +101,9 @@ public static class PlayerPresenter
             .Set("list_num", 0);
     }
 
-    // PES 2010 reads flat key[i]=v pairs; the PES 2011 tokenizer (FUN_00c79680) only accepts
-    // the bracketed key=[a,b,c] form, as it does for ulist and player_data.
+    // PES 2010 and 2011 take only the bracketed key=[a,b,c] form, as for ulist and player_data.
+    // The PES 2011 tokenizer (FUN_00c79680) rejects flat pairs; the PES 2010 lookup
+    // (FUN_00b6e0f0) resolves "teamLog[0]" as element 0 of key teamLog, so it never finds them.
     private static object Indexed(bool listSyntax, params object?[] values)
         => listSyntax ? new KvArray(values) : new IndexedField(values);
 

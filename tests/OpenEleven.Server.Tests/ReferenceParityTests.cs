@@ -187,14 +187,20 @@ public class ReferenceParityTests
     }
 
     [Fact]
-    public async Task Player_info_matches_the_reference_byte_for_byte()
+    public async Task Player_info_matches_the_reference_except_for_the_list_syntax()
     {
         await using var harness = await ServerHarness.CreateAsync();
         var session = harness.NewSession(ServiceRole.Account, SessionState.Authenticated);
 
         var actual = await harness.RenderFirstAsync(session, "CMD_GET_PLAYERINFO");
 
-        Assert.Equal(Reference["CMD_GET_PLAYERINFO"], actual);
+        // pes2010.exe (FUN_00b6e0f0) looks "teamLog[0]" up as element 0 of teamLog=[...], so the
+        // reference's flat teamLog[0]=v pairs left the profile's team history empty.
+        var expected = System.Text.RegularExpressions.Regex.Replace(Reference["CMD_GET_PLAYERINFO"],
+            @"(teamLog|desired_position)\[0\]=[^,]*(?:,\1\[\d+\]=[^,]*)*",
+            m => m.Groups[1].Value + "=[" + string.Join(',', m.Value.Split(',').Select(p => p[(p.IndexOf('=') + 1)..])) + "]");
+
+        Assert.Equal(expected, actual);
     }
 
     [Fact]
