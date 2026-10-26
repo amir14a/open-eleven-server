@@ -62,20 +62,26 @@ public static class GameEndpoints
 
         // The RANK and RANK_WEEK urls. The client posts the ranking query as the body (some
         // paths may put it in the query string) and wraps our text in ranking_data="...".
-        app.MapMethods("/ranking", ["GET", "POST"], async (HttpContext http, OpenEleven.Data.GameDbContext db, TimeProvider time) =>
+        app.MapMethods("/ranking", ["GET", "POST"], async (HttpContext http, OpenEleven.Data.GameDbContext db, TimeProvider time,
+            IOptionsMonitor<ServerOptions> options) =>
         {
             var data = http.Request.QueryString.Value ?? "";
             if (HttpMethods.IsPost(http.Request.Method))
             {
-                // The real query is under 100 bytes.
-                http.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>()!.MaxRequestBodySize = 4096;
+                // The real query is under 100 bytes. The limit can only be set before anything has
+                // read the body (the HTTP trace middleware does when it is on), so the read is
+                // capped as well.
+                if (http.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>() is { IsReadOnly: false } limit)
+                    limit.MaxRequestBodySize = 4096;
                 using var reader = new StreamReader(http.Request.Body, Encoding.ASCII);
-                var body = await reader.ReadToEndAsync(http.RequestAborted);
+                var buffer = new char[4096];
+                var read = await reader.ReadBlockAsync(buffer, http.RequestAborted);
+                var body = new string(buffer, 0, read);
                 if (body.Length > 0)
                     data = body;
             }
 
-            var text = await new State.RankingQuery(db).RenderAsync(data, time.GetUtcNow().UtcDateTime, http.RequestAborted);
+            var text = await new State.RankingQuery(db, options.CurrentValue.GameProfile).RenderAsync(data, time.GetUtcNow().UtcDateTime, http.RequestAborted);
             return Results.Text(text, "text/plain", Encoding.UTF8);
         }).RequireRateLimiting(HttpRateLimits.Ranking);
 

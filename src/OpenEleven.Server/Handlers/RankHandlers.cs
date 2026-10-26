@@ -20,7 +20,8 @@ namespace OpenEleven.Server.Handlers;
 /// Rank screens: the ranking tables (CMD_GET_RANKING), the archived weeks, the
 /// season-end division report and the player's notices.
 /// </summary>
-public sealed class RankHandlers(GameDbContext db, TimeProvider time, ILogger<RankHandlers> log)
+public sealed class RankHandlers(GameDbContext db, TimeProvider time, ILogger<RankHandlers> log,
+    IOptionsMonitor<ServerOptions> options)
 {
     private const ServiceRole AccountRoles = ServiceRole.Account | ServiceRole.Menu | ServiceRole.Gate;
 
@@ -121,22 +122,25 @@ public sealed class RankHandlers(GameDbContext db, TimeProvider time, ILogger<Ra
     [Command("CMD_GET_RANKING", Roles = ServiceRole.Menu)]
     public async ValueTask<KvMessage[]> GetRanking(CommandContext ctx)
     {
-        var text = await new RankingQuery(db).RenderAsync(ctx.Request.GetString("data") ?? "", time.GetUtcNow().UtcDateTime, ctx.CancellationToken);
+        var text = await new RankingQuery(db, options.CurrentValue.GameProfile).RenderAsync(ctx.Request.GetString("data") ?? "", time.GetUtcNow().UtcDateTime, ctx.CancellationToken);
         return [ctx.Ok().Set("ranking_data", text)];
     }
 
     /// <summary>
     /// The archived weeks (FUN_005f2870/FUN_005f2be0): date_list_num, then
     /// date_list[i].start_date / end_date as unix seconds, newest first.
+    /// PES 2010 (FUN_0072a640) also reads date_list[i].id, the weekid it posts back, and adds
+    /// the running week itself, so it takes an empty list where the error leaves it nothing.
     /// </summary>
     [Command("CMD_GET_WEEKLYRANKINGDATELIST", Roles = ServiceRole.Menu)]
     public async ValueTask<KvMessage[]> GetWeeklyRankingDates(CommandContext ctx)
     {
+        var pes2010 = options.CurrentValue.GameProfile == GameProfile.Pes2010Pc;
         var weeks = await RankingQuery.ArchivedWeeksAsync(db, WeeksShown, ctx.CancellationToken);
         if (weeks.Count == 0)
-            return [ctx.Fail("ERR_WEEKLYRANKINGNOTFOUND")];
+            return pes2010 ? [ctx.Ok().Set("date_list_num", 0)] : [ctx.Fail("ERR_WEEKLYRANKINGNOTFOUND")];
 
-        var entries = weeks.Select(start => new KvMessage()
+        var entries = weeks.Select(start => (pes2010 ? new KvMessage().Set("id", start) : new KvMessage())
             .Set("start_date", start)
             .Set("end_date", start + 7 * 24 * 3600 - 1)).ToArray();
         return [ctx.Ok().SetList("date_list_num", "date_list", entries)];

@@ -197,6 +197,26 @@ public sealed class MatchResultsTests : IDisposable
     }
 
     [Fact]
+    public void Pes2010_ranking_text_has_no_empty_lines_and_its_own_division_index()
+    {
+        // D5 is what PES 2010 rows may still hold; the client shows it as D3C = index 0.
+        var lines = new[]
+        {
+            new RankSystem.Line(7, "marc", 10, 6, 2, 2, 20, "D2", 1100, Streak: 4),
+            new RankSystem.Line(8, "away", 1, 0, 0, 1, 0, "D5", 990),
+        };
+
+        var text = RankSystem.Format(lines, 6, 0, 100, new DateTime(2026, 10, 24, 12, 0, 0, DateTimeKind.Utc), null,
+            registered: 9, profile: Configuration.GameProfile.Pes2010Pc).TrimEnd('\n').Split('\n');
+
+        // strtok skips empty lines, which would move the rows (FUN_007297a0 reads them from line 11).
+        Assert.DoesNotContain("", text);
+        Assert.Equal(("9/2", "2026-10-24 12:00:00"), (text[1], text[2]));
+        Assert.Equal("1,7,marc,0,10,6,2,2,4,3,1100,0,0,0,0,0,0,0", text[11]);
+        Assert.Equal("0", text[12].Split(',')[9]);
+    }
+
+    [Fact]
     public async Task Ranking_query_serves_all_time_running_week_and_archived_week()
     {
         using var scope = _services.CreateScope();

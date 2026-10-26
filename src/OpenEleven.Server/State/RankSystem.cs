@@ -70,6 +70,16 @@ public static class RankSystem
 
     public static int DivisionIndex(string division) => Math.Max(0, Array.IndexOf(Divisions, division));
 
+    private static readonly string[] Pes2010RankingDivisions = ["D3C", "D3B", "D3A", "D2", "D1"];
+
+    /// <summary>
+    /// The divisions by the index the ranking screen sends and reads back in each row.
+    /// pes2010.exe (FUN_00729290) stores 4 - index as its D1..D3C enum, so its ladder takes
+    /// the same five positions, lowest first.
+    /// </summary>
+    public static string[] RankingDivisions(GameProfile profile)
+        => profile == GameProfile.Pes2010Pc ? Pes2010RankingDivisions : Divisions;
+
     /// <summary>Monday 00:00 UTC of the week <paramref name="utc"/> falls in.</summary>
     public static DateTime WeekStart(DateTime utc)
     {
@@ -258,21 +268,30 @@ public static class RankSystem
     /// so it is written "registered/listed"; the client pages and shows it.
     /// All-time header: (unused), count line, "yyyy/MM/dd HH:mm:ss", 8 unused lines.
     /// Weekly header: week start, week end (same date format), (unused), count line.
+    /// PES 2010 (FUN_007297a0 all-time, FUN_00729a70 weekly) has the same layout, but splits the
+    /// lines with strtok, which skips empty ones, and its dates use dashes (yyyy-MM-dd). Its row
+    /// parse (FUN_00729290) reads the fourth field as %d. The last unused line (all-time) or
+    /// the one before the count (weekly) is the player's own row there.
     /// </summary>
     public static string Format(IReadOnlyList<Line> ordered, int type, int from, int records,
-        DateTime updated, (DateTime Start, DateTime End)? week, int registered = 0)
+        DateTime updated, (DateTime Start, DateTime End)? week, int registered = 0,
+        GameProfile profile = GameProfile.Pes2011Pc)
     {
+        var pes2010 = profile == GameProfile.Pes2010Pc;
+        // PES 2010 needs a non-empty unused line; "-" is not a row, so no own row is shown.
+        var unused = pes2010 ? "-\n" : "\n";
         var sb = new StringBuilder();
         var count = $"{Math.Max(registered, ordered.Count)}/{ordered.Count}";
         if (week is { } w)
         {
-            sb.Append(Date(w.Start)).Append('\n').Append(Date(w.End)).Append("\n\n").Append(count).Append('\n');
+            sb.Append(Date(w.Start)).Append('\n').Append(Date(w.End)).Append('\n').Append(unused)
+                .Append(count).Append('\n');
         }
         else
         {
             sb.Append("1\n").Append(count).Append('\n').Append(Date(updated)).Append('\n');
             for (var i = 0; i < 8; i++)
-                sb.Append('\n');
+                sb.Append(unused);
         }
 
         for (var i = from; i < ordered.Count && i < from + Math.Min(records, 100); i++)
@@ -280,14 +299,15 @@ public static class RankSystem
             var l = ordered[i];
             // The client wraps this text in ranking_data="...": no commas or quotes inside a name.
             sb.Append(i + 1).Append(',').Append(l.Pid).Append(',').Append(l.Name.Replace(",", " ").Replace("\"", "'"))
-                .Append(",,").Append(l.Matches).Append(',').Append(l.Wins).Append(',').Append(l.Draws)
-                .Append(',').Append(l.Losses).Append(',').Append(l.Streak).Append(',')
-                .Append(DivisionIndex(l.Division)).Append(',').Append(l.Rating)
-                .Append(",0,0,0,0,0,0,0\n");
+                .Append(',').Append(pes2010 ? "0" : "").Append(',').Append(l.Matches).Append(',').Append(l.Wins)
+                .Append(',').Append(l.Draws).Append(',').Append(l.Losses).Append(',').Append(l.Streak).Append(',')
+                .Append(Math.Max(0, Array.IndexOf(RankingDivisions(profile), Label(l.Division, profile))))
+                .Append(',').Append(l.Rating).Append(",0,0,0,0,0,0,0\n");
         }
 
         return sb.ToString();
 
-        static string Date(DateTime d) => d.ToString("yyyy/MM/dd HH:mm:ss", CultureInfo.InvariantCulture);
+        string Date(DateTime d) => d.ToString(pes2010 ? "yyyy-MM-dd HH:mm:ss" : "yyyy/MM/dd HH:mm:ss",
+            CultureInfo.InvariantCulture);
     }
 }
