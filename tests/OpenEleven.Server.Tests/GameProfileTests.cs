@@ -86,6 +86,19 @@ public class GameProfileTests
             Build(GameProfile.Pes2011Pc).Entries.Single(e => e.Msg == "CMD_VARIANT").HandlerType);
     }
 
+    // pes2010.exe sends the same in-match commands as pes2011.exe (FUN_007c1f80).
+    [Theory]
+    [InlineData(GameProfile.Pes2010Pc, true)]
+    [InlineData(GameProfile.Pes2011Pc, true)]
+    [InlineData(GameProfile.Pes2013Pc, false)]
+    public void Match_commands_are_served_to_pes2010_and_pes2011(GameProfile profile, bool served)
+    {
+        var registry = CommandRegistry.Build(profile, typeof(Handlers.Pes2011Handlers).Assembly);
+
+        foreach (var msg in new[] { "CMD_CHANGE_GAMEPHASE", "CMD_ADD_SCORE", "CMD_GET_GAMEADDPOINT", "CMD_SET_FORFEITEDGAMEEND" })
+            Assert.Equal(served, registry.TryGet(msg, out _));
+    }
+
     [Fact]
     public void Overlapping_variants_on_the_active_title_still_throw()
         => Assert.Throws<InvalidOperationException>(() => Build(GameProfile.Pes2012Pc));

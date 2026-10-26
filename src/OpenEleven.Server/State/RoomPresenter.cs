@@ -22,15 +22,15 @@ public static class RoomPresenter
             .Set("match_type", EmptyAs(room.MatchType, "OC_FREE"))
             .Set("room_id", room.Id)
             .Set("status", room.Status)
-            .Set("game_phase", "ENTRY")
+            .Set("game_phase", room.Phase)
             .Set("name", room.Name);
 
         if (room.GameEnvironment is not null)
             entry.Set("gameenv", room.GameEnvironment);
 
         entry
-            .Set("team[0]", 0)
-            .Set("team[1]", 0);
+            .Set("team[0]", room.HomeTeamId)
+            .Set("team[1]", room.AwayTeamId);
 
         // No score[N].field group here. Dot-index keys are recorded in the RE handoff
         // (section 10.3) as causing parser failures and, in some experiments, a client
@@ -97,6 +97,17 @@ public static class RoomPresenter
 
     public static KvMessage MemberListEntry(Room room, Session member)
         => MemberEntry(room, member, "room_pid");
+
+    /// <summary>
+    /// The PES 2010 room player watch. FUN_00735840 reads room_player_list[] into the room's
+    /// player table and FUN_007c7fc0 copies those pids into the peer table; the joining
+    /// player (FUN_007b8ad0) leaves the room when the host's pid is not in it.
+    /// </summary>
+    public static KvMessage RoomPlayerWatch(Room room, int rqid)
+        => KvMessage.Ok("CMD_WATCH_ROOMPLAYERLIST", rqid)
+            .Set("room_id", room.Id)
+            .SetList("room_player_num", "room_player_list",
+                room.Snapshot().Select(member => RoomPlayerEntry(room, member)).ToArray());
 
     private static KvMessage RoomPlayerEntry(Room room, Session member)
         => MemberEntry(room, member, "room_player_id");

@@ -299,12 +299,12 @@ public class RoomTests
             if (item.Message is { } message)
                 pushed.Add(message);
 
-        // Both sessions reach the server from the same host on a private deployment, so
-        // the LAN endpoint is the one that works; the NAT endpoint would need hairpinning.
+        // Same NAT, but PES 2010 still gets the endpoint as reported: the client probes
+        // in_ip itself when ex_ip matches its own (FUN_00f8bd00).
         var endpoint = Assert.Single(pushed, message => message.MsgName == "CMD_WATCH_IPANDPORT");
         Assert.Equal(77, endpoint.Rqid);
-        Assert.Equal(guest.InternalIp, endpoint.GetString("ex_ip"));
-        Assert.Equal(guest.InternalPort, endpoint.GetInt32("ex_port"));
+        Assert.Equal(guest.ExternalIp, endpoint.GetString("ex_ip"));
+        Assert.Equal(guest.ExternalPort, endpoint.GetInt32("ex_port"));
         Assert.Equal(guest.Pid, endpoint.GetInt32("pid"));
     }
 
@@ -371,8 +371,9 @@ public class RoomTests
 
         Assert.Equal(
             ["CMD_JOIN_ROOM", "CMD_WATCH_ROOMSTATE",
-             "MSG_RMEMBERLISTSTART", "MSG_RMEMBERLIST", "MSG_RMEMBEREND"],
+             "MSG_RMEMBERLISTSTART", "MSG_RMEMBERLIST", "MSG_RMEMBEREND", "CMD_WATCH_ROOMPLAYERLIST"],
             replies.Select(reply => reply.MsgName).ToArray());
+        Assert.Equal(2, replies[^1].GetInt32("room_player_num"));
         Assert.Equal(88, replies[1].Rqid);
         Assert.Equal("WAITING", replies[1].GetString("state"));
         Assert.Equal(owner.Pid, replies[1].GetInt32("owner_pid"));
@@ -426,6 +427,9 @@ public class RoomTests
         var reply = Assert.Single(replies);
         Assert.Equal("CMD_WATCH_ROOMPLAYERLIST", reply.MsgName);
         Assert.Equal(roomId, reply.GetInt32("room_id"));
+        // The joining client looks the host's pid up in this list (FUN_007b8ad0).
+        Assert.Equal(1, reply.GetInt32("room_player_num"));
+        Assert.Equal(owner.Pid, Assert.Single(reply.GetList("room_player_list")).GetInt32("pid"));
     }
 
     [Fact]
@@ -815,7 +819,7 @@ public class BlockTests
         var session = harness.NewSession(ServiceRole.Lobby, SessionState.Authenticated);
         await harness.DispatchAsync(session, "CMD_SET_CURRENTPLAYER");
         await harness.DispatchAsync(session, "CMD_JOIN_BLOCK");
-        var room = Assert.Single(await harness.DispatchAsync(session, "CMD_CREATEJOIN_ROOM"));
+        var room = Enumerable.First(await harness.DispatchAsync(session, "CMD_CREATEJOIN_ROOM"));
 
         var replies = await harness.DispatchAsync(session, "MSG_REQBLOCKPLAYERLIST");
         var entry = Assert.Single(replies[2].GetList("block_player_list"));
@@ -983,8 +987,10 @@ public class GameEnvironmentTests
         Assert.Equal("NOROOM", replies[0].GetString("reason"));
     }
 
+    // PES 2010 only sends CMD_ENTRY_GAME while the room is WAITING (FUN_007b7bc0), so a
+    // join must not move the room to SETENV; the client does that itself.
     [Fact]
-    public async Task Game_environment_moves_room_to_setenv_and_join_keeps_that_state()
+    public async Task Join_keeps_a_configured_room_waiting()
     {
         await using var harness = await ServerHarness.CreateAsync();
         var owner = harness.NewSession(ServiceRole.Lobby, SessionState.InBlock);
@@ -1008,10 +1014,20 @@ public class GameEnvironmentTests
         var replies = await harness.DispatchAsync(guest, "CMD_JOIN_ROOM", withFields: r =>
             r.Set("room_id", roomId));
 
-        Assert.Equal("SETENV", room.Status);
+        Assert.Equal("WAITING", room.Status);
         Assert.Contains(replies, message => message.MsgName == "CMD_JOIN_ROOM");
         Assert.Contains(replies, message =>
-            message.MsgName == "CMD_WATCH_ROOMSTATE" && message.GetString("state") == "SETENV");
+            message.MsgName == "CMD_WATCH_ROOMSTATE" && message.GetString("state") == "WAITING");
+
+        // OwnerChanged/AppointOwner mean "the owner left" to PES 2010 (FUN_007bb130), so a
+        // join is announced as a plain StateChanged.
+        Assert.Equal("StateChanged", Assert.Single(replies, m => m.MsgName == "CMD_WATCH_ROOMSTATE").GetString("event"));
+
+        // The creator's room screen reads its own room from the room-list cache, which only
+        // this update fills; it follows the create reply.
+        Assert.Equal("CMD_CREATEJOIN_ROOM", created[0].MsgName);
+        var own = Assert.Single(created, m => m.MsgName == "MSG_ROOMLISTUPDATE");
+        Assert.Equal(roomId, Assert.Single(own.GetList("roomList")).GetInt32("room_id"));
     }
 }
 
