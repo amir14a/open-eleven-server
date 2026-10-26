@@ -68,6 +68,10 @@ public sealed class Session
     public WatchListSubscription? BlockPlayerWatch { get; set; }
     public WatchListSubscription? RoomPlayerWatch { get; set; }
 
+    /// <summary>PES2010's friends-screen watches; changes push under the same names.</summary>
+    public int? FriendListWatchRqid { get; set; }
+    public int? FriendRequestWatchRqid { get; set; }
+
     public int? BlockId { get; set; }
     public int? RoomId { get; set; }
     public int RoomEntryNo { get; set; } = -1;

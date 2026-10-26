@@ -71,7 +71,10 @@ public sealed class RankHandlers(GameDbContext db, TimeProvider time, ILogger<Ra
             .Set("iid", n.Id)
             .Set("title", n.Title)
             .Set("info", n.Body)
-            .Set("important", n.Important ? "TRUE" : "FALSE")).ToArray();
+            .Set("important", n.Important ? "TRUE" : "FALSE")
+            // FUN_00731C60 requires this field too and stops parsing the entry without it.
+            // Enum type 0 is FALSE/TRUE.
+            .Set("present", "TRUE")).ToArray();
         return [ctx.Ok().SetList("count", "privInfo", entries)];
     }
 
